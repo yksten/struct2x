@@ -15,3 +15,9 @@ SOURCE_GROUP(src FILES ${SRC})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 ADD_LIBRARY(struct ${THIRDPARTY} ${SRC} ${DIR_SRCS})
+
+
+SET(TESTER "./tester/main.cpp")
+SOURCE_GROUP(tester FILES ${TESTER})
+
+ADD_EXECUTABLE(tester ${THIRDPARTY} ${SRC} ${TESTER} ${DIR_SRCS})
