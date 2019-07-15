@@ -38,7 +38,7 @@ public:
     {
         cJSON* curItem = cur();
         getObject(sz);
-        value.deserialize(*this);
+        value.serialize(*this);
         cur(curItem);
         return *this;
     }
@@ -53,8 +53,27 @@ public:
             cJSON* lastItem = cur();
             getArrayItem(i);
             T item;
-            DESERIALIZATION_1((*this), item);
+            SERIALIZATION((*this), item);
             value.push_back(item);
+            cur(lastItem);
+        }
+        cur(curItem);
+        return *this;
+    }
+    template<typename T>
+    JSONWriter& convert(const char* sz, std::map<std::string, T>& value)
+    {
+        cJSON* curItem = cur();
+        getObject(sz);
+        int size = getArraySize();
+        for (int i = 0; i < size; ++i)
+        {
+            cJSON* lastItem = cur();
+            getArrayItem(i);
+            std::string key;
+            T item;
+            keyValue(key, item);
+            value.insert(std::pair<std::string, T>(key, item));
             cur(lastItem);
         }
         cur(curItem);
@@ -64,6 +83,13 @@ private:
     void getObject(const char* sz);
     int getArraySize()const;
     void getArrayItem(int i);
+    const char* getItemName()const;
+    template<typename T>
+    void keyValue(std::string& key, T& value)
+    {
+        key = getItemName();
+        convert(key.c_str(), value);
+    }
     void cur(cJSON* item) { _cur = item; }
     cJSON* cur() { return _cur; }
 };

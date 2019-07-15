@@ -132,3 +132,8 @@ void JSONWriter::getArrayItem(int i)
     assert(fmt);
     _cur = fmt;
 }
+
+const char* JSONWriter::getItemName() const
+{
+    return _cur->child->string;
+}

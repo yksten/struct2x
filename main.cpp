@@ -10,18 +10,16 @@ struct struInfo
     struInfo() :no(99){}
     int no;
 
-    bool operator !=(const struInfo& in)const 
-    {
-        if (no == in.no)
-            return false;
-        return true;
-    }
-
     bool operator ==(const struInfo& in)const
     {
         if (no != in.no)
             return false;
         return true;
+    }
+
+    bool operator !=(const struInfo& in)const 
+    {
+        return !operator==(in);
     }
 
     template<typename T>
@@ -51,17 +49,17 @@ struct struItem
             return false;
         if (v2 != in.v2)
             return false;
-        //if (m != in.m)
-        //    return false;
-        //if (m2 != in.m2)
-        //    return false;
+        if (m != in.m)
+            return false;
+        if (m2 != in.m2)
+            return false;
         return true;
     }
 
     template<typename T>
     void serialize(T& t)
     {
-        SERIALIZATION(t, id, info, v, v2, str);
+        SERIALIZATION(t, id, str, info, v, v2, m, m2);
     }
 };
 
@@ -89,11 +87,11 @@ int main()
     std::string str;
     jr.toString(str);
 
-    //JSONWriter jw(str.c_str());
-    //struItem item2;
-    //jw >> item2;
-    //bool b = (item == item2);
-    //assert(b);
+    JSONWriter jw(str.c_str());
+    struItem item2;
+    jw >> item2;
+    bool b = (item == item2);
+    assert(b);
 
     return 0;
 }
