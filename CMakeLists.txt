@@ -6,9 +6,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
 AUX_SOURCE_DIRECTORY(./ DIR_SRCS)
 
-SET(SRC "./cJSON.h" "./cJSON.c"  "./JSONReader.h" "./JSONReader.cpp" "./JSONWriter.h" "./JSONWriter.cpp" "./main.cpp")
+SET(THIRDPARTY "./thirdParty/cJSON.h" "./thirdParty/cJSON.c")
+SOURCE_GROUP(thirdParty FILES ${THIRDPARTY})
+
+SET(SRC "./srtuctMacro.h" "./JSONReader.h" "./JSONReader.cpp" "./JSONWriter.h" "./JSONWriter.cpp" "./main.cpp")
 SOURCE_GROUP(src FILES ${SRC})
 
-SET(MATH ${DIR_SRCS})
-
-ADD_EXECUTABLE(struct ${SRC} ${MATH})
+ADD_EXECUTABLE(struct ${THIRDPARTY} ${SRC} ${DIR_SRCS})
