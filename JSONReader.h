@@ -16,6 +16,9 @@
 #define SERIALIZATION_9(t, p1, p2, p3, p4, p5, p6, p7, p8, p9) SERIALIZATION_8(t, p1, p2, p3, p4, p5, p6, p7, p8).addValue(#p9, p9)
 #define SERIALIZATION_10(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) SERIALIZATION_9(t, p1, p2, p3, p4, p5, p6, p7, p8, p9).addValue(#p10, p10)
 
+#define X_COUNT(LEVEL, _10,_9,_8,_7,_6,_5,_4,_3,_2,_1,N,...) LEVEL##N
+#define SERIALIZATION(t, ...)  X_COUNT(SERIALIZATION, __VA_ARGS__, _10,_9,_8,_7,_6,_5,_4,_3,_2,_1) (t, __VA_ARGS__)
+
 
 struct cJSON;
 class JSONReader
@@ -76,7 +79,7 @@ public:
     {
         cJSON* curItem = cur();
         createArray(sz);
-        for (std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it)
+        for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it)
         {
             cJSON* lastItem = cur();
             addItemToArray();

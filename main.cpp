@@ -27,7 +27,7 @@ struct struInfo
     template<typename T>
     void serialize(T& t) const
     {
-        SERIALIZATION_1(t, no);
+        SERIALIZATION(t, no);
     }
     template<typename T>
     void deserialize(T& t)
@@ -66,7 +66,7 @@ struct struItem
     template<typename T>
     void serialize(T& t) const
     {
-        SERIALIZATION_7(t, id, info, v, v2, m, m2, str);
+        SERIALIZATION(t, id, info, v, v2, m, m2, str);
     }
     template<typename T>
     void deserialize(T& t)
