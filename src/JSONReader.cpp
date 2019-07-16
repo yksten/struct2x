@@ -97,7 +97,7 @@ void JSONReader::toString(std::string& str)
 {
     char *out = cJSON_Print(_root);
     str.append(out);
-    free(out);
+    cJSON_free(out);
 }
 
 void JSONReader::createObject(const char* sz)
