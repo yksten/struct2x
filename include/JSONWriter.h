@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "srtuctMacro.h"
 
 
 struct cJSON;
