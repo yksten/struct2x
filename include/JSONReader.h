@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "srtuctNoInvasiveMacro.h"
+#include "SelfAdapt.h"
 
 
 struct cJSON;
@@ -18,7 +20,7 @@ public:
     JSONReader& operator << (const T& value)
     {
         if (T* pValue = const_cast<T*>(&value)){
-            pValue->serialize(*this);
+            serializeWrapper(*this, *pValue);
         }
         return *this;
     }
@@ -41,7 +43,7 @@ public:
         cJSON* curItem = cur();
         createObject(sz);
         if (T* pValue = const_cast<T*>(&value)){
-            pValue->serialize(*this);
+            serializeWrapper(*this, *pValue);
         }
         cur(curItem);
         return *this;
@@ -57,7 +59,7 @@ public:
             cJSON* lastItem = cur();
             addItemToArray();
             const T& item = value.at(i);
-            SERIALIZATION((*this), item);
+            this->operator<<(item);
             cur(lastItem);
         }
         cur(curItem);

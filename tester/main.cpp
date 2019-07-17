@@ -64,6 +64,12 @@ struct struItem
     }
 };
 
+template<typename T>
+void serialize(T& t, struItem& item)
+{
+    NISERIALIZATION(t, item, id, str, info, v, v2, m, m2);
+}
+
 int main()
 {
     struItem item;

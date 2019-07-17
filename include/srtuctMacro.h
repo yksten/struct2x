@@ -1,5 +1,5 @@
-#ifndef __JSON_MACRO_H__
-#define __JSON_MACRO_H__
+#ifndef __STRUCT_MACRO_H__
+#define __STRUCT_MACRO_H__
 
 
 #define SERIALIZATION_1(t, p1) t.convert(#p1, p1)

@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "srtuctNoInvasiveMacro.h"
+#include "SelfAdapt.h"
 
 
 struct cJSON;
@@ -17,7 +19,7 @@ public:
     template<typename T>
     JSONWriter& operator >> (T& value)
     {
-        value.serialize(*this);
+        serializeWrapper(*this, value);
         return *this;
     }
 
@@ -37,7 +39,7 @@ public:
     {
         cJSON* curItem = cur();
         getObject(sz);
-        value.serialize(*this);
+        serializeWrapper(*this, value);
         cur(curItem);
         return *this;
     }
@@ -52,7 +54,7 @@ public:
             cJSON* lastItem = cur();
             getArrayItem(i);
             T item;
-            SERIALIZATION((*this), item);
+            this->operator>>(item);
             value.push_back(item);
             cur(lastItem);
         }
