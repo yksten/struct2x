@@ -23,12 +23,12 @@
 #define NISERIALIZATION_19(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19) NISERIALIZATION_18(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18).convert(#p19, c.p19)
 #define NISERIALIZATION_20(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) NISERIALIZATION_19(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19).convert(#p20, c.p20)
 
-#define X_COUNT(TAG, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1,N,...) TAG##N
-#define X_EXPAND(...) __VA_ARGS__
+#define X_NI_COUNT(TAG, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1,N,...) TAG##N
+#define X_NI_EXPAND(...) __VA_ARGS__
 #ifndef _MSC_VER
-#define NISERIALIZATION(t, c, ...)  X_COUNT(NISERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1) (t, c, __VA_ARGS__)
+#define NISERIALIZATION(t, c, ...)  X_NI_COUNT(NISERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1) (t, c, __VA_ARGS__)
 #else
-#define NISERIALIZATION(t, c, ...)  X_EXPAND(X_COUNT(NISERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1)) X_EXPAND((t, c, __VA_ARGS__))
+#define NISERIALIZATION(t, c, ...)  X_NI_EXPAND(X_NI_COUNT(NISERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1)) X_NI_EXPAND((t, c, __VA_ARGS__))
 #endif
 
 
