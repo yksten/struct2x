@@ -69,14 +69,13 @@ public:
     {
         cJSON* curItem = cur();
         getObject(sz);
-        int size = getArraySize();
+        int size = getMapSize();
         for (int i = 0; i < size; ++i)
         {
             cJSON* lastItem = cur();
-            getArrayItem(i);
             std::string key;
             T item;
-            keyValue(key, item);
+            getkeyValue(i, key, item);
             value.insert(std::pair<std::string, T>(key, item));
             cur(lastItem);
         }
@@ -87,11 +86,12 @@ private:
     void getObject(const char* sz);
     int getArraySize()const;
     void getArrayItem(int i);
-    const char* getItemName()const;
+    int getMapSize() const;
+    const char* getChildName(int i)const;
     template<typename T>
-    void keyValue(std::string& key, T& value)
+    void getkeyValue(int i, std::string& key, T& value)
     {
-        key = getItemName();
+        key = getChildName(i);
         convert(key.c_str(), value);
     }
     void cur(cJSON* item) { _cur = item; }

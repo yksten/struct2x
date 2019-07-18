@@ -71,11 +71,10 @@ public:
     JSONReader& convert(const char* sz, const std::map<std::string, T>& value)
     {
         cJSON* curItem = cur();
-        createArray(sz);
+        createObject(sz);
         for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it)
         {
             cJSON* lastItem = cur();
-            addItemToArray();
             const T& item = it->second;
             convert(it->first.c_str(), item);
             cur(lastItem);

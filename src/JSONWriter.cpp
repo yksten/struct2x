@@ -133,7 +133,18 @@ void JSONWriter::getArrayItem(int i)
     _cur = fmt;
 }
 
-const char* JSONWriter::getItemName() const
+int JSONWriter::getMapSize() const
 {
-    return _cur->child->string;
+    return getArraySize();
+}
+
+const char* JSONWriter::getChildName(int i) const
+{
+    cJSON *fmt = _cur->child;
+    for(int index=0; index<i; ++index)
+    {
+        fmt = fmt->next;
+    }
+    assert(fmt);
+    return fmt->string;
 }
