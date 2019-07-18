@@ -12,6 +12,9 @@ class JSONWriter
 {
     cJSON* _root;
     cJSON* _cur;
+    JSONWriter();
+    JSONWriter(const JSONWriter&);
+    JSONWriter& operator=(const JSONWriter&);
 public:
     JSONWriter(const char* sz);
     virtual ~JSONWriter();

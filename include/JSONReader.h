@@ -12,6 +12,8 @@ class JSONReader
 {
     cJSON* _root;
     cJSON* _cur;
+    JSONReader(const JSONReader&);
+    JSONReader& operator=(const JSONReader&);
 public:
     JSONReader();
     virtual ~JSONReader();
