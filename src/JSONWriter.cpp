@@ -54,7 +54,12 @@ JSONWriter& JSONWriter::convert(const char* sz, std::string& value)
 JSONWriter& JSONWriter::convert(const char* sz, bool& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
-        value = item->valueint;
+    {
+        if (item->type == cJSON_False)
+            value = false;
+        else
+            value = true;
+    }
     return *this;
 }
 
