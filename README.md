@@ -12,9 +12,11 @@
 如何使用
 
 # 如何使用
-包含srtuctMacro.h文件
-struct struItem
-{
+包含srtuctMacro.h文件。
+
+结构体如下：
+struct struItem {
+
     int id;
     std::string str;
     std::vector<std::string> v;
@@ -23,11 +25,12 @@ struct struItem
     std::map<std::string, struInfo> m2;
 
     template<typename T>
-    void serialize(T& t)//使用该模板函数，指定struct中需要转为json的变量，数必须为public
+    void serialize(T& t)//使用该模板函数，指定struct中需要转为json的变量，必须为public
     {
         SERIALIZATION(t, id, str, v, v2, m, m2);
     }
 };
+
 也可在struct外部使用非侵入式C++结构体序列化：
 template<typename T>
 void serialize(T& t, struItem& item)
@@ -35,4 +38,5 @@ void serialize(T& t, struItem& item)
     NISERIALIZATION(t, item, id, str, v, v2, m, m2);
 }
 生成json时会优先使用非侵入式。
+
 示例见 tester/main.cpp。
