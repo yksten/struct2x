@@ -28,6 +28,11 @@ public:
         return this->operator<<(value);
     }
 
+    template<typename T>
+    BufferReader& operator&(const T& value){
+        return this->operator<<(value);
+    }
+
     const char* data() const;
     size_t size() const;
 private:

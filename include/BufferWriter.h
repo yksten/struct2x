@@ -25,6 +25,11 @@ public:
     BufferWriter& convert(const char* sz, T& value){
         return this->operator>>(value);
     }
+
+    template<typename T>
+    BufferWriter& operator&(T& value){
+        return this->operator>>(value);
+    }
 private:
     BufferWriter& operator >>(bool& value);
     BufferWriter& operator >>(int8_t& value);

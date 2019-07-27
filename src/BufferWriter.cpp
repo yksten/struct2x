@@ -124,4 +124,3 @@ BufferWriter& BufferWriter::operator >>(std::string& value){
     _buffer->getValue(value);
     return *this;
 }
-

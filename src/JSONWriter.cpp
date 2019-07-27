@@ -16,42 +16,42 @@ JSONWriter::~JSONWriter()
         cJSON_Delete(_root);
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, int& value)
+JSONWriter& JSONWriter::getValue(const char* sz, int& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
         value = item->valueint;
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, float& value)
+JSONWriter& JSONWriter::getValue(const char* sz, float& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
         value = item->valuedouble;
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, double& value)
+JSONWriter& JSONWriter::getValue(const char* sz, double& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
         value = item->valuedouble;
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, unsigned int& value)
+JSONWriter& JSONWriter::getValue(const char* sz, unsigned int& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
         value = item->valueint;
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, std::string& value)
+JSONWriter& JSONWriter::getValue(const char* sz, std::string& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
         value = item->valuestring;
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, bool& value)
+JSONWriter& JSONWriter::getValue(const char* sz, bool& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
     {
@@ -63,7 +63,7 @@ JSONWriter& JSONWriter::convert(const char* sz, bool& value)
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, std::vector<int>& value)
+JSONWriter& JSONWriter::getValue(const char* sz, std::vector<int>& value)
 {
     cJSON* curItem = cur();
     getObject(sz);
@@ -77,7 +77,7 @@ JSONWriter& JSONWriter::convert(const char* sz, std::vector<int>& value)
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, std::vector<float>& value)
+JSONWriter& JSONWriter::getValue(const char* sz, std::vector<float>& value)
 {
     cJSON* curItem = cur();
     getObject(sz);
@@ -91,7 +91,7 @@ JSONWriter& JSONWriter::convert(const char* sz, std::vector<float>& value)
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, std::vector<double>& value)
+JSONWriter& JSONWriter::getValue(const char* sz, std::vector<double>& value)
 {
     cJSON* curItem = cur();
     getObject(sz);
@@ -105,7 +105,7 @@ JSONWriter& JSONWriter::convert(const char* sz, std::vector<double>& value)
     return *this;
 }
 
-JSONWriter& JSONWriter::convert(const char* sz, std::vector<std::string>& value)
+JSONWriter& JSONWriter::getValue(const char* sz, std::vector<std::string>& value)
 {
     cJSON* curItem = cur();
     getObject(sz);

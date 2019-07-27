@@ -20,25 +20,31 @@ public:
     virtual ~JSONWriter();
 
     template<typename T>
+    JSONWriter& convert(const char* sz, T& value)
+    {
+        return this->getValue(sz, value);
+    }
+
+    template<typename T>
     JSONWriter& operator >> (T& value)
     {
         serializeWrapper(*this, value);
         return *this;
     }
-
-    JSONWriter& convert(const char* sz, int& value);
-    JSONWriter& convert(const char* sz, float& value);
-    JSONWriter& convert(const char* sz, double& value);
-    JSONWriter& convert(const char* sz, unsigned int& value);
-    JSONWriter& convert(const char* sz, std::string& value);
-    JSONWriter& convert(const char* sz, bool& value);
-    JSONWriter& convert(const char* sz, std::vector<int>& value);
-    JSONWriter& convert(const char* sz, std::vector<float>& value);
-    JSONWriter& convert(const char* sz, std::vector<double>& value);
-    JSONWriter& convert(const char* sz, std::vector<std::string>& value);
+private:
+    JSONWriter& getValue(const char* sz, int& value);
+    JSONWriter& getValue(const char* sz, float& value);
+    JSONWriter& getValue(const char* sz, double& value);
+    JSONWriter& getValue(const char* sz, unsigned int& value);
+    JSONWriter& getValue(const char* sz, std::string& value);
+    JSONWriter& getValue(const char* sz, bool& value);
+    JSONWriter& getValue(const char* sz, std::vector<int>& value);
+    JSONWriter& getValue(const char* sz, std::vector<float>& value);
+    JSONWriter& getValue(const char* sz, std::vector<double>& value);
+    JSONWriter& getValue(const char* sz, std::vector<std::string>& value);
 
     template<typename T>
-    JSONWriter& convert(const char* sz, T& value)
+    JSONWriter& getValue(const char* sz, T& value)
     {
         cJSON* curItem = cur();
         getObject(sz);
@@ -47,7 +53,7 @@ public:
         return *this;
     }
     template<typename T>
-    JSONWriter& convert(const char* sz, std::vector<T>& value)
+    JSONWriter& getValue(const char* sz, std::vector<T>& value)
     {
         cJSON* curItem = cur();
         getObject(sz);
@@ -67,7 +73,7 @@ public:
         return *this;
     }
     template<typename T>
-    JSONWriter& convert(const char* sz, std::map<std::string, T>& value)
+    JSONWriter& getValue(const char* sz, std::map<std::string, T>& value)
     {
         cJSON* curItem = cur();
         getObject(sz);
@@ -86,7 +92,7 @@ public:
         cur(curItem);
         return *this;
     }
-private:
+
     void getObject(const char* sz);
     int getArraySize()const;
     void getArrayItem(int i);
@@ -96,7 +102,7 @@ private:
     void getkeyValue(int i, std::string& key, T& value)
     {
         key = getChildName(i);
-        convert(key.c_str(), value);
+        getValue(key.c_str(), value);
     }
     void cur(cJSON* item) { _cur = item; }
     cJSON* cur() { return _cur; }

@@ -19,6 +19,12 @@ public:
     virtual ~JSONReader();
 
     template<typename T>
+    JSONReader& convert(const char* sz, const T& value)
+    {
+        return this->setValue(sz, value);
+    }
+
+    template<typename T>
     JSONReader& operator << (const T& value)
     {
         if (T* pValue = const_cast<T*>(&value)){
@@ -27,20 +33,22 @@ public:
         return *this;
     }
 
-    JSONReader& convert(const char* sz, int value);
-    JSONReader& convert(const char* sz, float value);
-    JSONReader& convert(const char* sz, double value);
-    JSONReader& convert(const char* sz, unsigned int value);
-    JSONReader& convert(const char* sz, const char* value);
-    JSONReader& convert(const char* sz, const std::string& value);
-    JSONReader& convert(const char* sz, bool value);
-    JSONReader& convert(const char* sz, const std::vector<int>& value);
-    JSONReader& convert(const char* sz, const std::vector<float>& value);
-    JSONReader& convert(const char* sz, const std::vector<double>& value);
-    JSONReader& convert(const char* sz, const std::vector<std::string>& value);
+    void toString(std::string& str);
+private:
+    JSONReader& setValue(const char* sz, int value);
+    JSONReader& setValue(const char* sz, float value);
+    JSONReader& setValue(const char* sz, double value);
+    JSONReader& setValue(const char* sz, unsigned int value);
+    JSONReader& setValue(const char* sz, const char* value);
+    JSONReader& setValue(const char* sz, const std::string& value);
+    JSONReader& setValue(const char* sz, bool value);
+    JSONReader& setValue(const char* sz, const std::vector<int>& value);
+    JSONReader& setValue(const char* sz, const std::vector<float>& value);
+    JSONReader& setValue(const char* sz, const std::vector<double>& value);
+    JSONReader& setValue(const char* sz, const std::vector<std::string>& value);
 
     template<typename T>
-    JSONReader& convert(const char* sz, const T& value)
+    JSONReader& setValue(const char* sz, const T& value)
     {
         cJSON* curItem = cur();
         createObject(sz);
@@ -51,7 +59,7 @@ public:
         return *this;
     }
     template<typename T>
-    JSONReader& convert(const char* sz, const std::vector<T>& value)
+    JSONReader& setValue(const char* sz, const std::vector<T>& value)
     {
         cJSON* curItem = cur();
         createArray(sz);
@@ -68,7 +76,7 @@ public:
         return *this;
     }
     template<typename T>
-    JSONReader& convert(const char* sz, const std::map<std::string, T>& value)
+    JSONReader& setValue(const char* sz, const std::map<std::string, T>& value)
     {
         cJSON* curItem = cur();
         createObject(sz);
@@ -76,14 +84,12 @@ public:
         {
             cJSON* lastItem = cur();
             const T& item = it->second;
-            convert(it->first.c_str(), item);
+            setValue(it->first.c_str(), item);
             cur(lastItem);
         }
         cur(curItem);
         return *this;
     }
-    void toString(std::string& str);
-private:
     void createObject(const char* sz);
     void createArray(const char* sz);
     void addItemToArray();
