@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <vector>
 #include <map>
+#include "srtuctNoInvasiveMacro.h"
+#include "SelfAdapt.h"
 
 
 class BufferOut;
