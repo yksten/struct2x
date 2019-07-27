@@ -29,6 +29,7 @@ public:
     void setValue(float value){ append(value); }
     void setValue(double value){ append(value); }
     void setValue(const std::string& value){ uint32_t size = value.size(); append(size); append(value.c_str(), size); }
+    void setValue(const char* value){ uint32_t size = strlen(value); append(size); append(value, size); }
 private:
     template<typename T>
     void append(const T& data){
@@ -145,3 +146,9 @@ BufferReader& BufferReader::operator <<(const std::string& value){
     return *this;
 }
 
+BufferReader& BufferReader::operator <<(const char* value)
+{
+    assert(_buffer);
+    _buffer->setValue(value);
+    return *this;
+}

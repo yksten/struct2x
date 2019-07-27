@@ -50,6 +50,7 @@ private:
     BufferReader& operator <<(const float& value);
     BufferReader& operator <<(const double& value);
     BufferReader& operator <<(const std::string& value);
+    BufferReader& operator <<(const char* value);
 
     template<typename T>
     BufferReader& operator <<(const std::vector<T>& value){
