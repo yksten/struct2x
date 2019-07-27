@@ -12,7 +12,9 @@ AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 SET(THIRDPARTY "./thirdParty/cJSON.h" "./thirdParty/cJSON.c")
 SOURCE_GROUP(thirdParty FILES ${THIRDPARTY})
 
-SET(SRC "./include/srtuctMacro.h" "./include/SelfAdapt.h" "./include/srtuctNoInvasiveMacro.h" "./include/JSONReader.h" "./src/JSONReader.cpp" "./include/JSONWriter.h" "./src/JSONWriter.cpp")
+SET(SRC "./include/srtuctMacro.h" "./include/SelfAdapt.h" "./include/srtuctNoInvasiveMacro.h"
+ "./include/JSONReader.h" "./src/JSONReader.cpp" "./include/JSONWriter.h" "./src/JSONWriter.cpp"
+ "./include/BufferWriter.h" "./src/BufferWriter.cpp" "./include/BufferReader.h" "./src/BufferReader.cpp")
 SOURCE_GROUP(src FILES ${SRC})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")

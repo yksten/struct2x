@@ -6,6 +6,9 @@
 #include "JSONReader.h"
 #include "JSONWriter.h"
 
+#include "BufferReader.h"
+#include "BufferWriter.h"
+
 struct struInfo
 {
     struInfo() :no(99){}
@@ -99,6 +102,16 @@ int main()
     jw >> item2;
     bool b = (item == item2);
     assert(b);
+
+
+    BufferReader br;
+    br << item;
+
+    BufferWriter bw(br.data(), br.size());
+    bw >> item2;
+    b = (item == item2);
+    assert(b);
+
 
     return 0;
 }

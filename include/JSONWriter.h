@@ -52,6 +52,8 @@ public:
         cJSON* curItem = cur();
         getObject(sz);
         int size = getArraySize();
+        if (size)
+            value.clear();
         for (int i = 0; i < size; ++i)
         {
             cJSON* lastItem = cur();
@@ -70,6 +72,8 @@ public:
         cJSON* curItem = cur();
         getObject(sz);
         int size = getMapSize();
+        if (size)
+            value.clear();
         for (int i = 0; i < size; ++i)
         {
             cJSON* lastItem = cur();
