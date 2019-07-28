@@ -31,6 +31,22 @@ public:
         serializeWrapper(*this, value);
         return *this;
     }
+
+    template<typename T>
+    JSONWriter& operator >> (std::map<std::string, T>& value)
+    {
+        int size = getMapSize();
+        if (size)
+            value.clear();
+        for (int i = 0; i < size; ++i)
+        {
+            std::string key;
+            T item;
+            getkeyValue(i, key, item);
+            value.insert(std::pair<std::string, T>(key, item));
+        }
+        return *this;
+    }
 private:
     JSONWriter& getValue(const char* sz, int& value);
     JSONWriter& getValue(const char* sz, float& value);

@@ -73,8 +73,49 @@ void serialize(T& t, struItem& item)
     NISERIALIZATION(t, item, id, str, info, v, v2, m, m2);
 }
 
+
+void testMap()
+{
+    std::map<std::string, int> map, map2;
+    map["EVENT_NONE"] = 0;
+    map["EVENT_INIT"] = 1;
+    map["EVENT_VALUE_OF_NUMBER"] = 2;
+    map["EVENT_TIMER_EXPIRED"] = 3;
+    map["EVENT_COUNTER_EXPIRED"] = 4;
+    map["CONDITION_NONE"] = 0;
+    map["CONDITION_NUMBER_COMPARISON"] = 1;
+    map["ACTION_NONE"] = 0;
+    map["ACTION_DO_NOTHING"] = 1;
+    map["ACTION_IF_ELSE"] = 2;
+    map["ACTION_IF_ELIF_ELSE"] = 3;
+    map["ACTION_ACTION_GROUP"] = 4;
+    map["ACTION_SET_NUMBER"] = 5;
+    map["ACTION_SET_STRING"] = 6;
+    map["ACTION_ADD_NUMBER"] = 7;
+    map["ACTION_ADD_STRING"] = 8;
+    map["VARIABLE_NONE"] = 0;
+    map["VARIABLE_NUMBER"] = 1;
+    map["VARIABLE_STRING"] = 2;
+    map["VARIABLE_ENTITY"] = 3;
+    map["VARIABLE_TIMER"] = 4;
+    map["VARIABLE_COUNTER"] = 5;
+
+    JSONReader jrmap;
+    jrmap << map;
+    std::string str2;
+    jrmap.toString(str2);
+
+    JSONWriter jwmap(str2.c_str());
+    jwmap >> map2;
+
+    assert(map == map2);
+}
+
+
 int main()
 {
+    testMap();
+
     struItem item;
     item.id = 1;
     item.str = "asdfgh";

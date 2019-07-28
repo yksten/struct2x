@@ -33,6 +33,17 @@ public:
         return *this;
     }
 
+    template<typename T>
+    JSONReader& operator <<(const std::map<std::string, T>& value)
+    {
+        for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it)
+        {
+            const T& item = it->second;
+            setValue(it->first.c_str(), item);
+        }
+        return *this;
+    }
+
     void toString(std::string& str);
 private:
     JSONReader& setValue(const char* sz, int value);
