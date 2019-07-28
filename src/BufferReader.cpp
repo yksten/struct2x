@@ -149,6 +149,7 @@ BufferReader& BufferReader::operator <<(const std::string& value){
 BufferReader& BufferReader::operator <<(const char* value)
 {
     assert(_buffer);
-    _buffer->setValue(value);
+    if (value)
+        _buffer->setValue(value);
     return *this;
 }
