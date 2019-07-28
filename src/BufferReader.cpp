@@ -151,5 +151,7 @@ BufferReader& BufferReader::operator <<(const char* value)
     assert(_buffer);
     if (value)
         _buffer->setValue(value);
+    else
+        _buffer->setValue(0);
     return *this;
 }
