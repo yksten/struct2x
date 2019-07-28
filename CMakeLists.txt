@@ -1,4 +1,4 @@
-PROJECT(struct)
+PROJECT(struct2x)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 INCLUDE(CheckIncludeFileCXX)
 
@@ -22,11 +22,11 @@ SET(SRC "./include/srtuctMacro.h" "./include/SelfAdapt.h" "./include/srtuctNoInv
 SOURCE_GROUP(src FILES ${SRC})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
-ADD_LIBRARY(struct ${THIRDPARTY} ${SRC} ${DIR_SRCS})
+ADD_LIBRARY(struct2x ${THIRDPARTY} ${SRC} ${DIR_SRCS})
 
 
 SET(TESTER "./tester/main.cpp")
 SOURCE_GROUP(tester FILES ${TESTER})
 
 ADD_EXECUTABLE(tester ${TESTER})
-TARGET_LINK_LIBRARIES(tester struct)
+TARGET_LINK_LIBRARIES(tester struct2x)
