@@ -41,3 +41,5 @@ void serialize(T& t, struItem& item)
 生成json时会***优先使用非侵入式***。
 
 示例见 tester/main.cpp。
+
+沟通交流，请联系QQ：75133872。
