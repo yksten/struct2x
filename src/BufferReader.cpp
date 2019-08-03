@@ -77,6 +77,7 @@ size_t BufferReader::size() const{
 
 BufferReader& BufferReader::operator <<(const bool& value){
     assert(_buffer);
+    _buffer->setValue(value);
     return *this;
 }
 

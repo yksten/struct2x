@@ -24,7 +24,12 @@ public:
     void getValue(uint64_t& value){ value = peek<uint64_t>(); }
     void getValue(float& value){ value = peek<float>(); }
     void getValue(double& value){ value = peek<double>(); }
-    void getValue(std::string& value){ value.clear(); uint32_t size = peek<uint32_t>(); value.append(beginOut(), size); hasReader(size); }
+    void getValue(std::string& value){ 
+        value.clear();
+        uint32_t size = peek<uint32_t>();
+        value.append(beginOut(), size);
+        hasReader(size);
+    }
 private:
     template<typename T>
     T peek(){
