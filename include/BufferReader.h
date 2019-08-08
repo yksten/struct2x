@@ -51,6 +51,7 @@ private:
     BufferReader& operator <<(const double& value);
     BufferReader& operator <<(const std::string& value);
     BufferReader& operator <<(const char* value);
+    BufferReader& operator <<(const std::vector<bool>& value);
 
     template<typename T>
     BufferReader& operator <<(const std::vector<T>& value){
@@ -66,7 +67,7 @@ private:
     BufferReader& operator <<(const std::map<K, V>& value){
         uint32_t size = value.size();
         this->operator<<(size);
-        for (std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it){
+        for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it){
             this->operator<<(it->first);
             this->operator<<(it->second);
         }

@@ -156,3 +156,14 @@ BufferReader& BufferReader::operator <<(const char* value)
         _buffer->setValue(0);
     return *this;
 }
+
+BufferReader& BufferReader::operator <<(const std::vector<bool>& value)
+{
+    uint32_t size = value.size();
+    this->operator<<(size);
+    for (uint32_t i = 0; i < size; ++i){
+        bool b = value.at(i);
+        this->operator<<(b);
+    }
+    return *this;
+}
