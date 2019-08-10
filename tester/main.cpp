@@ -111,11 +111,8 @@ void testMap()
     assert(map == map2);
 }
 
-
-int main()
+void testStruct()
 {
-    testMap();
-
     struItem item;
     item.id = 1;
     item.str = "asdfgh";
@@ -152,7 +149,43 @@ int main()
     bw >> item2;
     b = (item == item2);
     assert(b);
+}
 
+struct myStruct
+{
+    std::vector<std::vector<int> > vec;
+    template<typename T>
+    void serialize(T& t)
+    {
+        SERIALIZATION(t, vec);
+    }
+};
+
+void testVector()
+{
+    myStruct s1, s2;
+    std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
+    s1.vec.push_back(v);
+
+    JSONReader jr;
+    jr << s1;
+
+    std::string str;
+    jr.toString(str);
+
+    JSONWriter jw(str.c_str());
+    jw >> s2;
+    bool b = (s1.vec == s2.vec);
+    assert(b);
+}
+
+
+int main()
+{
+    testMap();
+    testStruct();
+
+    testVector();
 
     return 0;
 }

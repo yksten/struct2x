@@ -33,7 +33,25 @@ public:
     }
 
     template<typename T>
-    JSONWriter& operator >> (std::map<std::string, T>& value)
+    JSONWriter& operator >>(std::vector<T>& value)
+    {
+        int size = getArraySize();
+        if (size)
+            value.clear();
+        for (int i = 0; i < size; ++i)
+        {
+            cJSON* lastItem = cur();
+            getArrayItem(i);
+            T item;
+            this->operator>>(item);
+            value.push_back(item);
+            cur(lastItem);
+        }
+        return *this;
+    }
+
+    template<typename T>
+    JSONWriter& operator >>(std::map<std::string, T>& value)
     {
         int size = getMapSize();
         if (size)
@@ -48,6 +66,10 @@ public:
         return *this;
     }
 private:
+    JSONWriter& operator >>(std::vector<int>& value);
+    JSONWriter& operator >>(std::vector<float>& value);
+    JSONWriter& operator >>(std::vector<double>& value);
+    JSONWriter& operator >>(std::vector<std::string>& value);
     JSONWriter& getValue(const char* sz, int& value);
     JSONWriter& getValue(const char* sz, float& value);
     JSONWriter& getValue(const char* sz, double& value);
@@ -80,7 +102,7 @@ private:
         {
             cJSON* lastItem = cur();
             getArrayItem(i);
-            T item;
+            typename TypeTraits<T>::Type item;
             this->operator>>(item);
             value.push_back(item);
             cur(lastItem);

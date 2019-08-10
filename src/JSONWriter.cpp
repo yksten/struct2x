@@ -16,6 +16,50 @@ JSONWriter::~JSONWriter()
         cJSON_Delete(_root);
 }
 
+JSONWriter& JSONWriter::operator >>(std::vector<int>& value)
+{
+    cJSON *c = _cur->child;
+    while (c)
+    {
+        value.push_back(c->valueint);
+        c = c->next;
+    }
+    return *this;
+}
+
+JSONWriter& JSONWriter::operator >>(std::vector<float>& value)
+{
+    cJSON *c = _cur->child;
+    while (c)
+    {
+        value.push_back(c->valuedouble);
+        c = c->next;
+    }
+    return *this;
+}
+
+JSONWriter& JSONWriter::operator >>(std::vector<double>& value)
+{
+    cJSON *c = _cur->child;
+    while (c)
+    {
+        value.push_back(c->valuedouble);
+        c = c->next;
+    }
+    return *this;
+}
+
+JSONWriter& JSONWriter::operator >>(std::vector<std::string>& value)
+{
+    cJSON *c = _cur->child;
+    while (c)
+    {
+        value.push_back(c->valuestring);
+        c = c->next;
+    }
+    return *this;
+}
+
 JSONWriter& JSONWriter::getValue(const char* sz, int& value)
 {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))

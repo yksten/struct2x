@@ -25,5 +25,19 @@ inline void serializeWrapper(T& t, C& c)
     serialize(t, c);
 }
 
+template<typename T>
+struct TypeTraits
+{
+    typedef T Type;
+    static bool isVector(){ return false; }
+};
+
+template<typename T>
+struct TypeTraits<std::vector<T> >
+{
+    typedef std::vector<T> Type;
+    static bool isVector(){ return true; }
+};
+
 
 #endif

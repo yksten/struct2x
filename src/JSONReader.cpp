@@ -20,6 +20,82 @@ void JSONReader::toString(std::string& str)
     free(out);
 }
 
+JSONReader& JSONReader::operator<<(const std::vector<int>& value)
+{
+    int count = (int)value.size();
+    cJSON *n = 0, *p = 0, *a = _cur;
+    for (int i = 0; a && i < count; i++)
+    {
+        n = cJSON_CreateNumber(value[i]);
+        if (!i)
+            a->child = n;
+        else
+        {
+            p->next = n;
+            n->prev = p;
+        }
+        p = n;
+    }
+    return *this;
+}
+
+JSONReader& JSONReader::operator<<(const std::vector<float>& value)
+{
+    int count = (int)value.size();
+    cJSON *n = 0, *p = 0, *a = _cur;
+    for (int i = 0; a && i < count; i++)
+    {
+        n = cJSON_CreateNumber(value[i]);
+        if (!i)
+            a->child = n;
+        else
+        {
+            p->next = n;
+            n->prev = p;
+        }
+        p = n;
+    }
+    return *this;
+}
+
+JSONReader& JSONReader::operator<<(const std::vector<double>& value)
+{
+    int count = (int)value.size();
+    cJSON *n = 0, *p = 0, *a = _cur;
+    for (int i = 0; a && i < count; i++)
+    {
+        n = cJSON_CreateNumber(value[i]);
+        if (!i)
+            a->child = n;
+        else
+        {
+            p->next = n;
+            n->prev = p;
+        }
+        p = n;
+    }
+    return *this;
+}
+
+JSONReader& JSONReader::operator<<(const std::vector<std::string>& value)
+{
+    int count = (int)value.size();
+    cJSON *n = 0, *p = 0, *a = _cur;
+    for (int i = 0; a && i < count; i++)
+    {
+        n = cJSON_CreateString(value[i].c_str());
+        if (!i)
+            a->child = n;
+        else
+        {
+            p->next = n;
+            n->prev = p;
+        }
+        p = n;
+    }
+    return *this;
+}
+
 JSONReader& JSONReader::setValue(const char* sz, int value)
 {
     cJSON_AddNumberToObject(_cur, sz, value);
@@ -117,6 +193,13 @@ void JSONReader::createArray(const char* sz)
 void JSONReader::addItemToArray()
 {
     cJSON *fmt = cJSON_CreateObject();
+    cJSON_AddItemToArray(_cur, fmt);
+    _cur = fmt;
+}
+
+void JSONReader::addArrayToArray()
+{
+    cJSON *fmt = cJSON_CreateArray();
     cJSON_AddItemToArray(_cur, fmt);
     _cur = fmt;
 }

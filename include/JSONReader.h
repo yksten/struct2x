@@ -27,8 +27,16 @@ public:
     template<typename T>
     JSONReader& operator << (const T& value)
     {
-        if (T* pValue = const_cast<T*>(&value)){
-            serializeWrapper(*this, *pValue);
+        if (typename TypeTraits<T>::isVector())
+        {
+            const typename TypeTraits<T>::Type& v = value;
+            operator << (v);
+        }
+        else
+        {
+            if (TypeTraits<T>::Type* pValue = const_cast<TypeTraits<T>::Type*>(&value)){
+                serializeWrapper(*this, *pValue);
+            }
         }
         return *this;
     }
@@ -46,6 +54,10 @@ public:
 
     void toString(std::string& str);
 private:
+    JSONReader& operator<<(const std::vector<int>& value);
+    JSONReader& operator<<(const std::vector<float>& value);
+    JSONReader& operator<<(const std::vector<double>& value);
+    JSONReader& operator<<(const std::vector<std::string>& value);
     JSONReader& setValue(const char* sz, int value);
     JSONReader& setValue(const char* sz, float value);
     JSONReader& setValue(const char* sz, double value);
@@ -78,8 +90,11 @@ private:
         for (int i = 0; i < size; ++i)
         {
             cJSON* lastItem = cur();
-            addItemToArray();
-            const T& item = value.at(i);
+            if (typename TypeTraits<T>::isVector())
+                addArrayToArray();
+            else
+                addItemToArray();
+            const typename TypeTraits<T>::Type& item = value.at(i);
             this->operator<<(item);
             cur(lastItem);
         }
@@ -104,6 +119,7 @@ private:
     void createObject(const char* sz);
     void createArray(const char* sz);
     void addItemToArray();
+    void addArrayToArray();
     void cur(cJSON* item) { _cur = item; }
     cJSON* cur() { return _cur; }
 };
