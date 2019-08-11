@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <map>
-#include "structNoInvasiveMacro.h"
+#include "structNoInvasive.h"
 #include "SelfAdapt.h"
 
 

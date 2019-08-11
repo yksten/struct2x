@@ -16,7 +16,7 @@ AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 SET(THIRDPARTY "./thirdParty/cJSON.h" "./thirdParty/cJSON.c")
 SOURCE_GROUP(thirdParty FILES ${THIRDPARTY})
 
-SET(SRC "./include/structMacro.h" "./include/SelfAdapt.h" "./include/structNoInvasiveMacro.h"
+SET(SRC "./include/structInvasive.h" "./include/SelfAdapt.h" "./include/structNoInvasive.h"
  "./include/JSONReader.h" "./src/JSONReader.cpp" "./include/JSONWriter.h" "./src/JSONWriter.cpp"
  "./include/BufferWriter.h" "./src/BufferWriter.cpp" "./include/BufferReader.h" "./src/BufferReader.cpp")
 SOURCE_GROUP(src FILES ${SRC})
