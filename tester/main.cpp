@@ -2,7 +2,7 @@
 #include <string>
 #include <assert.h>
 
-#include "srtuctMacro.h"
+#include "structMacro.h"
 #include "JSONReader.h"
 #include "JSONWriter.h"
 
