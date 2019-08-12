@@ -2,34 +2,95 @@
 #define __STRUCT_MACRO_H__
 
 
-#define SERIALIZATION_1(t, p1) t.convert(#p1, p1)
-#define SERIALIZATION_2(t, p1, p2) SERIALIZATION_1(t, p1).convert(#p2, p2)
-#define SERIALIZATION_3(t, p1, p2, p3) SERIALIZATION_2(t, p1, p2).convert(#p3, p3)
-#define SERIALIZATION_4(t, p1, p2, p3, p4) SERIALIZATION_3(t, p1, p2, p3).convert(#p4, p4)
-#define SERIALIZATION_5(t, p1, p2, p3, p4, p5) SERIALIZATION_4(t, p1, p2, p3, p4).convert(#p5, p5)
-#define SERIALIZATION_6(t, p1, p2, p3, p4, p5, p6) SERIALIZATION_5(t, p1, p2, p3, p4, p5).convert(#p6, p6)
-#define SERIALIZATION_7(t, p1, p2, p3, p4, p5, p6, p7) SERIALIZATION_6(t, p1, p2, p3, p4, p5, p6).convert(#p7, p7)
-#define SERIALIZATION_8(t, p1, p2, p3, p4, p5, p6, p7, p8) SERIALIZATION_7(t, p1, p2, p3, p4, p5, p6, p7).convert(#p8, p8)
-#define SERIALIZATION_9(t, p1, p2, p3, p4, p5, p6, p7, p8, p9) SERIALIZATION_8(t, p1, p2, p3, p4, p5, p6, p7, p8).convert(#p9, p9)
-#define SERIALIZATION_10(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) SERIALIZATION_9(t, p1, p2, p3, p4, p5, p6, p7, p8, p9).convert(#p10, p10)
-#define SERIALIZATION_11(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11) SERIALIZATION_10(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10).convert(#p11, p11)
-#define SERIALIZATION_12(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12) SERIALIZATION_11(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11).convert(#p12, p12)
-#define SERIALIZATION_13(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13) SERIALIZATION_12(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12).convert(#p13, p13)
-#define SERIALIZATION_14(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14) SERIALIZATION_13(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13).convert(#p14, p14)
-#define SERIALIZATION_15(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15) SERIALIZATION_14(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14).convert(#p15, p15)
-#define SERIALIZATION_16(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16) SERIALIZATION_15(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15).convert(#p16, p16)
-#define SERIALIZATION_17(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17) SERIALIZATION_16(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16).convert(#p17, p17)
-#define SERIALIZATION_18(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18) SERIALIZATION_17(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17).convert(#p18, p18)
-#define SERIALIZATION_19(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19) SERIALIZATION_18(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18).convert(#p19, p19)
-#define SERIALIZATION_20(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) SERIALIZATION_19(t, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19).convert(#p20, p20)
+#define EXPAND(args) args
 
-#define X_COUNT(TAG, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1,N,...) TAG##N
-#define X_EXPAND(...) __VA_ARGS__
-#ifndef _MSC_VER
-#define SERIALIZATION(t, ...)  X_COUNT(SERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1) (t, __VA_ARGS__)
-#else
-#define SERIALIZATION(t, ...)  X_EXPAND(X_COUNT(SERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1)) X_EXPAND((t, __VA_ARGS__))
-#endif
+#define SERIALIZATION_0(p) convert(#p, p)
+#define SERIALIZATION_1(p) SERIALIZATION_0(p)
+#define SERIALIZATION_2(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_1(__VA_ARGS__))
+#define SERIALIZATION_3(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_2(__VA_ARGS__))
+#define SERIALIZATION_4(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_3(__VA_ARGS__))
+#define SERIALIZATION_5(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_4(__VA_ARGS__))
+#define SERIALIZATION_6(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_5(__VA_ARGS__))
+#define SERIALIZATION_7(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_6(__VA_ARGS__))
+#define SERIALIZATION_8(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_7(__VA_ARGS__))
+#define SERIALIZATION_9(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_8(__VA_ARGS__))
+#define SERIALIZATION_10(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_9(__VA_ARGS__))
+#define SERIALIZATION_11(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_10(__VA_ARGS__))
+#define SERIALIZATION_12(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_11(__VA_ARGS__))
+#define SERIALIZATION_13(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_12(__VA_ARGS__))
+#define SERIALIZATION_14(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_13(__VA_ARGS__))
+#define SERIALIZATION_15(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_14(__VA_ARGS__))
+#define SERIALIZATION_16(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_15(__VA_ARGS__))
+#define SERIALIZATION_17(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_16(__VA_ARGS__))
+#define SERIALIZATION_18(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_17(__VA_ARGS__))
+#define SERIALIZATION_19(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_18(__VA_ARGS__))
+#define SERIALIZATION_20(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_19(__VA_ARGS__))
+#define SERIALIZATION_21(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_20(__VA_ARGS__))
+#define SERIALIZATION_22(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_21(__VA_ARGS__))
+#define SERIALIZATION_23(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_22(__VA_ARGS__))
+#define SERIALIZATION_24(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_23(__VA_ARGS__))
+#define SERIALIZATION_25(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_24(__VA_ARGS__))
+#define SERIALIZATION_26(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_25(__VA_ARGS__))
+#define SERIALIZATION_27(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_26(__VA_ARGS__))
+#define SERIALIZATION_28(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_27(__VA_ARGS__))
+#define SERIALIZATION_29(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_28(__VA_ARGS__))
+#define SERIALIZATION_30(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_29(__VA_ARGS__))
+#define SERIALIZATION_31(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_30(__VA_ARGS__))
+#define SERIALIZATION_32(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_31(__VA_ARGS__))
+#define SERIALIZATION_33(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_32(__VA_ARGS__))
+#define SERIALIZATION_34(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_33(__VA_ARGS__))
+#define SERIALIZATION_35(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_34(__VA_ARGS__))
+#define SERIALIZATION_36(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_35(__VA_ARGS__))
+#define SERIALIZATION_37(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_36(__VA_ARGS__))
+#define SERIALIZATION_38(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_37(__VA_ARGS__))
+#define SERIALIZATION_39(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_38(__VA_ARGS__))
+#define SERIALIZATION_40(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_39(__VA_ARGS__))
+#define SERIALIZATION_41(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_40(__VA_ARGS__))
+#define SERIALIZATION_42(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_41(__VA_ARGS__))
+#define SERIALIZATION_43(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_42(__VA_ARGS__))
+#define SERIALIZATION_44(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_43(__VA_ARGS__))
+#define SERIALIZATION_45(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_44(__VA_ARGS__))
+#define SERIALIZATION_46(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_45(__VA_ARGS__))
+#define SERIALIZATION_47(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_46(__VA_ARGS__))
+#define SERIALIZATION_48(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_47(__VA_ARGS__))
+#define SERIALIZATION_49(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_48(__VA_ARGS__))
+#define SERIALIZATION_50(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_49(__VA_ARGS__))
+#define SERIALIZATION_51(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_50(__VA_ARGS__))
+#define SERIALIZATION_52(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_51(__VA_ARGS__))
+#define SERIALIZATION_53(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_52(__VA_ARGS__))
+#define SERIALIZATION_54(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_53(__VA_ARGS__))
+#define SERIALIZATION_55(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_54(__VA_ARGS__))
+#define SERIALIZATION_56(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_55(__VA_ARGS__))
+#define SERIALIZATION_57(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_56(__VA_ARGS__))
+#define SERIALIZATION_58(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_57(__VA_ARGS__))
+#define SERIALIZATION_59(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_58(__VA_ARGS__))
+#define SERIALIZATION_60(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_59(__VA_ARGS__))
+#define SERIALIZATION_61(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_60(__VA_ARGS__))
+#define SERIALIZATION_62(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_61(__VA_ARGS__))
+#define SERIALIZATION_63(p, ...) SERIALIZATION_0(p) . EXPAND(SERIALIZATION_62(__VA_ARGS__))
+
+
+#define COUNT_PARMS_IMP(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, \
+               _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
+               _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
+               _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, \
+               _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, \
+               _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, NUM, ...) NUM
+
+#define COUNT_PARMS(...) EXPAND(COUNT_PARMS_IMP(__VA_ARGS__, 63, 62, 61 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, \
+                                                             50, 49, 48, 47, 46, 45, 44, 43, 42, 41, \
+                                                             40, 39, 38, 37, 36, 35, 34, 33, 32, 31, \
+                                                             30, 29, 28, 27, 26, 25, 24, 23, 22, 21, \
+                                                             20, 19, 18, 17, 16, 15, 14, 13, 12, 11, \
+                                                             10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
+
+#define MAKE_CALL(t, f) t . f
+
+#define SYMBOL_CATENATE(arg1, arg2) arg1 ## arg2
+
+#define SYMBOL_CATENATE_WITH_MACRO(arg1, arg2) SYMBOL_CATENATE(arg1, arg2)
+
+#define SERIALIZATION(t, ...) EXPAND(MAKE_CALL(t, SYMBOL_CATENATE_WITH_MACRO(SERIALIZATION_, EXPAND(COUNT_PARMS(__VA_ARGS__)))(__VA_ARGS__)))
 
 
 #endif

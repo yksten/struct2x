@@ -2,34 +2,95 @@
 #define __STRUCT_NOINVASIVEMACRO_H__
 
 
-#define NISERIALIZATION_1(t, c, p1) t.convert(#p1, c.p1)
-#define NISERIALIZATION_2(t, c, p1, p2) NISERIALIZATION_1(t, c, p1).convert(#p2, c.p2)
-#define NISERIALIZATION_3(t, c, p1, p2, p3) NISERIALIZATION_2(t, c, p1, p2).convert(#p3, c.p3)
-#define NISERIALIZATION_4(t, c, p1, p2, p3, p4) NISERIALIZATION_3(t, c, p1, p2, p3).convert(#p4, c.p4)
-#define NISERIALIZATION_5(t, c, p1, p2, p3, p4, p5) NISERIALIZATION_4(t, c, p1, p2, p3, p4).convert(#p5, c.p5)
-#define NISERIALIZATION_6(t, c, p1, p2, p3, p4, p5, p6) NISERIALIZATION_5(t, c, p1, p2, p3, p4, p5).convert(#p6, c.p6)
-#define NISERIALIZATION_7(t, c, p1, p2, p3, p4, p5, p6, p7) NISERIALIZATION_6(t, c, p1, p2, p3, p4, p5, p6).convert(#p7, c.p7)
-#define NISERIALIZATION_8(t, c, p1, p2, p3, p4, p5, p6, p7, p8) NISERIALIZATION_7(t, c, p1, p2, p3, p4, p5, p6, p7).convert(#p8, c.p8)
-#define NISERIALIZATION_9(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9) NISERIALIZATION_8(t, c, p1, p2, p3, p4, p5, p6, p7, p8).convert(#p9, c.p9)
-#define NISERIALIZATION_10(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) NISERIALIZATION_9(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9).convert(#p10, c.p10)
-#define NISERIALIZATION_11(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11) NISERIALIZATION_10(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10).convert(#p11, c.p11)
-#define NISERIALIZATION_12(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12) NISERIALIZATION_11(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11).convert(#p12, c.p12)
-#define NISERIALIZATION_13(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13) NISERIALIZATION_12(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12).convert(#p13, c.p13)
-#define NISERIALIZATION_14(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14) NISERIALIZATION_13(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13).convert(#p14, c.p14)
-#define NISERIALIZATION_15(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15) NISERIALIZATION_14(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14).convert(#p15, c.p15)
-#define NISERIALIZATION_16(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16) NISERIALIZATION_15(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15).convert(#p16, c.p16)
-#define NISERIALIZATION_17(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17) NISERIALIZATION_16(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16).convert(#p17, c.p17)
-#define NISERIALIZATION_18(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18) NISERIALIZATION_17(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17).convert(#p18, c.p18)
-#define NISERIALIZATION_19(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19) NISERIALIZATION_18(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18).convert(#p19, c.p19)
-#define NISERIALIZATION_20(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) NISERIALIZATION_19(t, c, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19).convert(#p20, c.p20)
+#define NI_EXPAND(args) args
 
-#define X_NI_COUNT(TAG, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1,N,...) TAG##N
-#define X_NI_EXPAND(...) __VA_ARGS__
-#ifndef _MSC_VER
-#define NISERIALIZATION(t, c, ...)  X_NI_COUNT(NISERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1) (t, c, __VA_ARGS__)
-#else
-#define NISERIALIZATION(t, c, ...)  X_NI_EXPAND(X_NI_COUNT(NISERIALIZATION, __VA_ARGS__, _20,_19,_18,_17,_16,_15,_14,_13,_12,_11,_10,_9,_8,_7,_6,_5,_4,_3,_2,_1)) X_NI_EXPAND((t, c, __VA_ARGS__))
-#endif
+#define NISERIALIZATION_0(c, p) convert(#p, c.p)
+#define NISERIALIZATION_1(c, p) NISERIALIZATION_0(c, p)
+#define NISERIALIZATION_2(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_1(c, __VA_ARGS__))
+#define NISERIALIZATION_3(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_2(c, __VA_ARGS__))
+#define NISERIALIZATION_4(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_3(c, __VA_ARGS__))
+#define NISERIALIZATION_5(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_4(c, __VA_ARGS__))
+#define NISERIALIZATION_6(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_5(c, __VA_ARGS__))
+#define NISERIALIZATION_7(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_6(c, __VA_ARGS__))
+#define NISERIALIZATION_8(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_7(c, __VA_ARGS__))
+#define NISERIALIZATION_9(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_8(c, __VA_ARGS__))
+#define NISERIALIZATION_10(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_9(c, __VA_ARGS__))
+#define NISERIALIZATION_11(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_10(c, __VA_ARGS__))
+#define NISERIALIZATION_12(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_11(c, __VA_ARGS__))
+#define NISERIALIZATION_13(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_12(c, __VA_ARGS__))
+#define NISERIALIZATION_14(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_13(c, __VA_ARGS__))
+#define NISERIALIZATION_15(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_14(c, __VA_ARGS__))
+#define NISERIALIZATION_16(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_15(c, __VA_ARGS__))
+#define NISERIALIZATION_17(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_16(c, __VA_ARGS__))
+#define NISERIALIZATION_18(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_17(c, __VA_ARGS__))
+#define NISERIALIZATION_19(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_18(c, __VA_ARGS__))
+#define NISERIALIZATION_20(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_19(c, __VA_ARGS__))
+#define NISERIALIZATION_21(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_20(c, __VA_ARGS__))
+#define NISERIALIZATION_22(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NISERIALIZATION_21(c, __VA_ARGS__))
+#define NISERIALIZATION_23(c, p, ...) NISERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_22(c, __VA_ARGS__))
+#define NI_SERIALIZATION_24(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_23(c, __VA_ARGS__))
+#define NI_SERIALIZATION_25(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_24(c, __VA_ARGS__))
+#define NI_SERIALIZATION_26(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_25(c, __VA_ARGS__))
+#define NI_SERIALIZATION_27(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_26(c, __VA_ARGS__))
+#define NI_SERIALIZATION_28(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_27(c, __VA_ARGS__))
+#define NI_SERIALIZATION_29(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_28(c, __VA_ARGS__))
+#define NI_SERIALIZATION_30(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_29(c, __VA_ARGS__))
+#define NI_SERIALIZATION_31(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_30(c, __VA_ARGS__))
+#define NI_SERIALIZATION_32(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_31(c, __VA_ARGS__))
+#define NI_SERIALIZATION_33(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_32(c, __VA_ARGS__))
+#define NI_SERIALIZATION_34(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_33(c, __VA_ARGS__))
+#define NI_SERIALIZATION_35(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_34(c, __VA_ARGS__))
+#define NI_SERIALIZATION_36(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_35(c, __VA_ARGS__))
+#define NI_SERIALIZATION_37(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_36(c, __VA_ARGS__))
+#define NI_SERIALIZATION_38(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_37(c, __VA_ARGS__))
+#define NI_SERIALIZATION_39(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_38(c, __VA_ARGS__))
+#define NI_SERIALIZATION_40(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_39(c, __VA_ARGS__))
+#define NI_SERIALIZATION_41(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_40(c, __VA_ARGS__))
+#define NI_SERIALIZATION_42(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_41(c, __VA_ARGS__))
+#define NI_SERIALIZATION_43(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_42(c, __VA_ARGS__))
+#define NI_SERIALIZATION_44(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_43(c, __VA_ARGS__))
+#define NI_SERIALIZATION_45(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_44(c, __VA_ARGS__))
+#define NI_SERIALIZATION_46(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_45(c, __VA_ARGS__))
+#define NI_SERIALIZATION_47(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_46(c, __VA_ARGS__))
+#define NI_SERIALIZATION_48(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_47(c, __VA_ARGS__))
+#define NI_SERIALIZATION_49(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_48(c, __VA_ARGS__))
+#define NI_SERIALIZATION_50(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_49(c, __VA_ARGS__))
+#define NI_SERIALIZATION_51(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_50(c, __VA_ARGS__))
+#define NI_SERIALIZATION_52(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_51(c, __VA_ARGS__))
+#define NI_SERIALIZATION_53(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_52(c, __VA_ARGS__))
+#define NI_SERIALIZATION_54(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_53(c, __VA_ARGS__))
+#define NI_SERIALIZATION_55(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_54(c, __VA_ARGS__))
+#define NI_SERIALIZATION_56(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_55(c, __VA_ARGS__))
+#define NI_SERIALIZATION_57(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_56(c, __VA_ARGS__))
+#define NI_SERIALIZATION_58(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_57(c, __VA_ARGS__))
+#define NI_SERIALIZATION_59(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_58(c, __VA_ARGS__))
+#define NI_SERIALIZATION_60(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_59(c, __VA_ARGS__))
+#define NI_SERIALIZATION_61(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_60(c, __VA_ARGS__))
+#define NI_SERIALIZATION_62(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_61(c, __VA_ARGS__))
+#define NI_SERIALIZATION_63(c, p, ...) NI_SERIALIZATION_0(c, p) . NI_EXPAND(NI_SERIALIZATION_62(c, __VA_ARGS__))
+
+
+#define NI_COUNT_PARMS_IMP(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, \
+               _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
+               _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
+               _31, _32, _33, _34, _35, _36, _37, _38, _39, _40, \
+               _41, _42, _43, _44, _45, _46, _47, _48, _49, _50, \
+               _51, _52, _53, _54, _55, _56, _57, _58, _59, _60, _61, _62, _63, NUM, ...) NUM
+
+#define NI_COUNT_PARMS(...) NI_EXPAND(NI_COUNT_PARMS_IMP(__VA_ARGS__, 63, 62, 61 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, \
+                                                             50, 49, 48, 47, 46, 45, 44, 43, 42, 41, \
+                                                             40, 39, 38, 37, 36, 35, 34, 33, 32, 31, \
+                                                             30, 29, 28, 27, 26, 25, 24, 23, 22, 21, \
+                                                             20, 19, 18, 17, 16, 15, 14, 13, 12, 11, \
+                                                             10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
+
+#define NI_MAKE_CALL(t, f) t . f
+
+#define NI_SYMBOL_CATENATE(arg1, arg2) arg1 ## arg2
+
+#define NI_SYMBOL_CATENATE_WITH_MACRO(arg1, arg2) NI_SYMBOL_CATENATE(arg1, arg2)
+
+#define NISERIALIZATION(t, c, ...) NI_EXPAND(NI_MAKE_CALL(t, NI_EXPAND(NI_SYMBOL_CATENATE_WITH_MACRO(NISERIALIZATION_, NI_EXPAND(NI_COUNT_PARMS(c, __VA_ARGS__)))(c, __VA_ARGS__))))
 
 
 #endif
