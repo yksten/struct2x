@@ -27,14 +27,14 @@ public:
     template<typename T>
     JSONReader& operator << (const T& value)
     {
-        if (typename TypeTraits<T>::isVector())
+        const typename TypeTraits<T>::Type& v = value;
+        if (TypeTraits<T>::isVector())
         {
-            const typename TypeTraits<T>::Type& v = value;
             operator << (v);
         }
         else
         {
-            if (TypeTraits<T>::Type* pValue = const_cast<TypeTraits<T>::Type*>(&value)){
+            if (typename TypeTraits<T>::Type* pValue = const_cast<typename TypeTraits<T>::Type*>(&v)){
                 serializeWrapper(*this, *pValue);
             }
         }
@@ -90,7 +90,7 @@ private:
         for (int i = 0; i < size; ++i)
         {
             cJSON* lastItem = cur();
-            if (typename TypeTraits<T>::isVector())
+            if (TypeTraits<T>::isVector())
                 addArrayToArray();
             else
                 addItemToArray();
