@@ -5,16 +5,16 @@
 #include <map>
 #include "structExternalSerialize.h"
 #include "SelfAdapt.h"
+#include "bufferInterface.h"
 
 
-class BufferIn;
 class BufferReader
 {
-    BufferIn* _buffer;
+    BufferInterface& _buffer;
     BufferReader(const BufferReader&);
     BufferReader& operator=(const BufferReader&);
 public:
-    BufferReader();
+    BufferReader(BufferInterface& buffer);
     virtual ~BufferReader();
 
     template<typename T>

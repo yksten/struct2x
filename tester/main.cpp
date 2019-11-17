@@ -9,6 +9,8 @@
 #include "BufferReader.h"
 #include "BufferWriter.h"
 
+#include "buffer.h"
+
 struct struInfo
 {
     struInfo() :no(99){}
@@ -141,11 +143,11 @@ void testStruct()
     bool b = (item == item2);
     assert(b);
 
-
-    BufferReader br;
+    BufferDemo bd;
+    BufferReader br(bd);
     br << item;
 
-    BufferWriter bw(br.data(), br.size());
+    BufferWriter bw(bd);
     bw >> item2;
     b = (item == item2);
     assert(b);

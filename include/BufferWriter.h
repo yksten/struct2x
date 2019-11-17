@@ -5,16 +5,15 @@
 #include <map>
 #include "structExternalSerialize.h"
 #include "SelfAdapt.h"
+#include "bufferInterface.h"
 
-
-class BufferOut;
 class BufferWriter
 {
-    BufferOut* _buffer;
+    BufferInterface& _buffer;
     BufferWriter(const BufferWriter&);
     BufferWriter& operator=(const BufferWriter&);
 public:
-    BufferWriter(const char* data, size_t size);
+    BufferWriter(BufferInterface& buffer);
     virtual ~BufferWriter();
 
     template<typename T>
