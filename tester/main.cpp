@@ -62,18 +62,19 @@ struct struItem
         return true;
     }
 
-    template<typename T>
-    void serialize(T& t)
-    {
-        SERIALIZATION(t, id, str, info, v, v2, m, m2);
-    }
+    //template<typename T>
+    //void serialize(T& t)
+    //{
+    //    SERIALIZATION(t, id, str, info, v, v2, m, m2);
+    //}
 };
 
-template<typename T>
-void serialize(T& t, struItem& item)
-{
-    NISERIALIZATION(t, item, id, str, info, v, v2, m, m2);
-}
+VISITSTRUCT(struItem, id, str, info, v, v2, m, m2)
+//template<typename T>
+//void serialize(T& t, struItem& item)
+//{
+//    NISERIALIZATION(t, item, id, str, info, v, v2, m, m2);
+//}
 
 
 void testMap()

@@ -88,4 +88,12 @@
                         _10,_9,_8,_7,_6,_5,_4,_3,_2,_1))(c, __VA_ARGS__))
 
 
+#define VISITSTRUCT(structType, ...)        \
+template<typename T>                        \
+void serialize(T& t, structType& data)      \
+{                                           \
+    NISERIALIZATION(t, data, __VA_ARGS__);  \
+}
+
+
 #endif
