@@ -42,4 +42,4 @@ void serialize(T& t, struItem& item)
 
 示例见 tester/main.cpp。
 
-沟通交流，请联系QQ：75133872。
+沟通交流，QQ群：977208341。
