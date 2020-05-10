@@ -33,8 +33,8 @@ public:
     void setValue(uint64_t value){ append(value); }
     void setValue(float value){ append(value); }
     void setValue(double value){ append(value); }
-    void setValue(const std::string& value){ uint32_t size = value.size(); append(size); append(value.c_str(), size); }
-    void setValue(const char* value){ uint32_t size = strlen(value); append(size); append(value, size); }
+    void setValue(const std::string& value){ uint32_t size = value.size(); append(size); append((void*)value.c_str(), size); }
+    void setValue(const char* value){ uint32_t size = strlen(value); append(size); append((void*)value, size); }
 
     void getValue(bool& value){ value = peek<bool>(); }
     void getValue(int8_t& value){ value = peek<int8_t>(); }
@@ -45,8 +45,8 @@ public:
     void getValue(uint32_t& value){ value = peek<uint32_t>(); }
     void getValue(int64_t& value){ value = peek<int64_t>(); }
     void getValue(uint64_t& value){ value = peek<uint64_t>(); }
-    void getValue(float& value){ value = peek<float>(); }
-    void getValue(double& value){ value = peek<double>(); }
+    void getValue(float& value){ value = getFloat(); }
+    void getValue(double& value){ value = getDouble(); }
     void getValue(std::string& value){
         value.clear();
         uint32_t size = peek<uint32_t>();
@@ -57,11 +57,40 @@ public:
 private:
     template<typename T>
     void append(const T& data){
-        append(static_cast<const char*>((const void*)&data), sizeof(T));
+        int nSize = sizeof(T);
+        uint8_t szTemp[sizeof(T)] = { 0 };
+        for (uint32_t idx = 0; idx < nSize; ++idx) {
+            szTemp[idx] = (data >> (idx * 8)) & 0xFF;
+        }
+        append(szTemp, nSize);
     }
-    void append(const char* data, size_t len){
+    void append(float v) {
+        union { float f; uint32_t i; };
+        f = v;
+        uint8_t bytes[4] = { 0 };
+        bytes[0] = (uint8_t)(i & 0xFF);
+        bytes[1] = (uint8_t)((i >> 8) & 0xFF);
+        bytes[2] = (uint8_t)((i >> 16) & 0xFF);
+        bytes[3] = (uint8_t)((i >> 24) & 0xFF);
+        append(bytes, 4);
+    }
+    void append(double v) {
+        union { double db; uint64_t i; };
+        db = v;
+        uint8_t bytes[8] = { 0 };
+        bytes[0] = (uint8_t)(i & 0xFF);
+        bytes[1] = (uint8_t)((i >> 8) & 0xFF);
+        bytes[2] = (uint8_t)((i >> 16) & 0xFF);
+        bytes[3] = (uint8_t)((i >> 24) & 0xFF);
+        bytes[4] = (uint8_t)((i >> 32) & 0xFF);
+        bytes[5] = (uint8_t)((i >> 40) & 0xFF);
+        bytes[6] = (uint8_t)((i >> 48) & 0xFF);
+        bytes[7] = (uint8_t)((i >> 56) & 0xFF);
+        append(bytes, 8);
+    }
+    void append(const void* data, size_t len){
         ensureWritableBytes(len);
-        std::copy(data, data + len, beginIn());
+        std::copy((const char*)data, (const char*)data + len, beginIn());
         hasWritten(len);
     }
     void ensureWritableBytes(size_t len){
@@ -80,10 +109,33 @@ private:
     template<typename T>
     T peek(){
         assert(readableBytes() >= sizeof(T));
+        int nSize = sizeof(T);
+        uint8_t szTemp[sizeof(T)] = { 0 };
+        ::memcpy(&szTemp, beginOut(), nSize);
         T value = T();
-        ::memcpy(&value, beginOut(), sizeof(T));
+        for (uint32_t idx = 0; idx < nSize; ++idx) {
+            value |= szTemp[idx] << (idx * 8);
+        }
         hasReader(sizeof(T));
         return value;
+    }
+    float getFloat() {
+        assert(readableBytes() >= sizeof(float));
+        uint8_t szTemp[4] = { 0 };
+        ::memcpy(&szTemp, beginOut(), 4);
+        union { float f; uint32_t i; };
+        i = ((uint32_t)szTemp[0] << 0) | ((uint32_t)szTemp[1] << 8) | ((uint32_t)szTemp[2] << 16) | ((uint32_t)szTemp[3] << 24);
+        hasReader(sizeof(float));
+        return f;
+    }
+    double getDouble() {
+        assert(readableBytes() >= sizeof(double));
+        uint8_t szTemp[8] = { 0 };
+        ::memcpy(&szTemp, beginOut(), 8);
+        union { double db; uint64_t i; };
+        i = ((uint64_t)szTemp[0] << 0) | ((uint64_t)szTemp[1] << 8) | ((uint64_t)szTemp[2] << 16) | ((uint64_t)szTemp[3] << 24) | ((uint64_t)szTemp[4] << 32) | ((uint64_t)szTemp[5] << 40) | ((uint64_t)szTemp[6] << 48) | ((uint64_t)szTemp[7] << 56);
+        hasReader(sizeof(double));
+        return db;
     }
     size_t readableBytes() const { return buffer_.size() - outIndex_; }
     void hasReader(size_t len){ outIndex_ += len; }
