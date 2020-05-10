@@ -6,10 +6,9 @@
 #include <string>
 #include <assert.h>
 
-class BufferInterface
-{
+class BufferInterface {
 public:
-    virtual ~BufferInterface(){}
+    virtual ~BufferInterface() {}
 
     virtual const char* data() const = 0;
     virtual size_t size() const = 0;

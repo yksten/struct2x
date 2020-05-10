@@ -8,8 +8,7 @@
 #include "bufferInterface.h"
 
 
-class BufferReader
-{
+class BufferReader {
     BufferInterface& _buffer;
     BufferReader(const BufferReader&);
     BufferReader& operator=(const BufferReader&);
@@ -18,20 +17,20 @@ public:
     virtual ~BufferReader();
 
     template<typename T>
-    BufferReader& operator << (const T& value){
-        if (T* pValue = const_cast<T*>(&value)){
+    BufferReader& operator << (const T& value) {
+        if (T* pValue = const_cast<T*>(&value)) {
             serializeWrapper(*this, *pValue);
         }
         return *this;
     }
 
     template<typename T>
-    BufferReader& convert(const char* sz, const T& value){
+    BufferReader& convert(const char* sz, const T& value) {
         return this->operator<<(value);
     }
 
     template<typename T>
-    BufferReader& operator&(const T& value){
+    BufferReader& operator&(const T& value) {
         return this->operator<<(value);
     }
 
@@ -54,20 +53,20 @@ private:
     BufferReader& operator <<(const std::vector<bool>& value);
 
     template<typename T>
-    BufferReader& operator <<(const std::vector<T>& value){
+    BufferReader& operator <<(const std::vector<T>& value) {
         uint32_t size = value.size();
         this->operator<<(size);
-        for (uint32_t i = 0; i < size; ++i){
+        for (uint32_t i = 0; i < size; ++i) {
             this->operator<<(value.at(i));
         }
         return *this;
     }
 
     template<typename K, typename V>
-    BufferReader& operator <<(const std::map<K, V>& value){
+    BufferReader& operator <<(const std::map<K, V>& value) {
         uint32_t size = value.size();
         this->operator<<(size);
-        for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it){
+        for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
             this->operator<<(it->first);
             this->operator<<(it->second);
         }

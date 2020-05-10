@@ -7,8 +7,7 @@
 #include "SelfAdapt.h"
 #include "bufferInterface.h"
 
-class BufferWriter
-{
+class BufferWriter {
     BufferInterface& _buffer;
     BufferWriter(const BufferWriter&);
     BufferWriter& operator=(const BufferWriter&);
@@ -17,18 +16,18 @@ public:
     virtual ~BufferWriter();
 
     template<typename T>
-    BufferWriter& operator >>(T& value){
+    BufferWriter& operator >>(T& value) {
         serializeWrapper(*this, value);
         return *this;
     }
 
     template<typename T>
-    BufferWriter& convert(const char* sz, T& value){
+    BufferWriter& convert(const char* sz, T& value) {
         return this->operator>>(value);
     }
 
     template<typename T>
-    BufferWriter& operator&(T& value){
+    BufferWriter& operator&(T& value) {
         return this->operator>>(value);
     }
 private:
@@ -46,12 +45,12 @@ private:
     BufferWriter& operator >>(std::string& value);
 
     template<typename T>
-    BufferWriter& operator >>(std::vector<T>& value){
+    BufferWriter& operator >>(std::vector<T>& value) {
         uint32_t size = 0;
         this->operator>>(size);
         if (size)
             value.clear();
-        for (uint32_t i = 0; i < size; ++i){
+        for (uint32_t i = 0; i < size; ++i) {
             T item;
             this->operator>>(item);
             value.push_back(item);
@@ -60,12 +59,12 @@ private:
     }
 
     template<typename K, typename V>
-    BufferWriter& operator >>(std::map<K, V>& value){
+    BufferWriter& operator >>(std::map<K, V>& value) {
         uint32_t size = 0;
         this->operator>>(size);
         if (size)
             value.clear();
-        for (uint32_t i = 0; i < size; ++i){
+        for (uint32_t i = 0; i < size; ++i) {
             K k; this->operator>>(k);
             V v; this->operator>>(v);
             value.insert(std::pair<K, V>(k, v));

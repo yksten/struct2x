@@ -11,32 +11,27 @@
 
 #include "buffer.h"
 
-struct struInfo
-{
-    struInfo() :no(99){}
+struct struInfo {
+    struInfo() :no(99) {}
     int no;
 
-    bool operator ==(const struInfo& in)const
-    {
+    bool operator ==(const struInfo& in)const {
         if (no != in.no)
             return false;
         return true;
     }
 
-    bool operator !=(const struInfo& in)const 
-    {
+    bool operator !=(const struInfo& in)const {
         return !operator==(in);
     }
 
     template<typename T>
-    void serialize(T& t)
-    {
+    void serialize(T& t) {
         SERIALIZATION(t, no);
     }
 };
 
-struct struItem
-{
+struct struItem {
     int id;
     std::string str;
     struInfo info;
@@ -45,8 +40,7 @@ struct struItem
     std::map<std::string, int> m;
     std::map<std::string, struInfo> m2;
 
-    bool operator ==(const struItem& in)
-    {
+    bool operator ==(const struItem& in) {
         if (id != in.id)
             return false;
         if (str != in.str)
@@ -77,8 +71,7 @@ VISITSTRUCT(struItem, id, str, info, v, v2, m, m2)
 //}
 
 
-void testMap()
-{
+void testMap() {
     std::map<std::string, int> map, map2;
     map["EVENT_NONE"] = 0;
     map["EVENT_INIT"] = 1;
@@ -114,8 +107,7 @@ void testMap()
     assert(map == map2);
 }
 
-void testStruct()
-{
+void testStruct() {
     struItem item;
     item.id = 1;
     item.str = "asdfgh";
@@ -154,18 +146,15 @@ void testStruct()
     assert(b);
 }
 
-struct myStruct
-{
+struct myStruct {
     std::vector<std::vector<int> > vec;
     template<typename T>
-    void serialize(T& t)
-    {
+    void serialize(T& t) {
         SERIALIZATION(t, vec);
     }
 };
 
-void testVector()
-{
+void testVector() {
     myStruct s1, s2;
     std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
     s1.vec.push_back(v);
@@ -183,8 +172,7 @@ void testVector()
 }
 
 
-int main()
-{
+int main() {
     testMap();
     testStruct();
 

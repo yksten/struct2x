@@ -8,8 +8,7 @@
 
 #include "bufferInterface.h"
 
-class BufferDemo : public BufferInterface
-{
+class BufferDemo : public BufferInterface {
     std::vector<char> buffer_;
     size_t inIndex_;
     size_t outIndex_;
@@ -17,37 +16,38 @@ class BufferDemo : public BufferInterface
 public:
 
     explicit BufferDemo(size_t initialSize = kInitialSize)
-        : buffer_(initialSize), inIndex_(0), outIndex_(0){}
+        : buffer_(initialSize), inIndex_(0), outIndex_(0) {
+    }
 
-    const char* data() const{ return begin(); }
-    size_t size() const{ return inIndex_; }
+    const char* data() const { return begin(); }
+    size_t size() const { return inIndex_; }
 
-    void setValue(bool value){ append(value); }
-    void setValue(int8_t value){ append(value); }
-    void setValue(uint8_t value){ append(value); }
-    void setValue(int16_t value){ append(value); }
-    void setValue(uint16_t value){ append(value); }
-    void setValue(int32_t value){ append(value); }
-    void setValue(uint32_t value){ append(value); }
-    void setValue(int64_t value){ append(value); }
-    void setValue(uint64_t value){ append(value); }
-    void setValue(float value){ append(value); }
-    void setValue(double value){ append(value); }
-    void setValue(const std::string& value){ uint32_t size = value.size(); append(size); append((void*)value.c_str(), size); }
-    void setValue(const char* value){ uint32_t size = strlen(value); append(size); append((void*)value, size); }
+    void setValue(bool value) { append(value); }
+    void setValue(int8_t value) { append(value); }
+    void setValue(uint8_t value) { append(value); }
+    void setValue(int16_t value) { append(value); }
+    void setValue(uint16_t value) { append(value); }
+    void setValue(int32_t value) { append(value); }
+    void setValue(uint32_t value) { append(value); }
+    void setValue(int64_t value) { append(value); }
+    void setValue(uint64_t value) { append(value); }
+    void setValue(float value) { append(value); }
+    void setValue(double value) { append(value); }
+    void setValue(const std::string& value) { uint32_t size = value.size(); append(size); append((void*)value.c_str(), size); }
+    void setValue(const char* value) { uint32_t size = strlen(value); append(size); append((void*)value, size); }
 
-    void getValue(bool& value){ value = peek<bool>(); }
-    void getValue(int8_t& value){ value = peek<int8_t>(); }
-    void getValue(uint8_t& value){ value = peek<uint8_t>(); }
-    void getValue(int16_t& value){ value = peek<int16_t>(); }
-    void getValue(uint16_t& value){ value = peek<uint16_t>(); }
-    void getValue(int32_t& value){ value = peek<int32_t>(); }
-    void getValue(uint32_t& value){ value = peek<uint32_t>(); }
-    void getValue(int64_t& value){ value = peek<int64_t>(); }
-    void getValue(uint64_t& value){ value = peek<uint64_t>(); }
-    void getValue(float& value){ value = getFloat(); }
-    void getValue(double& value){ value = getDouble(); }
-    void getValue(std::string& value){
+    void getValue(bool& value) { value = peek<bool>(); }
+    void getValue(int8_t& value) { value = peek<int8_t>(); }
+    void getValue(uint8_t& value) { value = peek<uint8_t>(); }
+    void getValue(int16_t& value) { value = peek<int16_t>(); }
+    void getValue(uint16_t& value) { value = peek<uint16_t>(); }
+    void getValue(int32_t& value) { value = peek<int32_t>(); }
+    void getValue(uint32_t& value) { value = peek<uint32_t>(); }
+    void getValue(int64_t& value) { value = peek<int64_t>(); }
+    void getValue(uint64_t& value) { value = peek<uint64_t>(); }
+    void getValue(float& value) { value = getFloat(); }
+    void getValue(double& value) { value = getDouble(); }
+    void getValue(std::string& value) {
         value.clear();
         uint32_t size = peek<uint32_t>();
         value.append(beginOut(), size);
@@ -56,7 +56,7 @@ public:
 
 private:
     template<typename T>
-    void append(const T& data){
+    void append(const T& data) {
         int nSize = sizeof(T);
         uint8_t szTemp[sizeof(T)] = { 0 };
         for (uint32_t idx = 0; idx < nSize; ++idx) {
@@ -88,26 +88,26 @@ private:
         bytes[7] = (uint8_t)((i >> 56) & 0xFF);
         append(bytes, 8);
     }
-    void append(const void* data, size_t len){
+    void append(const void* data, size_t len) {
         ensureWritableBytes(len);
         std::copy((const char*)data, (const char*)data + len, beginIn());
         hasWritten(len);
     }
-    void ensureWritableBytes(size_t len){
+    void ensureWritableBytes(size_t len) {
         if (writableBytes() < len)
             makeSpace(len);
         assert(writableBytes() >= len);
     }
-    size_t writableBytes() const{ return buffer_.size() - inIndex_; }
-    void makeSpace(size_t len){ buffer_.resize(inIndex_ + len); }
-    void hasWritten(size_t len){ inIndex_ += len; }
-    char* beginIn(){ return begin() + inIndex_; }
-    char* begin(){ return &(*buffer_.begin()); }
-    const char* begin()const{ return &(*buffer_.begin()); }
+    size_t writableBytes() const { return buffer_.size() - inIndex_; }
+    void makeSpace(size_t len) { buffer_.resize(inIndex_ + len); }
+    void hasWritten(size_t len) { inIndex_ += len; }
+    char* beginIn() { return begin() + inIndex_; }
+    char* begin() { return &(*buffer_.begin()); }
+    const char* begin()const { return &(*buffer_.begin()); }
 
 private:
     template<typename T>
-    T peek(){
+    T peek() {
         assert(readableBytes() >= sizeof(T));
         int nSize = sizeof(T);
         uint8_t szTemp[sizeof(T)] = { 0 };
@@ -138,8 +138,8 @@ private:
         return db;
     }
     size_t readableBytes() const { return buffer_.size() - outIndex_; }
-    void hasReader(size_t len){ outIndex_ += len; }
-    char* beginOut(){ return begin() + outIndex_; }
+    void hasReader(size_t len) { outIndex_ += len; }
+    char* beginOut() { return begin() + outIndex_; }
     //char* begin(){ return &(*buffer_.begin()); }
     //const char* begin()const{ return &(*buffer_.begin()); }
 };

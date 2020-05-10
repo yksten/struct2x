@@ -8,8 +8,7 @@
 
 
 struct cJSON;
-class JSONWriter
-{
+class JSONWriter {
     cJSON* _root;
     cJSON* _cur;
     JSONWriter();
@@ -20,26 +19,22 @@ public:
     virtual ~JSONWriter();
 
     template<typename T>
-    JSONWriter& convert(const char* sz, T& value)
-    {
+    JSONWriter& convert(const char* sz, T& value) {
         return this->getValue(sz, value);
     }
 
     template<typename T>
-    JSONWriter& operator >> (T& value)
-    {
+    JSONWriter& operator >> (T& value) {
         serializeWrapper(*this, value);
         return *this;
     }
 
     template<typename T>
-    JSONWriter& operator >>(std::vector<T>& value)
-    {
+    JSONWriter& operator >>(std::vector<T>& value) {
         int size = getArraySize();
         if (size)
             value.clear();
-        for (int i = 0; i < size; ++i)
-        {
+        for (int i = 0; i < size; ++i) {
             cJSON* lastItem = cur();
             getArrayItem(i);
             T item;
@@ -51,13 +46,11 @@ public:
     }
 
     template<typename T>
-    JSONWriter& operator >>(std::map<std::string, T>& value)
-    {
+    JSONWriter& operator >>(std::map<std::string, T>& value) {
         int size = getMapSize();
         if (size)
             value.clear();
-        for (int i = 0; i < size; ++i)
-        {
+        for (int i = 0; i < size; ++i) {
             std::string key;
             T item;
             getkeyValue(i, key, item);
@@ -82,8 +75,7 @@ private:
     JSONWriter& getValue(const char* sz, std::vector<std::string>& value);
 
     template<typename T>
-    JSONWriter& getValue(const char* sz, T& value)
-    {
+    JSONWriter& getValue(const char* sz, T& value) {
         cJSON* curItem = cur();
         getObject(sz);
         serializeWrapper(*this, value);
@@ -91,15 +83,13 @@ private:
         return *this;
     }
     template<typename T>
-    JSONWriter& getValue(const char* sz, std::vector<T>& value)
-    {
+    JSONWriter& getValue(const char* sz, std::vector<T>& value) {
         cJSON* curItem = cur();
         getObject(sz);
         int size = getArraySize();
         if (size)
             value.clear();
-        for (int i = 0; i < size; ++i)
-        {
+        for (int i = 0; i < size; ++i) {
             cJSON* lastItem = cur();
             getArrayItem(i);
             typename TypeTraits<T>::Type item;
@@ -111,15 +101,13 @@ private:
         return *this;
     }
     template<typename T>
-    JSONWriter& getValue(const char* sz, std::map<std::string, T>& value)
-    {
+    JSONWriter& getValue(const char* sz, std::map<std::string, T>& value) {
         cJSON* curItem = cur();
         getObject(sz);
         int size = getMapSize();
         if (size)
             value.clear();
-        for (int i = 0; i < size; ++i)
-        {
+        for (int i = 0; i < size; ++i) {
             cJSON* lastItem = cur();
             std::string key;
             T item;
@@ -137,8 +125,7 @@ private:
     int getMapSize() const;
     const char* getChildName(int i)const;
     template<typename T>
-    void getkeyValue(int i, std::string& key, T& value)
-    {
+    void getkeyValue(int i, std::string& key, T& value) {
         key = getChildName(i);
         getValue(key.c_str(), value);
     }

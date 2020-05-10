@@ -8,8 +8,7 @@
 
 
 struct cJSON;
-class JSONReader
-{
+class JSONReader {
     cJSON* _root;
     cJSON* _cur;
     JSONReader(const JSONReader&);
@@ -19,22 +18,17 @@ public:
     virtual ~JSONReader();
 
     template<typename T>
-    JSONReader& convert(const char* sz, const T& value)
-    {
+    JSONReader& convert(const char* sz, const T& value) {
         return this->setValue(sz, value);
     }
 
     template<typename T>
-    JSONReader& operator << (const T& value)
-    {
+    JSONReader& operator << (const T& value) {
         const typename TypeTraits<T>::Type& v = value;
-        if (TypeTraits<T>::isVector())
-        {
+        if (TypeTraits<T>::isVector()) {
             operator << (v);
-        }
-        else
-        {
-            if (typename TypeTraits<T>::Type* pValue = const_cast<typename TypeTraits<T>::Type*>(&v)){
+        } else {
+            if (typename TypeTraits<T>::Type* pValue = const_cast<typename TypeTraits<T>::Type*>(&v)) {
                 serializeWrapper(*this, *pValue);
             }
         }
@@ -42,10 +36,8 @@ public:
     }
 
     template<typename T>
-    JSONReader& operator <<(const std::map<std::string, T>& value)
-    {
-        for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it)
-        {
+    JSONReader& operator <<(const std::map<std::string, T>& value) {
+        for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it) {
             const T& item = it->second;
             setValue(it->first.c_str(), item);
         }
@@ -71,24 +63,21 @@ private:
     JSONReader& setValue(const char* sz, const std::vector<std::string>& value);
 
     template<typename T>
-    JSONReader& setValue(const char* sz, const T& value)
-    {
+    JSONReader& setValue(const char* sz, const T& value) {
         cJSON* curItem = cur();
         createObject(sz);
-        if (T* pValue = const_cast<T*>(&value)){
+        if (T* pValue = const_cast<T*>(&value)) {
             serializeWrapper(*this, *pValue);
         }
         cur(curItem);
         return *this;
     }
     template<typename T>
-    JSONReader& setValue(const char* sz, const std::vector<T>& value)
-    {
+    JSONReader& setValue(const char* sz, const std::vector<T>& value) {
         cJSON* curItem = cur();
         createArray(sz);
         int size = (int)value.size();
-        for (int i = 0; i < size; ++i)
-        {
+        for (int i = 0; i < size; ++i) {
             cJSON* lastItem = cur();
             if (TypeTraits<T>::isVector())
                 addArrayToArray();
@@ -102,12 +91,10 @@ private:
         return *this;
     }
     template<typename T>
-    JSONReader& setValue(const char* sz, const std::map<std::string, T>& value)
-    {
+    JSONReader& setValue(const char* sz, const std::map<std::string, T>& value) {
         cJSON* curItem = cur();
         createObject(sz);
-        for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it)
-        {
+        for (typename std::map<std::string, T>::const_iterator it = value.begin(); it != value.end(); ++it) {
             cJSON* lastItem = cur();
             const T& item = it->second;
             setValue(it->first.c_str(), item);
