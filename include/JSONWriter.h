@@ -8,7 +8,7 @@
 
 
 struct cJSON;
-class JSONWriter {
+class EXPORTAPI JSONWriter {
     cJSON* _root;
     cJSON* _cur;
     JSONWriter();
@@ -16,7 +16,7 @@ class JSONWriter {
     JSONWriter& operator=(const JSONWriter&);
 public:
     JSONWriter(const char* sz);
-    virtual ~JSONWriter();
+    ~JSONWriter();
 
     template<typename T>
     JSONWriter& convert(const char* sz, T& value) {
@@ -24,39 +24,45 @@ public:
     }
 
     template<typename T>
-    JSONWriter& operator >> (T& value) {
-        serializeWrapper(*this, value);
-        return *this;
+    bool operator >> (T& value) {
+        if (_cur) {
+            serializeWrapper(*this, value);
+        }
+        return (_cur) ? true : false;
     }
 
     template<typename T>
-    JSONWriter& operator >>(std::vector<T>& value) {
-        int size = getArraySize();
-        if (size)
-            value.clear();
-        for (int i = 0; i < size; ++i) {
-            cJSON* lastItem = cur();
-            getArrayItem(i);
-            T item;
-            this->operator>>(item);
-            value.push_back(item);
-            cur(lastItem);
+    bool operator >>(std::vector<T>& value) {
+        if (_cur) {
+            int size = getArraySize();
+            if (size && !value.empty())
+                value.clear();
+            for (int i = 0; i < size; ++i) {
+                cJSON* lastItem = cur();
+                getArrayItem(i);
+                T item;
+                this->operator>>(item);
+                value.push_back(item);
+                cur(lastItem);
+            }
         }
-        return *this;
+        return (_cur) ? true : false;
     }
 
     template<typename T>
-    JSONWriter& operator >>(std::map<std::string, T>& value) {
-        int size = getMapSize();
-        if (size)
-            value.clear();
-        for (int i = 0; i < size; ++i) {
-            std::string key;
-            T item;
-            getkeyValue(i, key, item);
-            value.insert(std::pair<std::string, T>(key, item));
+    bool operator >>(std::map<std::string, T>& value) {
+        if (_cur) {
+            int size = getMapSize();
+            if (size && !value.empty())
+                value.clear();
+            for (int i = 0; i < size; ++i) {
+                std::string key;
+                T item;
+                getkeyValue(i, key, item);
+                value.insert(std::pair<std::string, T>(key, item));
+            }
         }
-        return *this;
+        return (_cur) ? true : false;
     }
 private:
     JSONWriter& operator >>(std::vector<int>& value);
@@ -87,7 +93,7 @@ private:
         cJSON* curItem = cur();
         getObject(sz);
         int size = getArraySize();
-        if (size)
+        if (size&& !value.empty())
             value.clear();
         for (int i = 0; i < size; ++i) {
             cJSON* lastItem = cur();
@@ -105,7 +111,7 @@ private:
         cJSON* curItem = cur();
         getObject(sz);
         int size = getMapSize();
-        if (size)
+        if (size&& !value.empty())
             value.clear();
         for (int i = 0; i < size; ++i) {
             cJSON* lastItem = cur();

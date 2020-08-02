@@ -11,10 +11,21 @@ JSONReader::~JSONReader() {
     cJSON_Delete(_root);
 }
 
-void JSONReader::toString(std::string& str) {
-    char *out = cJSON_Print(_root);
-    str.append(out);
-    free(out);
+bool JSONReader::toString(std::string& str, bool bUnformatted) {
+    if (_root) {
+        char *out = NULL;
+        if (bUnformatted) {
+            out = cJSON_PrintUnformatted(_root);
+        } else {
+            out = cJSON_Print(_root);
+        }
+        if (out) {
+            str.append(out);
+            free(out);
+            return true;
+        }
+    }
+    return false;
 }
 
 JSONReader& JSONReader::operator<<(const std::vector<int>& value) {

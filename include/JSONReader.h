@@ -8,14 +8,14 @@
 
 
 struct cJSON;
-class JSONReader {
+class EXPORTAPI JSONReader {
     cJSON* _root;
     cJSON* _cur;
     JSONReader(const JSONReader&);
     JSONReader& operator=(const JSONReader&);
 public:
     JSONReader();
-    virtual ~JSONReader();
+    ~JSONReader();
 
     template<typename T>
     JSONReader& convert(const char* sz, const T& value) {
@@ -44,7 +44,7 @@ public:
         return *this;
     }
 
-    void toString(std::string& str);
+    bool toString(std::string& str, bool bUnformatted = false);
 private:
     JSONReader& operator<<(const std::vector<int>& value);
     JSONReader& operator<<(const std::vector<float>& value);

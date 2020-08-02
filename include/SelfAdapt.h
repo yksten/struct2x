@@ -1,6 +1,15 @@
 #ifndef __STRUCT_SELFADAPT_H__
 #define __STRUCT_SELFADAPT_H__
 
+#ifdef _MSC_VER
+#ifdef EXPORTAPI 
+#define EXPORTAPI _declspec(dllimport)
+#else 
+#define EXPORTAPI _declspec(dllexport)
+#endif
+#else
+#define EXPORTAPI
+#endif
 
 struct access {
     template<class T, class C>

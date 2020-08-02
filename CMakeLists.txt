@@ -22,7 +22,11 @@ SET(SRC "./include/struct2x.hpp" "./include/SelfAdapt.h" "./include/structExtern
 SOURCE_GROUP(src FILES ${SRC})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
-ADD_LIBRARY(struct2x ${THIRDPARTY} ${SRC} ${DIR_SRCS})
+IF (WIN32)
+    ADD_LIBRARY(struct2x SHARED ${THIRDPARTY} ${SRC} ${DIR_SRCS})
+ELSE ()
+    ADD_LIBRARY(struct2x ${THIRDPARTY} ${SRC} ${DIR_SRCS})
+ENDIF ()
 
 
 SET(TESTER "./tester/buffer.h" "./tester/main.cpp")

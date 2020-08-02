@@ -15,6 +15,7 @@ JSONWriter::~JSONWriter() {
 }
 
 JSONWriter& JSONWriter::operator >>(std::vector<int>& value) {
+    if (!value.empty()) value.clear();
     cJSON *c = _cur->child;
     while (c) {
         value.push_back(c->valueint);
@@ -24,6 +25,7 @@ JSONWriter& JSONWriter::operator >>(std::vector<int>& value) {
 }
 
 JSONWriter& JSONWriter::operator >>(std::vector<float>& value) {
+    if (!value.empty()) value.clear();
     cJSON *c = _cur->child;
     while (c) {
         value.push_back(c->valuedouble);
@@ -33,6 +35,7 @@ JSONWriter& JSONWriter::operator >>(std::vector<float>& value) {
 }
 
 JSONWriter& JSONWriter::operator >>(std::vector<double>& value) {
+    if (!value.empty()) value.clear();
     cJSON *c = _cur->child;
     while (c) {
         value.push_back(c->valuedouble);
@@ -42,6 +45,7 @@ JSONWriter& JSONWriter::operator >>(std::vector<double>& value) {
 }
 
 JSONWriter& JSONWriter::operator >>(std::vector<std::string>& value) {
+    if (!value.empty()) value.clear();
     cJSON *c = _cur->child;
     while (c) {
         value.push_back(c->valuestring);
@@ -91,6 +95,7 @@ JSONWriter& JSONWriter::getValue(const char* sz, bool& value) {
 }
 
 JSONWriter& JSONWriter::getValue(const char* sz, std::vector<int>& value) {
+    if (!value.empty()) value.clear();
     cJSON* curItem = cur();
     getObject(sz);
     cJSON *c = _cur->child;
@@ -103,6 +108,7 @@ JSONWriter& JSONWriter::getValue(const char* sz, std::vector<int>& value) {
 }
 
 JSONWriter& JSONWriter::getValue(const char* sz, std::vector<float>& value) {
+    if (!value.empty()) value.clear();
     cJSON* curItem = cur();
     getObject(sz);
     cJSON *c = _cur->child;
@@ -115,6 +121,7 @@ JSONWriter& JSONWriter::getValue(const char* sz, std::vector<float>& value) {
 }
 
 JSONWriter& JSONWriter::getValue(const char* sz, std::vector<double>& value) {
+    if (!value.empty()) value.clear();
     cJSON* curItem = cur();
     getObject(sz);
     cJSON *c = _cur->child;
@@ -127,6 +134,7 @@ JSONWriter& JSONWriter::getValue(const char* sz, std::vector<double>& value) {
 }
 
 JSONWriter& JSONWriter::getValue(const char* sz, std::vector<std::string>& value) {
+    if (!value.empty()) value.clear();
     cJSON* curItem = cur();
     getObject(sz);
     cJSON *c = _cur->child;

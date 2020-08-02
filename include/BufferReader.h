@@ -8,13 +8,13 @@
 #include "bufferInterface.h"
 
 
-class BufferReader {
+class EXPORTAPI BufferReader {
     BufferInterface& _buffer;
     BufferReader(const BufferReader&);
     BufferReader& operator=(const BufferReader&);
 public:
     BufferReader(BufferInterface& buffer);
-    virtual ~BufferReader();
+    ~BufferReader();
 
     template<typename T>
     BufferReader& operator << (const T& value) {

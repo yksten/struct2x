@@ -7,13 +7,13 @@
 #include "SelfAdapt.h"
 #include "bufferInterface.h"
 
-class BufferWriter {
+class EXPORTAPI BufferWriter {
     BufferInterface& _buffer;
     BufferWriter(const BufferWriter&);
     BufferWriter& operator=(const BufferWriter&);
 public:
     BufferWriter(BufferInterface& buffer);
-    virtual ~BufferWriter();
+    ~BufferWriter();
 
     template<typename T>
     BufferWriter& operator >>(T& value) {
