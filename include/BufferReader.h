@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <vector>
 #include <map>
-#include "structExternalSerialize.h"
 #include "SelfAdapt.h"
 #include "bufferInterface.h"
 
@@ -54,7 +53,7 @@ private:
 
     template<typename T>
     BufferReader& operator <<(const std::vector<T>& value) {
-        uint32_t size = value.size();
+        uint32_t size = (uint32_t)value.size();
         this->operator<<(size);
         for (uint32_t i = 0; i < size; ++i) {
             this->operator<<(value.at(i));
@@ -64,7 +63,7 @@ private:
 
     template<typename K, typename V>
     BufferReader& operator <<(const std::map<K, V>& value) {
-        uint32_t size = value.size();
+        uint32_t size = (uint32_t)value.size();
         this->operator<<(size);
         for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
             this->operator<<(it->first);

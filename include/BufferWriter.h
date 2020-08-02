@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <vector>
 #include <map>
-#include "structExternalSerialize.h"
 #include "SelfAdapt.h"
 #include "bufferInterface.h"
 

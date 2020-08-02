@@ -86,7 +86,7 @@ BufferReader& BufferReader::operator <<(const char* value) {
 }
 
 BufferReader& BufferReader::operator <<(const std::vector<bool>& value) {
-    uint32_t size = value.size();
+    uint32_t size = (uint32_t)value.size();
     this->operator<<(size);
     for (uint32_t i = 0; i < size; ++i) {
         bool b = value.at(i);

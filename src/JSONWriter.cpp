@@ -28,7 +28,7 @@ JSONWriter& JSONWriter::operator >>(std::vector<float>& value) {
     if (!value.empty()) value.clear();
     cJSON *c = _cur->child;
     while (c) {
-        value.push_back(c->valuedouble);
+        value.push_back((float)c->valuedouble);
         c = c->next;
     }
     return *this;
@@ -62,7 +62,7 @@ JSONWriter& JSONWriter::getValue(const char* sz, int& value) {
 
 JSONWriter& JSONWriter::getValue(const char* sz, float& value) {
     if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
-        value = item->valuedouble;
+        value = (float)item->valuedouble;
     return *this;
 }
 
@@ -113,7 +113,7 @@ JSONWriter& JSONWriter::getValue(const char* sz, std::vector<float>& value) {
     getObject(sz);
     cJSON *c = _cur->child;
     while (c) {
-        value.push_back(c->valuedouble);
+        value.push_back((float)c->valuedouble);
         c = c->next;
     }
     cur(curItem);

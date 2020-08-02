@@ -33,10 +33,10 @@ public:
     void setValue(uint64_t value) { append(value); }
     void setValue(float value) { append(value); }
     void setValue(double value) { append(value); }
-    void setValue(const std::string& value) { uint32_t size = value.size(); append(size); append((void*)value.c_str(), size); }
-    void setValue(const char* value) { uint32_t size = strlen(value); append(size); append((void*)value, size); }
+    void setValue(const std::string& value) { uint32_t size = (uint32_t)value.size(); append(size); append((void*)value.c_str(), size); }
+    void setValue(const char* value) { uint32_t size = (uint32_t)strlen(value); append(size); append((void*)value, size); }
 
-    void getValue(bool& value) { value = peek<bool>(); }
+    void getValue(bool& value) { value = peekBool(); }
     void getValue(int8_t& value) { value = peek<int8_t>(); }
     void getValue(uint8_t& value) { value = peek<uint8_t>(); }
     void getValue(int16_t& value) { value = peek<int16_t>(); }
@@ -57,7 +57,7 @@ public:
 private:
     template<typename T>
     void append(const T& data) {
-        int nSize = sizeof(T);
+        uint32_t nSize = sizeof(T);
         uint8_t szTemp[sizeof(T)] = { 0 };
         for (uint32_t idx = 0; idx < nSize; ++idx) {
             szTemp[idx] = (data >> (idx * 8)) & 0xFF;
@@ -109,7 +109,7 @@ private:
     template<typename T>
     T peek() {
         assert(readableBytes() >= sizeof(T));
-        int nSize = sizeof(T);
+        uint32_t nSize = sizeof(T);
         uint8_t szTemp[sizeof(T)] = { 0 };
         ::memcpy(&szTemp, beginOut(), nSize);
         T value = T();
@@ -118,6 +118,14 @@ private:
         }
         hasReader(sizeof(T));
         return value;
+    }
+    bool peekBool() {
+        assert(readableBytes() >= sizeof(bool));
+        uint32_t nSize = sizeof(bool);
+        uint8_t szTemp[sizeof(bool)] = { 0 };
+        ::memcpy(&szTemp, beginOut(), nSize);
+        hasReader(nSize);
+        return (szTemp[0]) ? true : false;
     }
     float getFloat() {
         assert(readableBytes() >= sizeof(float));
