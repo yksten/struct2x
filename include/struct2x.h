@@ -1,6 +1,221 @@
 #ifndef __STRUCT_MACRO_H__
 #define __STRUCT_MACRO_H__
 
+#ifdef _MSC_VER
+#include <stdlib.h>
+#define _atoi64(val)     strtoll(val, NULL, 10)
+#ifdef EXPORTAPI 
+#define EXPORTAPI _declspec(dllimport)
+#else 
+#define EXPORTAPI _declspec(dllexport)
+#endif
+#else
+#define EXPORTAPI
+#endif
+
+#include <stdint.h>
+#include <vector>
+
+
+#define SERIALIZE_2(num, value)         struct2x::makePair(#value, num, value)
+#define SERIALIZE_3(num, value, type)   struct2x::makePair(#value, num, value, type)
+
+#define EXPAND(args) args
+#define MAKE_TAG_COUNT(TAG, _3,_2,_1,N,...) TAG##N
+#define SERIALIZE(...) EXPAND(MAKE_TAG_COUNT(SERIALIZE, __VA_ARGS__, _3,_2,_1) (__VA_ARGS__))
+
+namespace struct2x {
+
+    enum {
+        WT_VARINT = 0,    // int32,int64,uint32,uint64,sint32,sin64,bool,enum
+        WT_64BIT = 1,    // fixed64,sfixed64,double
+        WT_LENGTH_DELIMITED = 2,    // string,bytes,embedded messages,packed repeated fields
+        WT_START_GROUP = 3,    // Groups(deprecated)
+        WT_END_GROUP = 4,    // Groups(deprecated)
+        WT_32BIT = 5,    // fixed32,sfixed32,float
+    };
+
+    enum {
+        TYPE_VARINT = 0,    // int32,int64,uint32,uint64,bool,enum
+        TYPE_SVARINT = 1,    // sint32,sin64
+        TYPE_FIXED32 = 2,    // fixed32,sfixed32
+        TYPE_FIXED64 = 3,    // fixed64,sfixed64
+        TYPE_BYTES = 4,    // bytes
+        TYPE_PACK = 5,    // repaeted [pack=true]
+    };
+
+    class EXPORTAPI BufferWrapper {
+        std::vector<uint8_t> _buffer;
+        size_t _index;
+        enum { INITIALSIZE = 8 };
+
+    public:
+        explicit BufferWrapper(size_t nSize = INITIALSIZE);
+
+        uint8_t* data() { return &(*_buffer.begin()); }
+        const uint8_t* data() const { return &(*_buffer.begin()); }
+        size_t size() const { return _index; }
+
+        void append(const void* data, size_t len);
+        void swap(BufferWrapper& that);
+    };
+
+    template<typename VALUE>
+    class EXPORTAPI serializeItem {
+        const char* _sz;
+        const uint32_t _num;
+        VALUE& _value;
+        const uint32_t _type;
+    public:
+        serializeItem(const char* sz, uint32_t num, VALUE& value) : _sz(sz), _num(num), _value(value), _type(TYPE_VARINT) {}
+        serializeItem(const char* sz, uint32_t num, VALUE& value, uint32_t type) : _sz(sz), _num(num), _value(value), _type(type) {}
+
+        const char* name() const { return _sz; }
+        uint32_t type() const { return _type; }
+        uint32_t num() const { return _num; }
+        VALUE& value() { return _value; }
+        const VALUE& value() const { return _value; }
+    };
+
+    template<typename VALUE>
+    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value) {
+        return serializeItem<VALUE>(sz, num, value);
+    }
+
+    template<typename VALUE>
+    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value, int32_t type) {
+        return serializeItem<VALUE>(sz, num, value, type);
+    }
+
+    template <typename T>
+    struct isMessage {
+    private:
+        template < typename C, C&(C::*)(const C&) = &C::operator=> static char check(C*);
+        template<typename C> static int32_t check(...);
+    public:
+        enum { YES = (sizeof(check<T>(static_cast<T*>(0))) == sizeof(char)) };
+        enum { WRITE_TYPE = (YES == 0) ? WT_VARINT : WT_LENGTH_DELIMITED };
+    };
+
+    template<>
+    struct isMessage<std::string> {
+        enum { YES = 0, WRITE_TYPE = WT_LENGTH_DELIMITED };
+    };
+
+    template<>
+    struct isMessage<float> {
+        enum { YES = 0, WRITE_TYPE = WT_32BIT };
+    };
+
+    template<>
+    struct isMessage<double> {
+        enum { YES = 0, WRITE_TYPE = WT_64BIT };
+    };
+
+    struct access {
+        template<class T, class C>
+        static void serialize(T& t, C& c) {
+            c.serialize(t);
+        }
+    };
+
+    template<class T, class C>
+    inline void serialize(T& t, C& c) {
+        access::serialize(t, c);
+    }
+
+    template<class T, class C>
+    inline void serializeWrapper(T& t, C& c) {
+        serialize(t, c);
+    }
+
+    template<typename T>
+    struct TypeTraits {
+        typedef T Type;
+        static bool isVector() { return false; }
+    };
+
+    template<typename T>
+    struct TypeTraits<std::vector<T> > {
+        typedef std::vector<T> Type;
+        static bool isVector() { return true; }
+    };
+
+    namespace STOT {
+        template<typename T> struct type {};
+
+        const int32_t _RTBUFSIZE = 128;
+        static char _transbuf[_RTBUFSIZE] = { 0 };
+
+        //bool
+        template<> struct type<bool> {
+            static inline bool strto(const char* str) { return atoi(str) != 0; }
+            static inline const char* tostr(bool v) { return v ? "1" : "0"; }
+        };
+
+        //int32_t
+        template<> struct type<int32_t> {
+            static inline int32_t strto(const char* str) { return (int32_t)atoi(str); }
+            static inline const char* tostr(int32_t v) { sprintf(_transbuf, "%d", v); return _transbuf; }
+        };
+
+        //uint32_t
+        template<> struct type<uint32_t> {
+            static inline uint32_t strto(const char* str) { return (uint32_t)atoi(str); }
+            static inline const char* tostr(uint32_t v) { sprintf(_transbuf, "%u", v); return _transbuf; }
+        };
+
+        //int64_t
+        template<> struct type<int64_t> {
+            static inline int64_t strto(const char* str) { return _atoi64(str); }
+            static inline const char* tostr(int64_t v) { sprintf(_transbuf, "%lld", (long long)v); return _transbuf; }
+        };
+
+        //uint64_t
+        template<> struct type<uint64_t> {
+            static inline uint64_t strto(const char* str) { return (uint64_t)_atoi64(str); }
+            static inline const char* tostr(uint64_t v) { sprintf(_transbuf, "%lld", (long long)v); return _transbuf; }
+        };
+
+        //float
+        template<> struct type<float> {
+            static inline float strto(const char* str) { return (float)atof(str); }
+            static inline const char* tostr(float v) { sprintf(_transbuf, "%f", v); return _transbuf; }
+        };
+
+        //double
+        template<> struct type<double> {
+            static inline double strto(const char* str) { return atof(str); }
+            static inline const char* tostr(double v) { sprintf(_transbuf, "%lf", v); return _transbuf; }
+        };
+
+        //char*
+        template<> struct type<char*> {
+            static inline char* strto(char* str) { return str; }
+            static inline char* tostr(char* v) { return v; }
+        };
+
+        //const char*
+        template<> struct type<const char*> {
+            static inline const char* strto(const char* str) { return str; }
+            static inline const char* tostr(const char* v) { return v; }
+        };
+
+        //std::string
+        template<> struct type<std::string> {
+            static inline const std::string& strto(const std::string& str) { return str; }
+            static inline const const char* tostr(const std::string& v) { return v.c_str(); }
+        };
+
+        //const std::string
+        template<> struct type<const std::string> {
+            static inline const std::string& strto(const std::string& str) { return str; }
+            static inline const const char* tostr(const std::string& v) { return v.c_str(); }
+        };
+
+    }//namespace STOT
+
+}
 
 #define EXPAND(args) args
 
@@ -178,8 +393,7 @@
 
 #define VISITSTRUCT(structType, ...)        \
 template<typename T>                        \
-void serialize(T& t, structType& data)      \
-{                                           \
+void serialize(T& t, structType& data) {    \
     NISERIALIZATION(t, data, __VA_ARGS__);  \
 }
 

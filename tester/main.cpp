@@ -2,14 +2,12 @@
 #include <string>
 #include <assert.h>
 
-#include "struct2x.hpp"
-#include "JSONReader.h"
-#include "JSONWriter.h"
+#include "json/JSONReader.h"
+#include "json/JSONWriter.h"
 
-#include "BufferReader.h"
-#include "BufferWriter.h"
-
-#include "buffer.h"
+#include "testStruct.h"
+#include "protobuf/encoder.h"
+#include "protobuf/decoder.h"
 
 struct struInfo {
     struInfo() :no(99) {}
@@ -96,18 +94,18 @@ void testMap() {
     map["VARIABLE_TIMER"] = 4;
     map["VARIABLE_COUNTER"] = 5;
 
-    JSONReader jrmap;
+    struct2x::JSONReader jrmap;
     jrmap << map;
     std::string str2;
     jrmap.toString(str2);
 
-    JSONWriter jwmap(str2.c_str());
+    struct2x::JSONWriter jwmap(str2.c_str());
     jwmap >> map2;
 
     assert(map == map2);
 }
 
-void testStruct() {
+void testStructFunc() {
     struItem item;
     item.id = 1;
     item.str = "asdfgh";
@@ -124,25 +122,16 @@ void testStruct() {
     info.no = 992;
     item.m2["2"] = info;
 
-    JSONReader jr;
+    struct2x::JSONReader jr;
     jr << item;
 
     std::string str;
     jr.toString(str);
 
-    JSONWriter jw(str.c_str());
+    struct2x::JSONWriter jw(str.c_str());
     struItem item2;
     jw >> item2;
     bool b = (item == item2);
-    assert(b);
-
-    BufferDemo bd;
-    BufferReader br(bd);
-    br << item;
-
-    BufferWriter bw(bd);
-    bw >> item2;
-    b = (item == item2);
     assert(b);
 }
 
@@ -159,24 +148,55 @@ void testVector() {
     std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
     s1.vec.push_back(v);
 
-    JSONReader jr;
+    struct2x::JSONReader jr;
     jr << s1;
 
     std::string str;
     jr.toString(str);
 
-    JSONWriter jw(str.c_str());
+    struct2x::JSONWriter jw(str.c_str());
     jw >> s2;
     bool b = (s1.vec == s2.vec);
     assert(b);
 }
 
+void testProtobuf() {
+    testStruct::struExample item;
+    item.id = 1;
+    item.str = "example";
+    item.f = 9.7f;
+    item.db = 19.8f;
+    testStruct::struExamples items, items2;
+    items.v.push_back(item);
+    items.m[1] = item;
+    item.id = 2;
+    item.str = "afexample";
+    item.f = 5.7f;
+    item.db = 89.8f;
+    items.v.push_back(item);
+    items.m[2] = item;
+
+    struct2x::BufferWrapper buffer;
+    struct2x::PBEncoder encoder(buffer);
+    encoder << items;
+
+    struct2x::JSONReader jr;
+    jr << items;
+    std::string strJson;
+    jr.toString(strJson);
+
+    struct2x::JSONWriter(strJson.c_str()) >> items;
+
+    struct2x::PBDecoder decoder(buffer.data(), buffer.size());
+    decoder >> items2;
+}
+
 
 int main() {
     testMap();
-    testStruct();
-
+    testStructFunc();
     testVector();
+    testProtobuf();
 
     return 0;
 }
