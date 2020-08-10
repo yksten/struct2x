@@ -22,11 +22,11 @@ SET(SRC "./include/struct2x.hpp" "./include/SelfAdapt.h" "./include/bufferInterf
 SOURCE_GROUP(src FILES ${SRC})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
-IF (WIN32)
+IF (MSVC)
     ADD_LIBRARY(struct2x SHARED ${THIRDPARTY} ${SRC} ${DIR_SRCS})
 ELSE ()
     ADD_LIBRARY(struct2x ${THIRDPARTY} ${SRC} ${DIR_SRCS})
-ENDIF ()
+ENDIF (MSVC)
 
 
 SET(TESTER "./tester/buffer.h" "./tester/main.cpp")
