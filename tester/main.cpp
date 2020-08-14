@@ -1,13 +1,12 @@
 #include <iostream>
-#include <string>
 #include <assert.h>
 
 #include "json/JSONReader.h"
 #include "json/JSONWriter.h"
 
-#include "testStruct.h"
 #include "protobuf/encoder.h"
 #include "protobuf/decoder.h"
+#include "testStruct.h"
 
 struct struInfo {
     struInfo() :no(99) {}

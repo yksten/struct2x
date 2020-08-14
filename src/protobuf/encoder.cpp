@@ -8,13 +8,12 @@ namespace struct2x {
     PBEncoder::~PBEncoder() {
     }
 
-    PBEncoder& PBEncoder::encodeValue(const std::string& v, int32_t type) {
+    void PBEncoder::encodeValue(const std::string& v, int32_t type) {
         varInt(v.length());
         _buffer.append(v.c_str(), v.size());
-        return *this;
     }
 
-    PBEncoder& PBEncoder::encodeValue(const float& v, int32_t type) {
+    void PBEncoder::encodeValue(const float& v, int32_t type) {
         union { float f; uint32_t i; };
         f = v;
         uint8_t bytes[4] = { 0 };
@@ -23,10 +22,9 @@ namespace struct2x {
         bytes[2] = (uint8_t)((i >> 16) & 0xFF);
         bytes[3] = (uint8_t)((i >> 24) & 0xFF);
         _buffer.append(bytes, 4);
-        return *this;
     }
 
-    PBEncoder& PBEncoder::encodeValue(const double& v, int32_t type) {
+    void PBEncoder::encodeValue(const double& v, int32_t type) {
         union { double db; uint64_t i; };
         db = v;
         uint8_t bytes[8] = { 0 };
@@ -39,7 +37,6 @@ namespace struct2x {
         bytes[6] = (uint8_t)((i >> 48) & 0xFF);
         bytes[7] = (uint8_t)((i >> 56) & 0xFF);
         _buffer.append(bytes, 8);
-        return *this;
     }
 
     void PBEncoder::value(uint64_t value, int32_t type) {

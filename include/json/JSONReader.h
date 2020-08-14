@@ -1,7 +1,6 @@
 #ifndef __JSON_READER_H__
 #define __JSON_READER_H__
 #include <string>
-#include <vector>
 #include <map>
 #include "struct2x.h"
 
@@ -20,76 +19,43 @@ namespace struct2x {
 
         template<typename T>
         JSONReader& operator&(serializeItem<T> value) {
-            return setValue(value.name(), value.value());
-        }
-
-        template<typename T>
-        JSONReader& convert(const char* sz, const T& value) {
-            return setValue(sz, value);
+            return convert(value.name(), value.value());
         }
 
         template<typename T>
         JSONReader& operator << (const T& value) {
-            const typename TypeTraits<T>::Type& v = value;
-            if (TypeTraits<T>::isVector()) {
+            const typename internal::TypeTraits<T>::Type& v = value;
+            if (internal::TypeTraits<T>::isVector()) {
                 operator << (v);
             } else {
-                if (typename TypeTraits<T>::Type* pValue = const_cast<typename TypeTraits<T>::Type*>(&v)) {
-                    serializeWrapper(*this, *pValue);
+                if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
+                    internal::serializeWrapper(*this, *pValue);
                 }
             }
             return *this;
         }
 
-        template<typename K, typename V>
-        JSONReader& operator <<(const std::map<K, V>& value) {
-            for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
-                const V& item = it->second;
-                setValue(STOT::type<K>::tostr(it->first), item);
-            }
-            return *this;
-        }
-
-        bool toString(std::string& str, bool bUnformatted = false);
-    private:
-        JSONReader& operator<<(const std::vector<int>& value);
-        JSONReader& operator<<(const std::vector<float>& value);
-        JSONReader& operator<<(const std::vector<double>& value);
-        JSONReader& operator<<(const std::vector<std::string>& value);
-        JSONReader& setValue(const char* sz, int value);
-        JSONReader& setValue(const char* sz, float value);
-        JSONReader& setValue(const char* sz, double value);
-        JSONReader& setValue(const char* sz, unsigned int value);
-        JSONReader& setValue(const char* sz, const char* value);
-        JSONReader& setValue(const char* sz, const std::string& value);
-        JSONReader& setValue(const char* sz, bool value);
-        JSONReader& setValue(const char* sz, const std::vector<int>& value);
-        JSONReader& setValue(const char* sz, const std::vector<float>& value);
-        JSONReader& setValue(const char* sz, const std::vector<double>& value);
-        JSONReader& setValue(const char* sz, const std::vector<std::string>& value);
-
         template<typename T>
-        JSONReader& setValue(const char* sz, const T& value) {
+        JSONReader& convert(const char* sz, const T& value) {
             cJSON* curItem = cur();
             createObject(sz);
-            if (T* pValue = const_cast<T*>(&value)) {
-                serializeWrapper(*this, *pValue);
-            }
+            internal::serializeWrapper(*this, *const_cast<T*>(&value));
             cur(curItem);
             return *this;
         }
+
         template<typename T>
-        JSONReader& setValue(const char* sz, const std::vector<T>& value) {
+        JSONReader& convert(const char* sz, const std::vector<T>& value) {
             cJSON* curItem = cur();
             createArray(sz);
             int size = (int)value.size();
             for (int i = 0; i < size; ++i) {
                 cJSON* lastItem = cur();
-                if (TypeTraits<T>::isVector())
+                if (internal::TypeTraits<T>::isVector())
                     addArrayToArray();
                 else
                     addItemToArray();
-                const typename TypeTraits<T>::Type& item = value.at(i);
+                const typename internal::TypeTraits<T>::Type& item = value.at(i);
                 this->operator<<(item);
                 cur(lastItem);
             }
@@ -97,18 +63,46 @@ namespace struct2x {
             return *this;
         }
         template<typename K, typename V>
-        JSONReader& setValue(const char* sz, const std::map<K, V>& value) {
+        JSONReader& convert(const char* sz, const std::map<K, V>& value) {
             cJSON* curItem = cur();
             createObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 cJSON* lastItem = cur();
                 const V& item = it->second;
-                setValue(STOT::type<K>::tostr(it->first), item);
+                convert(internal::STOT::type<K>::tostr(it->first), item);
                 cur(lastItem);
             }
             cur(curItem);
             return *this;
         }
+
+        template<typename K, typename V>
+        JSONReader& operator <<(const std::map<K, V>& value) {
+            for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
+                const V& item = it->second;
+                convert(internal::STOT::type<K>::tostr(it->first), item);
+            }
+            return *this;
+        }
+
+        bool toString(std::string& str, bool bUnformatted = false);
+        JSONReader& convert(const char* sz, int value);
+        JSONReader& convert(const char* sz, float value);
+        JSONReader& convert(const char* sz, double value);
+        JSONReader& convert(const char* sz, unsigned int value);
+        JSONReader& convert(const char* sz, const char* value);
+        JSONReader& convert(const char* sz, const std::string& value);
+        JSONReader& convert(const char* sz, bool value);
+        JSONReader& convert(const char* sz, const std::vector<int>& value);
+        JSONReader& convert(const char* sz, const std::vector<float>& value);
+        JSONReader& convert(const char* sz, const std::vector<double>& value);
+        JSONReader& convert(const char* sz, const std::vector<std::string>& value);
+    private:
+        JSONReader& operator<<(const std::vector<int>& value);
+        JSONReader& operator<<(const std::vector<float>& value);
+        JSONReader& operator<<(const std::vector<double>& value);
+        JSONReader& operator<<(const std::vector<std::string>& value);
+
         void createObject(const char* sz);
         void createArray(const char* sz);
         void addItemToArray();

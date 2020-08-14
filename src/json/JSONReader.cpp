@@ -93,57 +93,57 @@ namespace struct2x {
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, int value) {
+    JSONReader& JSONReader::convert(const char* sz, int value) {
         cJSON_AddNumberToObject(_cur, sz, value);
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, float value) {
+    JSONReader& JSONReader::convert(const char* sz, float value) {
         cJSON_AddNumberToObject(_cur, sz, value);
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, double value) {
+    JSONReader& JSONReader::convert(const char* sz, double value) {
         cJSON_AddNumberToObject(_cur, sz, value);
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, unsigned int value) {
+    JSONReader& JSONReader::convert(const char* sz, unsigned int value) {
         cJSON_AddNumberToObject(_cur, sz, value);
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, const char* value) {
+    JSONReader& JSONReader::convert(const char* sz, const char* value) {
         cJSON_AddStringToObject(_cur, sz, value);
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, const std::string& value) {
+    JSONReader& JSONReader::convert(const char* sz, const std::string& value) {
         cJSON_AddStringToObject(_cur, sz, value.c_str());
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, bool value) {
+    JSONReader& JSONReader::convert(const char* sz, bool value) {
         cJSON_AddBoolToObject(_cur, sz, value);
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, const std::vector<int>& value) {
+    JSONReader& JSONReader::convert(const char* sz, const std::vector<int>& value) {
         cJSON_AddItemToObject(_cur, sz, cJSON_CreateIntArray(&value.front(), (int)value.size()));
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, const std::vector<float>& value) {
+    JSONReader& JSONReader::convert(const char* sz, const std::vector<float>& value) {
         cJSON_AddItemToObject(_cur, sz, cJSON_CreateFloatArray(&value.front(), (int)value.size()));
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, const std::vector<double>& value) {
+    JSONReader& JSONReader::convert(const char* sz, const std::vector<double>& value) {
         cJSON_AddItemToObject(_cur, sz, cJSON_CreateDoubleArray(&value.front(), (int)value.size()));
         return *this;
     }
 
-    JSONReader& JSONReader::setValue(const char* sz, const std::vector<std::string>& value) {
+    JSONReader& JSONReader::convert(const char* sz, const std::vector<std::string>& value) {
         cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
         int count = (int)value.size();
         for (int i = 0; a && i < count; i++) {

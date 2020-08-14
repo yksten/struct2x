@@ -2,8 +2,6 @@
 #define __PROTO_H__
 #include <cstdint>
 #include <vector>
-#include <utility>
-#include <string>
 
 namespace proto {
 

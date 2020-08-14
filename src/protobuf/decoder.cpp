@@ -1,4 +1,5 @@
 #include "protobuf/decoder.h"
+#include <assert.h>
 #include "parse/proto.h"
 
 namespace struct2x {

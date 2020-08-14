@@ -55,37 +55,37 @@ namespace struct2x {
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, int& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, int& value) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
             value = item->valueint;
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, float& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, float& value) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
             value = (float)item->valuedouble;
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, double& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, double& value) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
             value = item->valuedouble;
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, unsigned int& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, unsigned int& value) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
             value = item->valueint;
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, std::string& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, std::string& value) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz))
             value = item->valuestring;
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, bool& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, bool& value) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_False)
                 value = false;
@@ -95,7 +95,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, std::vector<int>& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, std::vector<int>& value) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         getObject(sz);
@@ -108,7 +108,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, std::vector<float>& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, std::vector<float>& value) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         getObject(sz);
@@ -121,7 +121,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, std::vector<double>& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, std::vector<double>& value) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         getObject(sz);
@@ -134,7 +134,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONWriter& JSONWriter::getValue(const char* sz, std::vector<std::string>& value) {
+    JSONWriter& JSONWriter::convert(const char* sz, std::vector<std::string>& value) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         getObject(sz);

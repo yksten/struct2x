@@ -1,8 +1,6 @@
 #ifndef __PROTOBUF_DECODER_H__
 #define __PROTOBUF_DECODER_H__
-#include <assert.h>
 #include <string>
-#include <vector>
 #include <map>
 #include "struct2x.h"
 
@@ -16,44 +14,6 @@ namespace struct2x {
         proto::Message* _rootMsg;
         proto::Message* _curMsg;
         bool _bParseRet;
-
-        template <int isStruct>
-        struct valueDecoder {
-            template <typename OUT>
-            static void decode(serializeItem<OUT>& out, PBDecoder& decoder) {
-                proto::Message* msg = decoder.getCurMsg(); {
-                    decoder.setCurMsg(decoder.getMessage(out.num()));
-                    decoder.operator>>(out.value());
-                } decoder.setCurMsg(msg);
-            }
-
-            template <typename T>
-            static void decodeRepaeted(serializeItem<std::vector<T> >& out, PBDecoder& decoder) {
-                proto::Message* msg = decoder.getCurMsg();
-                std::vector<proto::Message*>* repaetedMsg = decoder.getMessageArray(out.num());
-                if (!repaetedMsg || repaetedMsg->empty()) return;
-                for (uint32_t idx = 0; idx < repaetedMsg->size(); ++idx) {
-                    decoder.setCurMsg(repaetedMsg->at(idx));
-                    typename TypeTraits<T>::Type item = typename TypeTraits<T>::Type();
-                    decoder.operator>>(item);
-                    out.value().push_back(item);
-                }
-                decoder.setCurMsg(msg);
-            }
-        };
-        template <>
-        struct valueDecoder<0> {
-            template <typename OUT>
-            static void decode(serializeItem<OUT>& out, PBDecoder& decoder) { decoder.decodeValue(out); }
-
-            template <typename OUT>
-            static void decodeRepaeted(serializeItem<OUT>& out, PBDecoder& decoder) {
-                decoder.decodeRepaeted(out);
-            }
-        };
-        friend struct valueDecoder<0>;
-        friend struct valueDecoder<1>;
-
         PBDecoder(const PBDecoder&);
         PBDecoder& operator=(const PBDecoder&);
     public:
@@ -63,20 +23,20 @@ namespace struct2x {
         template<typename T>
         bool operator>>(T& value) {
             if (_bParseRet)
-                serializeWrapper(*this, value);
+                internal::serializeWrapper(*this, value);
             return _bParseRet;
         }
 
         template<typename T>
         PBDecoder& operator&(serializeItem<T> value) {
-            valueDecoder<isMessage<T>::YES>::decode(value, *this);
+            decodeValue(value);
             return *this;
         }
 
         template<typename T>
         PBDecoder& operator&(serializeItem<std::vector<T> > value) {
             if (!value.value().empty()) value.value().clear();
-            valueDecoder<isMessage<T>::YES>::decodeRepaeted(value, *this);
+            decodeRepaeted(value);
             return *this;
         }
 
@@ -91,7 +51,7 @@ namespace struct2x {
                     typename K key = typename K();
                     decodeValue(SERIALIZE(1, key));
                     typename V v = typename V();
-                    valueDecoder<isMessage<V>::YES>::decode(SERIALIZE(2, v), *this);
+                    decodeValue(SERIALIZE(2, v));
                     value.value().insert(std::pair<K, V>(key, v));
                 }
             }
@@ -107,10 +67,26 @@ namespace struct2x {
         std::vector<proto::Message*>* getMessageArray(int32_t number);
 
         template<typename T>
-        void decodeValue(serializeItem<T>& v);
+        void decodeValue(serializeItem<T>& v) {
+            proto::Message* msg = getCurMsg(); {
+                setCurMsg(getMessage(v.num()));
+                operator>>(v.value());
+            } setCurMsg(msg);
+        }
 
         template<typename T>
-        void decodeRepaeted(serializeItem<std::vector<T> >& v);
+        void decodeRepaeted(serializeItem<std::vector<T> >& v) {
+            proto::Message* msg = getCurMsg();
+            std::vector<proto::Message*>* repaetedMsg = getMessageArray(v.num());
+            if (!repaetedMsg || repaetedMsg->empty()) return;
+            for (uint32_t idx = 0; idx < repaetedMsg->size(); ++idx) {
+                setCurMsg(repaetedMsg->at(idx));
+                typename internal::TypeTraits<T>::Type item = typename internal::TypeTraits<T>::Type();
+                operator>>(item);
+                v.value().push_back(item);
+            }
+            setCurMsg(msg);
+        }
 
         proto::Message* getCurMsg() { return _curMsg; }
         void setCurMsg(proto::Message* msg) { _curMsg = msg; }

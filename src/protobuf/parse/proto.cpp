@@ -1,4 +1,5 @@
 #include "proto.h"
+#include <string>
 #include <iostream>
 #include <assert.h>
 
