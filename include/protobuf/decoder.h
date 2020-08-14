@@ -73,6 +73,14 @@ namespace struct2x {
                 operator>>(v.value());
             } setCurMsg(msg);
         }
+        void decodeValue(serializeItem<bool>&);
+        void decodeValue(serializeItem<int32_t>&);
+        void decodeValue(serializeItem<uint32_t>&);
+        void decodeValue(serializeItem<int64_t>&);
+        void decodeValue(serializeItem<uint64_t>&);
+        void decodeValue(serializeItem<float>&);
+        void decodeValue(serializeItem<double>&);
+        void decodeValue(serializeItem<std::string>&);
 
         template<typename T>
         void decodeRepaeted(serializeItem<std::vector<T> >& v) {
@@ -87,28 +95,19 @@ namespace struct2x {
             }
             setCurMsg(msg);
         }
+        void decodeRepaeted(serializeItem<std::vector<bool> >&);
+        void decodeRepaeted(serializeItem<std::vector<int32_t> >&);
+        void decodeRepaeted(serializeItem<std::vector<uint32_t> >&);
+        void decodeRepaeted(serializeItem<std::vector<int64_t> >&);
+        void decodeRepaeted(serializeItem<std::vector<uint64_t> >&);
+        void decodeRepaeted(serializeItem<std::vector<float> >&);
+        void decodeRepaeted(serializeItem<std::vector<double> >&);
+        void decodeRepaeted(serializeItem<std::vector<std::string> >&);
 
         proto::Message* getCurMsg() { return _curMsg; }
         void setCurMsg(proto::Message* msg) { _curMsg = msg; }
     };
 
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<bool>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<int32_t>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<uint32_t>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<int64_t>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<uint64_t>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<float>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<double>&);
-    template<> EXPORTAPI void PBDecoder::decodeValue(serializeItem<std::string>&);
-
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<bool> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<int32_t> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint32_t> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<int64_t> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint64_t> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<float> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<double> >&);
-    template<> EXPORTAPI void PBDecoder::decodeRepaeted(serializeItem<std::vector<std::string> >&);
 }
 
 #endif

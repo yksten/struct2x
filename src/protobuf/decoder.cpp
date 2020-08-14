@@ -23,14 +23,12 @@ namespace struct2x {
         return _curMsg->GetMessageArray(number);
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<bool>& v) {
         if (!_curMsg) return;
 
         v.value() = (bool)_curMsg->GetVarInt(v.num());
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<int32_t>& v) {
         if (!_curMsg) return;
 
@@ -43,7 +41,6 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<uint32_t>& v) {
         if (!_curMsg) return;
 
@@ -54,7 +51,6 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<int64_t>& v) {
         if (!_curMsg) return;
 
@@ -65,7 +61,6 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<uint64_t>& v) {
         if (!_curMsg) return;
 
@@ -76,21 +71,18 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<float>& v) {
         if (!_curMsg) return;
 
         v.value() = _curMsg->GetFloat(v.num());
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<double>& v) {
         if (!_curMsg) return;
 
         v.value() = _curMsg->GetDouble(v.num());
     }
 
-    template<>
     void PBDecoder::decodeValue(serializeItem<std::string>& v) {
         if (!_curMsg) return;
 
@@ -103,14 +95,12 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<bool> >& v) {
         if (!_curMsg) return;
 
         _curMsg->GetVarIntArray(v.num(), v.value());
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<int32_t> >& v) {
         if (!_curMsg) return;
 
@@ -123,7 +113,6 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint32_t> >& v) {
         if (!_curMsg) return;
 
@@ -134,7 +123,6 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<int64_t> >& v) {
         if (!_curMsg) return;
 
@@ -145,28 +133,24 @@ namespace struct2x {
         }
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint64_t> >& v) {
         if (!_curMsg) return;
 
         _curMsg->GetVarIntArray(v.num(), v.value());
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<float> >& v) {
         if (!_curMsg) return;
 
         _curMsg->GetFloatArray(v.num(), v.value());
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<double> >& v) {
         if (!_curMsg) return;
 
         _curMsg->GetDoubleArray(v.num(), v.value());
     }
 
-    template<>
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<std::string> >& v) {
         if (!_curMsg) return;
 
