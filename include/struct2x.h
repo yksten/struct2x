@@ -52,20 +52,22 @@ namespace struct2x {
     };
 
     template<typename VALUE>
-    class EXPORTAPI serializeItem {
-        const char* _sz;
-        const uint32_t _num;
-        VALUE& _value;
-        const uint32_t _type;
-    public:
-        serializeItem(const char* sz, uint32_t num, VALUE& value) : _sz(sz), _num(num), _value(value), _type(TYPE_VARINT) {}
-        serializeItem(const char* sz, uint32_t num, VALUE& value, uint32_t type) : _sz(sz), _num(num), _value(value), _type(type) {}
+    struct serializeItem {
+        serializeItem(const char* sz, uint32_t n, VALUE& v) : name(sz), num(n), value(v), type(TYPE_VARINT) {}
+        serializeItem(const char* sz, uint32_t n, VALUE& v, uint32_t t) : name(sz), num(n), value(v), type(t) {}
 
-        const char* name() const { return _sz; }
-        uint32_t type() const { return _type; }
-        uint32_t num() const { return _num; }
-        VALUE& value() { return _value; }
-        const VALUE& value() const { return _value; }
+        const char* name;
+        const uint32_t num;
+        VALUE& value;
+        const uint32_t type;
+
+        void setHas(bool) {
+            //proto2 has
+        }
+        void setValue(const VALUE& v) {
+            value = v;
+            setHas(true);
+        }
     };
 
     template<typename VALUE>
@@ -131,7 +133,7 @@ namespace struct2x {
         namespace STOT {
             template<typename T> struct type {};
             const int32_t _RTBUFSIZE = 128;
-            static char _transbuf[_RTBUFSIZE] = { 0 };
+            static char szTransbuf[_RTBUFSIZE] = { 0 };
             //bool
             template<> struct type<bool> {
                 static inline bool strto(const char* str) { return atoi(str) != 0; }
@@ -140,32 +142,32 @@ namespace struct2x {
             //int32_t
             template<> struct type<int32_t> {
                 static inline int32_t strto(const char* str) { return (int32_t)atoi(str); }
-                static inline const char* tostr(int32_t v) { sprintf(_transbuf, "%d", v); return _transbuf; }
+                static inline const char* tostr(int32_t v) { sprintf(szTransbuf, "%d", v); return szTransbuf; }
             };
             //uint32_t
             template<> struct type<uint32_t> {
                 static inline uint32_t strto(const char* str) { return (uint32_t)atoi(str); }
-                static inline const char* tostr(uint32_t v) { sprintf(_transbuf, "%u", v); return _transbuf; }
+                static inline const char* tostr(uint32_t v) { sprintf(szTransbuf, "%u", v); return szTransbuf; }
             };
             //int64_t
             template<> struct type<int64_t> {
                 static inline int64_t strto(const char* str) { return _atoi64(str); }
-                static inline const char* tostr(int64_t v) { sprintf(_transbuf, "%lld", (long long)v); return _transbuf; }
+                static inline const char* tostr(int64_t v) { sprintf(szTransbuf, "%lld", (long long)v); return szTransbuf; }
             };
             //uint64_t
             template<> struct type<uint64_t> {
                 static inline uint64_t strto(const char* str) { return (uint64_t)_atoi64(str); }
-                static inline const char* tostr(uint64_t v) { sprintf(_transbuf, "%lld", (long long)v); return _transbuf; }
+                static inline const char* tostr(uint64_t v) { sprintf(szTransbuf, "%lld", (long long)v); return szTransbuf; }
             };
             //float
             template<> struct type<float> {
                 static inline float strto(const char* str) { return (float)atof(str); }
-                static inline const char* tostr(float v) { sprintf(_transbuf, "%f", v); return _transbuf; }
+                static inline const char* tostr(float v) { sprintf(szTransbuf, "%f", v); return szTransbuf; }
             };
             //double
             template<> struct type<double> {
                 static inline double strto(const char* str) { return atof(str); }
-                static inline const char* tostr(double v) { sprintf(_transbuf, "%lf", v); return _transbuf; }
+                static inline const char* tostr(double v) { sprintf(szTransbuf, "%lf", v); return szTransbuf; }
             };
             //char*
             template<> struct type<char*> {

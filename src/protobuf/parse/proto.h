@@ -45,20 +45,19 @@ namespace proto {
         Message();
         bool ParseFromBytes(const uint8_t* szBin, size_t nBinSize);
 
-        uint64_t GetSInt(uint32_t number);
-        uint64_t GetVarInt(uint32_t number);
-        uint32_t GetFixedInt32(uint32_t number);
-        uint64_t GetFixedInt64(uint32_t number);
-        uint32_t GetSFixedInt32(uint32_t number);
-        uint64_t GetSFixedInt64(uint32_t number);
-        float GetFloat(uint32_t number);
-        double GetDouble(uint32_t number);
-        std::string GetString(uint32_t number);
-        binType GetBytes(uint32_t number);
+        bool GetSInt(uint32_t number, uint64_t& value);
+        bool GetVarInt(uint32_t number, uint64_t& value);
+        bool GetFixedInt32(uint32_t number, uint32_t& value);
+        bool GetFixedInt64(uint32_t number, uint64_t& value);
+        bool GetSFixedInt32(uint32_t number, uint32_t& value);
+        bool GetSFixedInt64(uint32_t number, uint64_t& value);
+        bool GetFloat(uint32_t number, float& f);
+        bool GetDouble(uint32_t number, double& db);
+        bool GetString(uint32_t number, std::string& str);
         Message* GetMessage(uint32_t number);
 
         template<typename T>
-        std::vector<T> GetSIntArray(uint32_t number);
+        bool GetSIntArray(uint32_t number, std::vector<T>& value);
 
         template<typename T>
         bool GetVarIntArray(uint32_t number, std::vector<T>& value) {

@@ -3,12 +3,6 @@
 #include <iostream>
 #include <assert.h>
 
-// To keep dependencies minimal, some bare-bones macros to make logging easier.
-#define PROTO_LOG(X) PROTO_LOG_##X
-#define PROTO_LOG_INFO std::cerr << __FILE__ << ":" << __LINE__ << " - INFO: "
-#define PROTO_LOG_WARN std::cerr << __FILE__ << ":" << __LINE__ << " - WARN: "
-#define PROTO_LOG_ERROR std::cerr << __FILE__ << ":" << __LINE__ << " - ERROR: "
-#define PROTO_CHECK(X) if (!(X)) PROTO_LOG(ERROR) << "PROTO_CHECK(" << #X << ") failed. "
 
 namespace proto {
 
@@ -96,22 +90,14 @@ namespace proto {
                     current += size;
                     remaining -= size;
                 } break;
-                case WIRETYPE_GROUP_START: {
-                    PROTO_LOG(INFO) << field_number << ": GROUPSTART" << std::endl;
-                    PROTO_LOG(ERROR) << "Unhandled wire type encountered";
-                } break;
-                case WIRETYPE_GROUP_END: {
-                    PROTO_LOG(INFO) << field_number << ": GROUPEND" << std::endl;
-                    PROTO_LOG(ERROR) << "Unhandled wire type encountered";
-                } break;
+                case WIRETYPE_GROUP_START:
+                case WIRETYPE_GROUP_END:
+                    return false;
                 case WIRETYPE_32BIT: {
                     Field& field = AddField(field_number, Field::FIELD_UINT32);
                     field._uint32s.push_back(ReadFromBytes<uint32_t>(current, remaining));
                 } break;
                 default: {
-                    PROTO_LOG(ERROR) << "Unknown wire type encountered: "
-                                  << static_cast<int>(wire_type) << " at offset"
-                                  << (nBinSize - remaining);
                     return false;
                 } break;
             }
@@ -119,93 +105,85 @@ namespace proto {
         return true;
     }
 
-    uint64_t Message::GetSInt(uint32_t number) {
-        uint64_t nRet = 0;
+    bool Message::GetSInt(uint32_t number, uint64_t& value) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT64);
-            nRet = (field->_uint64s.front() >> 1) ^ (-(field->_uint64s.front() & 1));
+            value = (field->_uint64s.front() >> 1) ^ (-(field->_uint64s.front() & 1));
+            return true;
         }
-        return nRet;
+        return false;
     }
-    uint64_t Message::GetVarInt(uint32_t number) {
-        uint64_t nRet = 0;
+    bool Message::GetVarInt(uint32_t number, uint64_t& value) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT64);
-            nRet = field->_uint64s.front();
+            value = field->_uint64s.front();
+            return true;
         }
-        return nRet;
+        return false;
     }
-    uint32_t Message::GetFixedInt32(uint32_t number) {
-        uint32_t nRet = 0;
+    bool Message::GetFixedInt32(uint32_t number, uint32_t& value) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT32);
-            nRet = field->_uint32s.front();
+            value = field->_uint32s.front();
+            return true;
         }
-        return nRet;
+        return false;
     }
 
-    uint64_t Message::GetFixedInt64(uint32_t number) {
-        return GetVarInt(number);
+    bool Message::GetFixedInt64(uint32_t number, uint64_t& value) {
+        return GetVarInt(number, value);
     }
 
-    uint32_t Message::GetSFixedInt32(uint32_t number) {
-        uint32_t nRet = 0;
+    bool Message::GetSFixedInt32(uint32_t number, uint32_t& value) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT32);
-            nRet = static_cast<uint32_t>((field->_uint32s.front() >> 1) ^ (-(field->_uint32s.front() & 1)));
+            value = static_cast<uint32_t>((field->_uint32s.front() >> 1) ^ (-(field->_uint32s.front() & 1)));
+            return false;
         }
-        return nRet;
+        return false;
     }
 
-    uint64_t Message::GetSFixedInt64(uint32_t number) {
-        uint64_t nRet = 0;
+    bool Message::GetSFixedInt64(uint32_t number, uint64_t& value) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT64);
-            nRet = (field->_uint64s.front() >> 1) ^ (-(field->_uint64s.front() & 1));
+            value = (field->_uint64s.front() >> 1) ^ (-(field->_uint64s.front() & 1));
+            return true;
         }
-        return nRet;
+        return false;
     }
-    float Message::GetFloat(uint32_t number) {
+
+    bool Message::GetFloat(uint32_t number, float& f) {
         float ret = 0.0f;
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT32);
-            union { uint32_t i; float f; };
+            union { uint32_t i; float num; };
             i = field->_uint32s.front();
-            ret = f;
+            f = num;
+            return true;
         }
-        return ret;
+        return false;
     }
 
-    double Message::GetDouble(uint32_t number) {
-        double ret = 0.0f;
+    bool Message::GetDouble(uint32_t number, double& db) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT64);
-            union { uint64_t i; double db; };
+            union { uint64_t i; double num; };
             i = field->_uint64s.front();
-            ret = db;
+            db = num;
+            return true;
         }
-        return ret;
+        return false;
     }
     
-    std::string Message::GetString(uint32_t number) {
-        std::string ret;
+    bool Message::GetString(uint32_t number, std::string& str) {
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_BYTES);
             assert(field->_bins.size() == 1);
             const binType& bin = field->_bins.front();
-            ret.append((const char*)bin.first, bin.second);
+            str = std::string((const char*)bin.first, bin.second);
+            return true;
         }
-        return ret;
-    }
-
-    binType Message::GetBytes(uint32_t number) {
-        binType ret;
-        if (Field* field = GetField(number)) {
-            assert(field->type == Field::FIELD_BYTES);
-            assert(field->_bins.size() == 1);
-            return field->_bins.front();
-        }
-        return ret;
+        return false;
     }
 
     Message* Message::GetMessage(uint32_t number) {
@@ -219,36 +197,40 @@ namespace proto {
                 msg = new Message;
                 assert(field->_bins.size() == 1);
                 const binType& bin = field->_bins.front();
-                bool bParse = msg->ParseFromBytes(bin.first, bin.second);
-                assert(bParse);
-                field->_msgs.push_back(msg);
+                if (msg->ParseFromBytes(bin.first, bin.second)) {
+                    field->_msgs.push_back(msg);
+                } else {
+                    delete msg; msg = NULL;
+                }
             }
         }
         return msg;
     }
 
     template<>
-    std::vector<int32_t> Message::GetSIntArray(uint32_t number) {
-        std::vector<int32_t> result;
+    bool Message::GetSIntArray(uint32_t number, std::vector<int32_t>& value) {
+        bool result = false;
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT64);
             for (uint32_t idx = 0; idx < field->_uint64s.size(); ++idx) {
                 uint64_t item = field->_uint64s.at(idx);
-                result.push_back(static_cast<int32_t>((item >> 1) ^ (-(item & 1))));
+                value.push_back(static_cast<int32_t>((item >> 1) ^ (-(item & 1))));
             }
+            result = !field->_uint64s.empty();
         }
         return result;
     }
 
     template<>
-    std::vector<int64_t> Message::GetSIntArray(uint32_t number) {
-        std::vector<int64_t> result;
+    bool Message::GetSIntArray(uint32_t number, std::vector<int64_t>& value) {
+        bool result = false;
         if (Field* field = GetField(number)) {
             assert(field->type == Field::FIELD_UINT64);
             for (uint32_t idx = 0; idx < field->_uint64s.size(); ++idx) {
                 uint64_t item = field->_uint64s.at(idx);
-                result.push_back(static_cast<int64_t>((item >> 1) ^ (-(item & 1))));
+                value.push_back(static_cast<int64_t>((item >> 1) ^ (-(item & 1))));
             }
+            result = !field->_uint64s.empty();
         }
         return result;
     }
@@ -345,9 +327,11 @@ namespace proto {
                 for (uint32_t idx = 0; idx < field->_bins.size(); ++idx) {
                     const binType& bin = field->_bins.at(idx);
                     Message* msg = new Message;
-                    bool bParse = msg->ParseFromBytes(bin.first, bin.second);
-                    assert(bParse);
-                    field->_msgs.push_back(msg);
+                    if (msg->ParseFromBytes(bin.first, bin.second)) {
+                        field->_msgs.push_back(msg);
+                    } else {
+                        delete msg; msg = NULL;
+                    }
                 }
             }
             return &field->_msgs;

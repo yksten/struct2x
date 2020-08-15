@@ -35,16 +35,16 @@ namespace struct2x {
 
         template<typename T>
         PBDecoder& operator&(serializeItem<std::vector<T> > value) {
-            if (!value.value().empty()) value.value().clear();
+            if (!value.value.empty()) value.value.clear();
             decodeRepaeted(value);
             return *this;
         }
 
         template<typename K, typename V>
         PBDecoder& operator&(serializeItem<std::map<K, V> > value) {
-            if (!value.value().empty()) value.value().clear();
+            if (!value.value.empty()) value.value.clear();
             proto::Message* msg = getCurMsg();
-            std::vector<proto::Message*>* repaetedMsg = getMessageArray(value.num());
+            std::vector<proto::Message*>* repaetedMsg = getMessageArray(value.num);
             if (repaetedMsg) {
                 for (uint32_t idx = 0; idx < repaetedMsg->size(); ++idx) {
                     setCurMsg(repaetedMsg->at(idx));
@@ -52,7 +52,7 @@ namespace struct2x {
                     decodeValue(SERIALIZE(1, key));
                     typename V v = typename V();
                     decodeValue(SERIALIZE(2, v));
-                    value.value().insert(std::pair<K, V>(key, v));
+                    value.value.insert(std::pair<K, V>(key, v));
                 }
             }
             setCurMsg(msg);
@@ -68,10 +68,13 @@ namespace struct2x {
 
         template<typename T>
         void decodeValue(serializeItem<T>& v) {
-            proto::Message* msg = getCurMsg(); {
-                setCurMsg(getMessage(v.num()));
-                operator>>(v.value());
-            } setCurMsg(msg);
+            proto::Message* msg = getCurMsg(); 
+            if (proto::Message* structMsg = getMessage(v.num)) {
+                setCurMsg(structMsg);
+                operator>>(v.value);
+                v.setHas(true);
+            }
+            setCurMsg(msg);
         }
         void decodeValue(serializeItem<bool>&);
         void decodeValue(serializeItem<int32_t>&);
@@ -85,13 +88,13 @@ namespace struct2x {
         template<typename T>
         void decodeRepaeted(serializeItem<std::vector<T> >& v) {
             proto::Message* msg = getCurMsg();
-            std::vector<proto::Message*>* repaetedMsg = getMessageArray(v.num());
+            std::vector<proto::Message*>* repaetedMsg = getMessageArray(v.num);
             if (!repaetedMsg || repaetedMsg->empty()) return;
             for (uint32_t idx = 0; idx < repaetedMsg->size(); ++idx) {
                 setCurMsg(repaetedMsg->at(idx));
                 typename internal::TypeTraits<T>::Type item = typename internal::TypeTraits<T>::Type();
                 operator>>(item);
-                v.value().push_back(item);
+                v.value.push_back(item);
             }
             setCurMsg(msg);
         }

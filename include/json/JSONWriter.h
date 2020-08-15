@@ -28,7 +28,7 @@ namespace struct2x {
 
         template<typename T>
         JSONWriter& operator&(serializeItem<T> value) {
-            return convert(value.name(), value.value());
+            return convert(value.name, value.value);
         }
 
         template<typename T>

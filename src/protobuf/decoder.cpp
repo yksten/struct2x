@@ -26,143 +26,159 @@ namespace struct2x {
     void PBDecoder::decodeValue(serializeItem<bool>& v) {
         if (!_curMsg) return;
 
-        v.value() = (bool)_curMsg->GetVarInt(v.num());
+        uint64_t value = 0;
+        if (_curMsg->GetVarInt(v.num, value)) {
+            v.setValue((bool)value);
+        }
     }
 
     void PBDecoder::decodeValue(serializeItem<int32_t>& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_SVARINT) {
-            v.value() = (int32_t)_curMsg->GetSInt(v.num());
-        } else if (v.type() == TYPE_FIXED32) {
-            v.value() = (int32_t)_curMsg->GetFixedInt32(v.num());
+        uint64_t value = 0;
+        if (v.type == TYPE_SVARINT) {
+            if (_curMsg->GetSInt(v.num, value)) {
+                v.setValue((int32_t)value);
+            }
+        } else if (v.type == TYPE_FIXED32) {
+            uint32_t value = 0;
+            if (_curMsg->GetFixedInt32(v.num, value)) {
+                v.setValue((int32_t)value);
+            }
         } else {
-            v.value() = (int32_t)_curMsg->GetVarInt(v.num());
+            if (_curMsg->GetVarInt(v.num, value))
+                v.setValue((int32_t)value);
         }
     }
 
     void PBDecoder::decodeValue(serializeItem<uint32_t>& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_FIXED32) {
-            v.value() = (uint32_t)_curMsg->GetFixedInt32(v.num());
+        if (v.type == TYPE_FIXED32) {
+            uint32_t value = 0;
+            if (_curMsg->GetFixedInt32(v.num, value)) {
+                v.setValue((uint32_t)value);
+            }
         } else {
-            v.value() = (uint32_t)_curMsg->GetVarInt(v.num());
+            uint64_t value = 0;
+            if (_curMsg->GetVarInt(v.num, value))
+                v.setValue((uint32_t)value);
         }
     }
 
     void PBDecoder::decodeValue(serializeItem<int64_t>& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_SVARINT) {
-            v.value() = _curMsg->GetSInt(v.num());
+        uint64_t value = 0;
+        if (v.type == TYPE_SVARINT) {
+            if (_curMsg->GetSInt(v.num, value))
+                v.setValue((int64_t)value);
         } else {
-            v.value() = (int64_t)_curMsg->GetVarInt(v.num());
+            if (_curMsg->GetVarInt(v.num, value))
+                v.setValue((int64_t)value);
         }
     }
 
     void PBDecoder::decodeValue(serializeItem<uint64_t>& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_SVARINT) {
-            v.value() = _curMsg->GetSInt(v.num());
+        uint64_t value = 0;
+        if (v.type == TYPE_SVARINT) {
+            if (_curMsg->GetSInt(v.num, value))
+                v.setValue(value);
         } else {
-            v.value() = _curMsg->GetVarInt(v.num());
+            if (_curMsg->GetVarInt(v.num, value))
+                v.setValue(value);
         }
     }
 
     void PBDecoder::decodeValue(serializeItem<float>& v) {
         if (!_curMsg) return;
 
-        v.value() = _curMsg->GetFloat(v.num());
+        v.setHas(_curMsg->GetFloat(v.num, v.value));
     }
 
     void PBDecoder::decodeValue(serializeItem<double>& v) {
         if (!_curMsg) return;
 
-        v.value() = _curMsg->GetDouble(v.num());
+        v.setHas(_curMsg->GetDouble(v.num, v.value));
     }
 
     void PBDecoder::decodeValue(serializeItem<std::string>& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_BYTES) {
-            proto::binType temp = _curMsg->GetBytes(v.num());
-            v.value().clear();
-            v.value().append((const char*)temp.first, temp.second);
-        } else {
-            v.value() = _curMsg->GetString(v.num());
-        }
+        //TYPE_BYTES TYPE_STRING
+        v.setHas(_curMsg->GetString(v.num, v.value));
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<bool> >& v) {
         if (!_curMsg) return;
 
-        _curMsg->GetVarIntArray(v.num(), v.value());
+        _curMsg->GetVarIntArray(v.num, v.value);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<int32_t> >& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_SVARINT) {
-            v.value() = _curMsg->GetSIntArray<int32_t>(v.num());
-        } else if (v.type() == TYPE_FIXED32) {
-            _curMsg->GetFixedInt32Array(v.num(), v.value());
+        if (v.type == TYPE_SVARINT) {
+            _curMsg->GetSIntArray<int32_t>(v.num, v.value);
+        } else if (v.type == TYPE_FIXED32) {
+            _curMsg->GetFixedInt32Array(v.num, v.value);
         } else {
-            _curMsg->GetVarIntArray(v.num(), v.value());
+            _curMsg->GetVarIntArray(v.num, v.value);
         }
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint32_t> >& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_FIXED32) {
-            _curMsg->GetFixedInt32Array(v.num(), v.value());
+        if (v.type == TYPE_FIXED32) {
+            _curMsg->GetFixedInt32Array(v.num, v.value);
         } else {
-            _curMsg->GetVarIntArray(v.num(), v.value());
+            _curMsg->GetVarIntArray(v.num, v.value);
         }
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<int64_t> >& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_SVARINT) {
-            v.value() = _curMsg->GetSIntArray<int64_t>(v.num());
+        if (v.type == TYPE_SVARINT) {
+            _curMsg->GetSIntArray<int64_t>(v.num, v.value);
         } else {
-            _curMsg->GetVarIntArray(v.num(), v.value());
+            _curMsg->GetVarIntArray(v.num, v.value);
         }
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint64_t> >& v) {
         if (!_curMsg) return;
 
-        _curMsg->GetVarIntArray(v.num(), v.value());
+        _curMsg->GetVarIntArray(v.num, v.value);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<float> >& v) {
         if (!_curMsg) return;
 
-        _curMsg->GetFloatArray(v.num(), v.value());
+        _curMsg->GetFloatArray(v.num, v.value);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<double> >& v) {
         if (!_curMsg) return;
 
-        _curMsg->GetDoubleArray(v.num(), v.value());
+        _curMsg->GetDoubleArray(v.num, v.value);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<std::string> >& v) {
         if (!_curMsg) return;
 
-        if (v.type() == TYPE_BYTES) {
+        if (v.type == TYPE_BYTES) {
             std::vector<proto::binType> temp;
-            _curMsg->GetByteArray(v.num(), temp);
+            _curMsg->GetByteArray(v.num, temp);
             for (uint32_t idx = 0; idx < temp.size(); ++idx) {
                 const proto::binType& item = temp.at(idx);
-                v.value().push_back(std::string((const char*)(item.first), item.second));
+                v.value.push_back(std::string((const char*)(item.first), item.second));
             }
         } else {
-            _curMsg->GetStringArray(v.num(), v.value());
+            _curMsg->GetStringArray(v.num, v.value);
         }
     }
 

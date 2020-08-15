@@ -28,16 +28,16 @@ namespace struct2x {
         template<typename T>
         PBEncoder& operator&(const serializeItem<T>& value) {
             if (!internal::isMessage<T>::YES) {
-                uint64_t tag = ((uint64_t)value.num() << 3) | internal::isMessage<T>::WRITE_TYPE;
+                uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
                 varInt(tag);
-                encodeValue(value.value(), value.type());
+                encodeValue(value.value, value.type);
                 return *this;
             }
-            uint64_t tag = ((uint64_t)value.num() << 3) | internal::WT_LENGTH_DELIMITED;
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
             varInt(tag);
             BufferWrapper bfTemp;
             bfTemp.swap(_buffer);
-            encodeValue(value.value(), value.type());
+            encodeValue(value.value, value.type);
             _buffer.swap(bfTemp);
             varInt(bfTemp.size());
             _buffer.append(bfTemp.data(), bfTemp.size());
@@ -46,23 +46,23 @@ namespace struct2x {
 
         template<typename T>
         PBEncoder& operator&(const serializeItem<std::vector<T> >& value) {
-            if (!internal::isMessage<T>::YES && value.type() == TYPE_PACK) {
+            if (!internal::isMessage<T>::YES && value.type == TYPE_PACK) {
                 return encodeRepaetedPack(value);
             }
 
-            uint64_t tag = ((uint64_t)value.num() << 3) | internal::WT_LENGTH_DELIMITED;
-            uint32_t size = (uint32_t)value.value().size();
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+            uint32_t size = (uint32_t)value.value.size();
             for (uint32_t i = 0; i < size; ++i) {
                 varInt(tag);
                 if (internal::isMessage<T>::YES) {
                     BufferWrapper bfTemp;
                     bfTemp.swap(_buffer);
-                    encodeValue(value.value().at(i), value.type());
+                    encodeValue(value.value.at(i), value.type);
                     _buffer.swap(bfTemp);
                     varInt(bfTemp.size());
                     _buffer.append(bfTemp.data(), bfTemp.size());
                 } else {
-                    encodeValue(value.value().at(i), value.type());
+                    encodeValue(value.value.at(i), value.type);
                 }
             }
             return *this;
@@ -70,8 +70,8 @@ namespace struct2x {
 
         template<typename K, typename V>
         PBEncoder& operator&(const serializeItem<std::map<K, V> >& value) {
-            uint64_t tag = ((uint64_t)value.num() << 3) | internal::WT_LENGTH_DELIMITED;
-            for (std::map<K, V>::const_iterator it = value.value().begin(); it != value.value().end(); ++it) {
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+            for (std::map<K, V>::const_iterator it = value.value.begin(); it != value.value.end(); ++it) {
                 varInt(tag);
                 BufferWrapper bfTemp;
                 bfTemp.swap(_buffer);
@@ -91,13 +91,13 @@ namespace struct2x {
     private:
         template<typename T>
         PBEncoder& encodeRepaetedPack(const serializeItem<std::vector<T> >& value) {
-            uint64_t tag = ((uint64_t)value.num() << 3) | value.type();
+            uint64_t tag = ((uint64_t)value.num << 3) | value.type;
             varInt(tag);
             BufferWrapper bfTemp;
             bfTemp.swap(_buffer);
-            uint32_t size = (uint32_t)value.value().size();
+            uint32_t size = (uint32_t)value.value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValue(value.value().at(i), value.type());
+                encodeValue(value.value.at(i), value.type);
             }
             _buffer.swap(bfTemp);
             varInt(bfTemp.size());
