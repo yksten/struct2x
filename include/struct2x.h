@@ -53,16 +53,18 @@ namespace struct2x {
 
     template<typename VALUE>
     struct serializeItem {
-        serializeItem(const char* sz, uint32_t n, VALUE& v) : name(sz), num(n), value(v), type(TYPE_VARINT) {}
-        serializeItem(const char* sz, uint32_t n, VALUE& v, uint32_t t) : name(sz), num(n), value(v), type(t) {}
+        serializeItem(const char* sz, uint32_t n, VALUE& v, bool* b) : name(sz), num(n), value(v), type(TYPE_VARINT), bHas(b){}
+        serializeItem(const char* sz, uint32_t n, VALUE& v, uint32_t t, bool* b) : name(sz), num(n), value(v), type(t), bHas(b) {}
 
         const char* name;
         const uint32_t num;
         VALUE& value;
         const uint32_t type;
+        bool* bHas;
 
-        void setHas(bool) {
-            //proto2 has
+        void setHas(bool b) {   //proto2 has
+            if (bHas)
+                *bHas = b;
         }
         void setValue(const VALUE& v) {
             value = v;
@@ -71,13 +73,13 @@ namespace struct2x {
     };
 
     template<typename VALUE>
-    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value) {
-        return serializeItem<VALUE>(sz, num, value);
+    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value, bool* b = NULL) {
+        return serializeItem<VALUE>(sz, num, value, b);
     }
 
     template<typename VALUE>
-    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value, int32_t type) {
-        return serializeItem<VALUE>(sz, num, value, type);
+    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value, int32_t type, bool* b = NULL) {
+        return serializeItem<VALUE>(sz, num, value, type, b);
     }
 
     namespace internal {

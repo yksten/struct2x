@@ -32,46 +32,52 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONWriter& convert(const char* sz, T& value) {
+        JSONWriter& convert(const char* sz, T& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
-            getObject(sz);
-            internal::serializeWrapper(*this, value);
+            if (getObject(sz)) {
+                internal::serializeWrapper(*this, value);
+                if (pHas) *pHas = true;
+            }
             cur(curItem);
             return *this;
         }
 
         template<typename T>
-        JSONWriter& convert(const char* sz, std::vector<T>& value) {
+        JSONWriter& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
-            getObject(sz);
-            int size = getArraySize();
-            if (size&& !value.empty())
-                value.clear();
-            for (int i = 0; i < size; ++i) {
-                cJSON* lastItem = cur();
-                getArrayItem(i);
-                typename internal::TypeTraits<T>::Type item;
-                this->operator>>(item);
-                value.push_back(item);
-                cur(lastItem);
+            if (getObject(sz)) {
+                int32_t size = getArraySize();
+                if (size&& !value.empty())
+                    value.clear();
+                for (int32_t i = 0; i < size; ++i) {
+                    cJSON* lastItem = cur();
+                    getArrayItem(i);
+                    typename internal::TypeTraits<T>::Type item;
+                    this->operator>>(item);
+                    value.push_back(item);
+                    cur(lastItem);
+                }
+                if (pHas) *pHas = true;
             }
             cur(curItem);
             return *this;
         }
         template<typename K, typename V>
-        JSONWriter& convert(const char* sz, std::map<K, V>& value) {
+        JSONWriter& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
-            getObject(sz);
-            int size = getMapSize();
-            if (size&& !value.empty())
-                value.clear();
-            for (int i = 0; i < size; ++i) {
-                cJSON* lastItem = cur();
-                std::string key;
-                V item = V();
-                getkeyValue(i, key, item);
-                value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
-                cur(lastItem);
+            if (getObject(sz)) {
+                int32_t size = getMapSize();
+                if (size&& !value.empty())
+                    value.clear();
+                for (int32_t i = 0; i < size; ++i) {
+                    cJSON* lastItem = cur();
+                    std::string key;
+                    V item = V();
+                    getkeyValue(i, key, item);
+                    value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
+                    cur(lastItem);
+                }
+                if (pHas) *pHas = true;
             }
             cur(curItem);
             return *this;
@@ -80,10 +86,10 @@ namespace struct2x {
         template<typename T>
         bool operator >>(std::vector<T>& value) {
             if (_cur) {
-                int size = getArraySize();
+                int32_t size = getArraySize();
                 if (size && !value.empty())
                     value.clear();
-                for (int i = 0; i < size; ++i) {
+                for (int32_t i = 0; i < size; ++i) {
                     cJSON* lastItem = cur();
                     getArrayItem(i);
                     T item;
@@ -98,10 +104,10 @@ namespace struct2x {
         template<typename K, typename V>
         bool operator >>(std::map<K, V>& value) {
             if (_cur) {
-                int size = getMapSize();
+                int32_t size = getMapSize();
                 if (size && !value.empty())
                     value.clear();
-                for (int i = 0; i < size; ++i) {
+                for (int32_t i = 0; i < size; ++i) {
                     std::string key;
                     V item = V();
                     getkeyValue(i, key, item);
@@ -110,29 +116,35 @@ namespace struct2x {
             }
             return (_cur) ? true : false;
         }
-        JSONWriter& convert(const char* sz, int& value);
-        JSONWriter& convert(const char* sz, float& value);
-        JSONWriter& convert(const char* sz, double& value);
-        JSONWriter& convert(const char* sz, unsigned int& value);
-        JSONWriter& convert(const char* sz, std::string& value);
-        JSONWriter& convert(const char* sz, bool& value);
-        JSONWriter& convert(const char* sz, std::vector<int>& value);
-        JSONWriter& convert(const char* sz, std::vector<float>& value);
-        JSONWriter& convert(const char* sz, std::vector<double>& value);
-        JSONWriter& convert(const char* sz, std::vector<std::string>& value);
+        JSONWriter& convert(const char* sz, bool& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, uint32_t& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, int32_t& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, uint64_t& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, int64_t& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, float& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, double& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::string& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<float>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<double>& value, bool* pHas = NULL);
+        JSONWriter& convert(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
     private:
-        JSONWriter& operator >>(std::vector<int>& value);
+        JSONWriter& operator >>(std::vector<int32_t>& value);
         JSONWriter& operator >>(std::vector<float>& value);
         JSONWriter& operator >>(std::vector<double>& value);
         JSONWriter& operator >>(std::vector<std::string>& value);
 
-        void getObject(const char* sz);
-        int getArraySize()const;
-        void getArrayItem(int i);
-        int getMapSize() const;
-        const char* getChildName(int i)const;
+        bool getObject(const char* sz);
+        int32_t getArraySize()const;
+        void getArrayItem(int32_t i);
+        int32_t getMapSize() const;
+        const char* getChildName(int32_t i)const;
         template<typename T>
-        void getkeyValue(int i, std::string& key, T& value) {
+        void getkeyValue(int32_t i, std::string& key, T& value) {
             key = getChildName(i);
             convert(key.c_str(), value);
         }

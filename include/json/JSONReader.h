@@ -36,7 +36,7 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONReader& convert(const char* sz, const T& value) {
+        JSONReader& convert(const char* sz, const T& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
             createObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
@@ -45,11 +45,11 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONReader& convert(const char* sz, const std::vector<T>& value) {
+        JSONReader& convert(const char* sz, const std::vector<T>& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
             createArray(sz);
-            int size = (int)value.size();
-            for (int i = 0; i < size; ++i) {
+            int32_t size = (int32_t)value.size();
+            for (int32_t i = 0; i < size; ++i) {
                 cJSON* lastItem = cur();
                 if (internal::TypeTraits<T>::isVector())
                     addArrayToArray();
@@ -63,7 +63,7 @@ namespace struct2x {
             return *this;
         }
         template<typename K, typename V>
-        JSONReader& convert(const char* sz, const std::map<K, V>& value) {
+        JSONReader& convert(const char* sz, const std::map<K, V>& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
             createObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
@@ -86,19 +86,24 @@ namespace struct2x {
         }
 
         bool toString(std::string& str, bool bUnformatted = false);
-        JSONReader& convert(const char* sz, int value);
-        JSONReader& convert(const char* sz, float value);
-        JSONReader& convert(const char* sz, double value);
-        JSONReader& convert(const char* sz, unsigned int value);
-        JSONReader& convert(const char* sz, const char* value);
-        JSONReader& convert(const char* sz, const std::string& value);
-        JSONReader& convert(const char* sz, bool value);
-        JSONReader& convert(const char* sz, const std::vector<int>& value);
-        JSONReader& convert(const char* sz, const std::vector<float>& value);
-        JSONReader& convert(const char* sz, const std::vector<double>& value);
-        JSONReader& convert(const char* sz, const std::vector<std::string>& value);
+        JSONReader& convert(const char* sz, bool value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, uint32_t value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, int32_t value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, uint64_t value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, int64_t value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, float value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, double value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::string& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<bool>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<int32_t>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<int64_t>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<float>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<double>& value, bool* pHas = NULL);
+        JSONReader& convert(const char* sz, const std::vector<std::string>& value, bool* pHas = NULL);
     private:
-        JSONReader& operator<<(const std::vector<int>& value);
+        JSONReader& operator<<(const std::vector<int32_t>& value);
         JSONReader& operator<<(const std::vector<float>& value);
         JSONReader& operator<<(const std::vector<double>& value);
         JSONReader& operator<<(const std::vector<std::string>& value);
