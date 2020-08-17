@@ -17,12 +17,13 @@
 #include <vector>
 
 
-#define SERIALIZE_2(num, value)         struct2x::makePair(#value, num, value)
-#define SERIALIZE_3(num, value, type)   struct2x::makePair(#value, num, value, type)
+#define SERIALIZE_2(num, value)         struct2x::makeItem(#value, num, value)
+#define SERIALIZE_3(num, value, typeOrHas)   struct2x::makeItem(#value, num, value, typeOrHas)
+#define SERIALIZE_4(num, value, type, has)   struct2x::makeItem(#value, num, value, type, has)
 
 #define EXPAND(args) args
-#define MAKE_TAG_COUNT(TAG, _3,_2,_1,N,...) TAG##N
-#define SERIALIZE(...) EXPAND(MAKE_TAG_COUNT(SERIALIZE, __VA_ARGS__, _3,_2,_1) (__VA_ARGS__))
+#define MAKE_TAG_COUNT(TAG, _4, _3,_2,_1,N,...) TAG##N
+#define SERIALIZE(...) EXPAND(MAKE_TAG_COUNT(SERIALIZE, __VA_ARGS__, _4, _3,_2,_1) (__VA_ARGS__))
 
 namespace struct2x {
 
@@ -73,12 +74,12 @@ namespace struct2x {
     };
 
     template<typename VALUE>
-    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value, bool* b = NULL) {
+    inline serializeItem<VALUE> makeItem(const char* sz, uint32_t num, VALUE& value, bool* b = NULL) {
         return serializeItem<VALUE>(sz, num, value, b);
     }
 
     template<typename VALUE>
-    inline serializeItem<VALUE> makePair(const char* sz, uint32_t num, VALUE& value, int32_t type, bool* b = NULL) {
+    inline serializeItem<VALUE> makeItem(const char* sz, uint32_t num, VALUE& value, int32_t type, bool* b = NULL) {
         return serializeItem<VALUE>(sz, num, value, type, b);
     }
 

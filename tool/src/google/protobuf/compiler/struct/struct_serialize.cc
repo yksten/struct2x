@@ -164,15 +164,16 @@ namespace google {
 
                 void codeSerialize::printInclude(google::protobuf::io::Printer& printer)const {
                     printer.Print("\n");
-                    if (hasInt(printer)) {
-                        printer.Print("#include<stdint.h>\n");
-                    }
+                    printer.Print("#include \"struct2x.h\"\n");
+                    //if (hasInt(printer)) {
+                    //    printer.Print("#include <stdint.h>\n");
+                    //}
                     if (hasString(printer)) {
                         printer.Print("#include <string>\n");
                     }
-                    if (hasVector(printer)) {
-                        printer.Print("#include <vector>\n");
-                    }
+                    //if (hasVector(printer)) {
+                    //    printer.Print("#include <vector>\n");
+                    //}
                     if (hasMap(printer)) {
                         printer.Print("#include <map>\n");
                     }
