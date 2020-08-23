@@ -120,6 +120,27 @@ namespace google {
                     return strResult.c_str();
                 }
 
+                class packagePartsWrapper {
+                    const std::vector<string>& _package_parts;
+                    google::protobuf::io::Printer& _printer;
+                public:
+                    packagePartsWrapper(const std::vector<string>& package_parts, google::protobuf::io::Printer& printer)
+                        :_package_parts(package_parts), _printer(printer) {
+                        uint32_t nSize = _package_parts.size();
+                        for (uint32_t idx = 0; idx < nSize; ++idx) {
+                            _printer.Print("namespace $name$ {\n", "name", _package_parts.at(idx));
+                        }
+                        _printer.Print("\n");
+                    }
+                    ~packagePartsWrapper() {
+                        _printer.Print("\n");
+                        uint32_t nSize = _package_parts.size();
+                        for (uint32_t idx = 0; idx < nSize; ++idx) {
+                            _printer.Print("}\n");
+                        }
+                    }
+                };
+
                 codeSerialize::codeSerialize(const FileDescriptor* file, const Options& options) :scc_analyzer_(options), _file(file) {
                     std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
                     for (int i = 0; i < msgs.size(); ++i) {
@@ -142,21 +163,22 @@ namespace google {
                 }
 
                 void codeSerialize::print(google::protobuf::io::Printer& printer, const char* szName)const {
-                    std::string strStructName(szName), strNameSpace;
-                    if (!(_file->package()).empty())
-                        strNameSpace.append((_file->package())).append("_");
+                    std::string strStructName(szName);
                     std::transform(strStructName.begin(), strStructName.end(), strStructName.begin(), ::toupper);
-                    std::transform(strNameSpace.begin(), strNameSpace.end(), strNameSpace.begin(), ::toupper);
                     //1.program once
-                    printer.Print("#ifndef __$nameSpace$$basename$__H_\n#define __$nameSpace$$basename$__H_\n", "basename", strStructName, "nameSpace", strNameSpace);
+                    printer.Print("#ifndef __STRUCT_$basename$_INCLUDE__H_\n#define __STRUCT_$basename$_INCLUDE__H_\n", "basename", strStructName);
                     //2.include
                     printInclude(printer);
-                    //3.namespace
-                    //struct
-                    //constructed function
-                    //Initialization fidlds
-                    //fields
-                    printStruct(printer, _file->syntax());
+                    do {
+                        //3.namespace
+                        std::vector<string> package_parts = Split(_file->package(), ".", true);
+                        //struct
+                        //constructed function
+                        //Initialization fidlds
+                        //fields
+                        packagePartsWrapper ins(package_parts, printer);
+                        printStruct(printer, _file->syntax());
+                    } while (false);
                     //4.serialize functions
                     //printSerialize(printer);
                     printer.Print("\n#endif\n");
@@ -181,8 +203,6 @@ namespace google {
                 }
 
                 void codeSerialize::printStruct(google::protobuf::io::Printer& printer, FileDescriptor::Syntax syntax)const {
-                    if (!_file->package().empty())
-                        printer.Print("namespace $name$ \{\n\n", "name", _file->package());
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -236,14 +256,10 @@ namespace google {
                                 printer.Print(" & SERIALIZE($number$, $field$$tag$)", "number", sz, "field", field->name(), "tag", type2tag(*field, syntax));
                             }
                         }
-                        printer.Print(";\n        }\n    \};\n");
 
+                        printer.Print(";\n        }\n    };\n");
                     }
-                    if (!_file->package().empty())
-                        printer.Print("\n}\n");
                 }
-
-
 
                 void codeSerialize::printSerialize(google::protobuf::io::Printer& printer)const {
                     uint32_t size = _message_generators.size();
