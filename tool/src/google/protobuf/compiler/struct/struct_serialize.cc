@@ -159,9 +159,41 @@ namespace google {
                         }
                         _message_generators.push_back(optimized_order);
                     }
+                    //sort
+                    sortMsgs(_message_generators);
                 }
 
                 codeSerialize::~codeSerialize() {
+                }
+
+                bool codeSerialize::sortMsgs(std::vector<FieldDescriptorArr>& msgs) {
+                    std::vector<FieldDescriptorArr> result;
+                    uint32_t nSize = msgs.size();
+                    for (uint32_t idx = 0; idx < nSize; ++idx) {
+                        const FieldDescriptorArr& item = msgs.at(idx);
+                        if (result.empty()) {
+                            result.insert(result.begin(), item);
+                        } else {
+                            result.insert(result.begin() + getInsertIdx(result, item), item);
+                        }
+                    }
+                    msgs.swap(result);
+                    return true;
+                }
+
+                uint32_t codeSerialize::getInsertIdx(const std::vector<FieldDescriptorArr>& msgs, const FieldDescriptorArr& item) {
+                    uint32_t idx = 0;
+                    for (; idx < msgs.size(); ++idx) {
+                        const FieldDescriptorArr& curItem = msgs.at(idx);
+                        uint32_t curItemIdx = 0;
+                        for (; curItemIdx < curItem._vec.size(); ++curItemIdx) {
+                            const FieldDescriptor* field = curItem._vec.at(curItemIdx);
+                            if (field->message_type() && field->message_type()->name() == item._name) {
+                                return idx;
+                            }
+                        }
+                    }
+                    return idx;
                 }
 
                 void codeSerialize::print(google::protobuf::io::Printer& printer, const char* szName)const {
@@ -238,7 +270,7 @@ namespace google {
                                     && field->type() != FieldDescriptor::TYPE_STRING
                                     && field->type() != FieldDescriptor::TYPE_MESSAGE);
                                 if (init) {
-                                    if (!flag) printer.Print(": "); else printer.Print(", ");
+                                    if (!flag) printer.Print(" : "); else printer.Print(", ");
                                     printer.Print("$fieldName$\(", "fieldName", field->name());
                                     if (field->has_default_value())
                                         printer.Print("$value$", "value", type2value(*field));
@@ -269,7 +301,7 @@ namespace google {
 
                         printer.Print(" {}\n$fields$", "fields", fields);
 
-                        printer.Print("\n        template<typename T>\n        void serialize(T& t) {\n            t", "nameSpace", _file->package(), "struName", messages._name);
+                        printer.Print("\n        template <typename T>\n        void serialize(T& t) {\n            t", "nameSpace", _file->package(), "struName", messages._name);
                         for (uint32_t idx = 0; idx < message_size; ++idx) {
                             if (const FieldDescriptor* field = messages._vec.at(idx)) {
                                 char sz[20] = { 0 };
@@ -287,9 +319,9 @@ namespace google {
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
                         if (messages._vec.empty()) continue;
-                        printer.Print("\ntemplate<typename T>\ninline void serialize(T& t, $nameSpace$::$struName$& item) {\n    t", "nameSpace", _file->package(), "struName", messages._name);
+                        printer.Print("\ntemplate <typename T>\ninline void serialize(T& t, $nameSpace$::$struName$& item) {\n    t", "nameSpace", _file->package(), "struName", messages._name);
                         uint32_t message_size = messages._vec.size();
-                        for (uint32_t idx = 0, flag = 0; idx < message_size; ++idx) {
+                        for (uint32_t idx = 0; idx < message_size; ++idx) {
                             if (const FieldDescriptor* field = messages._vec.at(idx)) {
                                 char sz[20] = { 0 };
                                 sprintf(sz, "%d", field->number());
