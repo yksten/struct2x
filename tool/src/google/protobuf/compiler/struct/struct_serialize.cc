@@ -33,8 +33,11 @@ namespace google {
                     case FieldDescriptor::TYPE_STRING:
                     case FieldDescriptor::TYPE_BYTES:
                         return "std::string";
-                    default:
-                        return field.message_type()->name().c_str();
+                    default:{
+                        static std::string strRet;
+                        strRet = ClassName(field.message_type(), true);
+                        return strRet.c_str();
+                    }
                     }
                 }
 
@@ -199,6 +202,24 @@ namespace google {
                     if (hasMap(printer)) {
                         printer.Print("#include <map>\n");
                     }
+                    // import
+                    std::set<string> public_import_names;
+                    for (int i = 0; i < _file->public_dependency_count(); i++) {
+                        public_import_names.insert(_file->public_dependency(i)->name());
+                    }
+
+                    for (int i = 0; i < _file->dependency_count(); i++) {
+                        const bool use_system_include = IsWellKnownMessage(_file->dependency(i));
+                        const string& name = _file->dependency(i)->name();
+                        bool public_import = (public_import_names.count(name) != 0);
+                        printer.Print(
+                            "#include $left$$dependency$.pb.h$right$$iwyu$\n",
+                            "dependency", StripProto(name),
+                            "iwyu", (public_import) ? "  // IWYU pragma: export" : "",
+                            "left", use_system_include ? "<" : "\"",
+                            "right", use_system_include ? ">" : "\"");
+                    }
+
                     printer.Print("\n");
                 }
 
