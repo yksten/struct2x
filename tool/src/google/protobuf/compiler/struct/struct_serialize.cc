@@ -133,7 +133,6 @@ namespace google {
                         for (uint32_t idx = 0; idx < nSize; ++idx) {
                             _printer.Print("namespace $name$ {\n", "name", _package_parts.at(idx));
                         }
-                        _printer.Print("\n");
                     }
                     ~packagePartsWrapper() {
                         _printer.Print("\n");
@@ -175,11 +174,11 @@ namespace google {
                     do {
                         //3.namespace
                         std::vector<string> package_parts = Split(_file->package(), ".", true);
+                        packagePartsWrapper ins(package_parts, printer);
                         //struct
                         //constructed function
                         //Initialization fidlds
                         //fields
-                        packagePartsWrapper ins(package_parts, printer);
                         printStruct(printer, _file->syntax());
                     } while (false);
                     //4.serialize functions
@@ -227,8 +226,9 @@ namespace google {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
-                        if (messages._vec.empty() || messages._name.find("Entry_DoNotUse") != std::string::npos) continue;
-                        if (i) printer.Print("\n");
+                        if (messages._vec.empty() || messages._name.find("Entry_DoNotUse") != std::string::npos)
+                            continue;
+                        printer.Print("\n");
                         printer.Print("    struct $struName$ \{\n        $struName$\()", "struName", messages._name);
                         std::string fields;
                         uint32_t message_size = messages._vec.size();
