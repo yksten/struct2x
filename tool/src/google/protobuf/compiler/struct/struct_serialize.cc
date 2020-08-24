@@ -117,7 +117,7 @@ namespace google {
 
                     if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                         if (field.label() == FieldDescriptor::LABEL_OPTIONAL)
-                            strResult.append(", &has_").append(field.name());
+                            strResult.append(", &has_").append(FieldName(&field));
                     }
 
                     return strResult.c_str();
@@ -136,9 +136,8 @@ namespace google {
                     }
                     ~packagePartsWrapper() {
                         _printer.Print("\n");
-                        uint32_t nSize = _package_parts.size();
-                        for (uint32_t idx = 0; idx < nSize; ++idx) {
-                            _printer.Print("}\n");
+                        for (std::vector<string>::const_reverse_iterator it = _package_parts.rbegin(); it != _package_parts.rend(); ++it) {
+                            _printer.Print("} // namespace $name$\n", "name", *it);
                         }
                     }
                 };
@@ -271,7 +270,7 @@ namespace google {
                                     && field->type() != FieldDescriptor::TYPE_MESSAGE);
                                 if (init) {
                                     if (!flag) printer.Print(" : "); else printer.Print(", ");
-                                    printer.Print("$fieldName$\(", "fieldName", field->name());
+                                    printer.Print("$fieldName$\(", "fieldName", FieldName(field));
                                     if (field->has_default_value())
                                         printer.Print("$value$", "value", type2value(*field));
                                     printer.Print(")");
@@ -280,7 +279,7 @@ namespace google {
                                 //has init
                                 if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                                     if (field->label() == FieldDescriptor::LABEL_OPTIONAL)
-                                        printer.Print(", has_$fieldName$\(false)", "fieldName", field->name());
+                                        printer.Print(", has_$fieldName$\(false)", "fieldName", FieldName(field));
                                 }
                                 fields.append("    ");
                                 if (field->is_map()) {
@@ -290,11 +289,11 @@ namespace google {
                                 } else {
                                     fields.append("    ").append(type2string(*field));
                                 }
-                                fields.append(" ").append(field->name()).append(";\n");
+                                fields.append(" ").append(FieldName(field)).append(";\n");
                                 //has declare
                                 if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                                     if (field->label() == FieldDescriptor::LABEL_OPTIONAL)
-                                        fields.append("        bool has_").append(field->name()).append(";\n");
+                                        fields.append("        bool has_").append(FieldName(field)).append(";\n");
                                 }
                             }
                         }
@@ -306,7 +305,13 @@ namespace google {
                             if (const FieldDescriptor* field = messages._vec.at(idx)) {
                                 char sz[20] = { 0 };
                                 sprintf(sz, "%d", field->number());
-                                printer.Print(" & SERIALIZE($number$, $field$$tag$)", "number", sz, "field", field->name(), "tag", type2tag(*field, syntax));
+                                const std::string& strOrgName = field->name();
+                                std::string fieldName(FieldName(field));
+                                if (strOrgName != fieldName) {
+                                    printer.Print(" & struct2x::makeItem($orgName$, $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
+                                } else {
+                                    printer.Print(" & SERIALIZE($number$, $field$$tag$)", "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
+                                }
                             }
                         }
 
