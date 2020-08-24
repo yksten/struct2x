@@ -308,7 +308,7 @@ namespace google {
                                 const std::string& strOrgName = field->name();
                                 std::string fieldName(FieldName(field));
                                 if (strOrgName != fieldName) {
-                                    printer.Print(" & struct2x::makeItem($orgName$, $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
+                                    printer.Print(" & struct2x::makeItem(\"$orgName$\", $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 } else {
                                     printer.Print(" & SERIALIZE($number$, $field$$tag$)", "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 }
