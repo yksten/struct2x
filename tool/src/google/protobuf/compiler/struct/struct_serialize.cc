@@ -9,7 +9,7 @@ namespace google {
         namespace compiler {
             namespace cpp {
 
-                const char* type2string(const FieldDescriptor& field) {
+                const char* type2string(const FieldDescriptor& field, const char* sz = "") {
                     switch (field.type()) {
                     case FieldDescriptor::TYPE_DOUBLE:
                         return "double";
@@ -35,7 +35,7 @@ namespace google {
                         return "std::string";
                     default:{
                         static std::string strRet;
-                        strRet = ClassName(field.message_type(), true);
+                        strRet = sz + ClassName(field.message_type(), true);
                         return strRet.c_str();
                     }
                     }
@@ -100,20 +100,20 @@ namespace google {
                     switch (field.type()) {
                     case FieldDescriptor::TYPE_FIXED64:
                     case FieldDescriptor::TYPE_SFIXED64:
-                        strResult.append(", serialization::TYPE_FIXED64");
+                        strResult.append(", struct2x::TYPE_FIXED64");
                         break;
                     case FieldDescriptor::TYPE_SINT32:
                     case FieldDescriptor::TYPE_SINT64:
-                        strResult.append(", serialization::TYPE_SVARINT");
+                        strResult.append(", struct2x::TYPE_SVARINT");
                         break;
                     case FieldDescriptor::TYPE_FIXED32:
                     case FieldDescriptor::TYPE_SFIXED32:
-                        strResult.append(", serialization::TYPE_FIXED32");
+                        strResult.append(", struct2x::TYPE_FIXED32");
                         break;
                     }
 
                     if (field.is_packed())
-                        strResult.append(", serialization::TYPE_PACK");
+                        strResult.append(", struct2x::TYPE_PACK");
 
                     if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                         if (field.label() == FieldDescriptor::LABEL_OPTIONAL)
@@ -285,7 +285,7 @@ namespace google {
                                 if (field->is_map()) {
                                     fields.append("    std::map<").append(map2string(*field)).append(">");
                                 } else if (field->is_repeated()) {
-                                    fields.append("    std::vector<").append(type2string(*field)).append(">");
+                                    fields.append("    std::vector<").append(type2string(*field, " ")).append(">");
                                 } else {
                                     fields.append("    ").append(type2string(*field));
                                 }

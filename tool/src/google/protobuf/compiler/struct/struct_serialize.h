@@ -14,7 +14,7 @@ namespace google {
         namespace compiler {
             namespace cpp {
 
-                class Options;
+                struct Options;
 
                 class codeSerialize {
                     struct FieldDescriptorArr {
@@ -30,8 +30,8 @@ namespace google {
 
                     void print(google::protobuf::io::Printer& printer, const char* szName)const;
                 private:
-                    bool sortMsgs(std::vector<FieldDescriptorArr>& msgs);
-                    uint32_t getInsertIdx(const std::vector<FieldDescriptorArr>& msgs, const FieldDescriptorArr& item);
+                    static bool sortMsgs(std::vector<FieldDescriptorArr>& msgs);
+                    static uint32_t getInsertIdx(const std::vector<FieldDescriptorArr>& msgs, const FieldDescriptorArr& item);
                     void printInclude(google::protobuf::io::Printer& printer)const;
                     void printStruct(google::protobuf::io::Printer& printer, FileDescriptor::Syntax syntax)const;
                     void printSerialize(google::protobuf::io::Printer& printer)const;
