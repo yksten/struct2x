@@ -9,6 +9,7 @@
 #include "testStruct.h"
 
 #include "rapidjson/rapidjsonEncoder.h"
+#include "rapidjson/rapidjsonDecoder.h"
 
 struct struInfo {
     struInfo() :no(99) {}
@@ -198,8 +199,16 @@ void testProtobuf() {
 
 
 int main() {
+    //bool b = true;
+    //struct2x::converter f = struct2x::bind(&struct2x::rapidjsonDecoder::convertBool, b, NULL);
+    //f(&b);
+
+    struInfo info;
+    struct2x::rapidjsonDecoder decoder("{\"no\":12345}");
+    decoder >> info;
+
     //testMap();
-    testStructFunc();
+    //testStructFunc();
     //testVector();
     //testProtobuf();
 
