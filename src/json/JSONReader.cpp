@@ -1,5 +1,5 @@
 #include "json/JSONReader.h"
-#include "thirdParty/cJSON.h"
+#include "thirdParty/cjson/cJSON.h"
 
 namespace struct2x {
 

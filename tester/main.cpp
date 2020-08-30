@@ -8,6 +8,8 @@
 #include "protobuf/decoder.h"
 #include "testStruct.h"
 
+#include "rapidjson/rapidjsonEncoder.h"
+
 struct struInfo {
     struInfo() :no(99) {}
     int no;
@@ -53,14 +55,14 @@ struct struItem {
         return true;
     }
 
-    //template<typename T>
-    //void serialize(T& t)
-    //{
-    //    SERIALIZATION(t, id, str, info, v, v2, m, m2);
-    //}
+    template<typename T>
+    void serialize(T& t)
+    {
+        SERIALIZATION(t, id, str, info, v, v2, m, m2);
+    }
 };
 
-VISITSTRUCT(struItem, id, str, info, v, v2, m, m2)
+//VISITSTRUCT(struItem, id, str, info, v, v2, m, m2)
 //template<typename T>
 //void serialize(T& t, struItem& item)
 //{
@@ -121,11 +123,15 @@ void testStructFunc() {
     info.no = 992;
     item.m2["2"] = info;
 
-    struct2x::JSONReader jr;
-    jr << item;
+    //struct2x::JSONReader jr;
+    //jr << item;
+    //std::string str;
+    //jr.toString(str);
 
+    struct2x::rapidjsonEncoder encoder;
+    encoder << item;
     std::string str;
-    jr.toString(str);
+    encoder.toString(str);
 
     struct2x::JSONWriter jw(str.c_str());
     struItem item2;
@@ -192,10 +198,10 @@ void testProtobuf() {
 
 
 int main() {
-    testMap();
+    //testMap();
     testStructFunc();
-    testVector();
-    testProtobuf();
+    //testVector();
+    //testProtobuf();
 
     return 0;
 }

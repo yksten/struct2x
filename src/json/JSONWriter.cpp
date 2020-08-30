@@ -1,5 +1,5 @@
 #include "json/JSONWriter.h"
-#include "thirdParty/cJSON.h"
+#include "thirdParty/cjson/cJSON.h"
 #include <assert.h>
 
 namespace struct2x {
