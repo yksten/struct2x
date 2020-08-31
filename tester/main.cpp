@@ -14,9 +14,12 @@
 struct struInfo {
     struInfo() :no(99) {}
     int no;
+    std::vector<bool> v;
 
     bool operator ==(const struInfo& in)const {
         if (no != in.no)
+            return false;
+        if (v != in.v)
             return false;
         return true;
     }
@@ -27,7 +30,7 @@ struct struInfo {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, no);
+        SERIALIZATION(t, no, v);
     }
 };
 
@@ -204,7 +207,7 @@ int main() {
     //f(&b);
 
     struInfo info;
-    struct2x::rapidjsonDecoder decoder("{\"no\":12345}");
+    struct2x::rapidjsonDecoder decoder("{\"no\":99,\"v\":[true]}");
     decoder >> info;
 
     //testMap();

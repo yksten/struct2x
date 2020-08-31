@@ -29,6 +29,11 @@ namespace struct2x {
         return converter(converter::convert_t(f), &value, pHas);
     }
 
+    template<typename P>
+    inline converter bind(void(*f)(std::vector<P>&, const P&, bool*), std::vector<P>& value, bool* pHas) {
+        return converter(converter::convert_t(f), &value, pHas);
+    }
+
     class EXPORTAPI convertHandler {
         const converter* _converter;
         const std::map<std::string, converter>& _map;
@@ -74,67 +79,30 @@ namespace struct2x {
 
         template<typename T>
         rapidjsonDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            cJSON* curItem = cur();
-            if (getObject(sz)) {
-                internal::serializeWrapper(*this, value);
-                if (pHas) *pHas = true;
-            }
-            cur(curItem);
+            // TODO
             return *this;
         }
 
         template<typename T>
         rapidjsonDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            cJSON* curItem = cur();
-            if (getObject(sz)) {
-                int32_t size = getArraySize();
-                if (size&& !value.empty())
-                    value.clear();
-                for (int32_t i = 0; i < size; ++i) {
-                    cJSON* lastItem = cur();
-                    getArrayItem(i);
-                    typename internal::TypeTraits<T>::Type item;
-                    this->operator>>(item);
-                    value.push_back(item);
-                    cur(lastItem);
-                }
-                if (pHas) *pHas = true;
-            }
-            cur(curItem);
+            // TODO
             return *this;
         }
         template<typename K, typename V>
         rapidjsonDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            cJSON* curItem = cur();
-            if (getObject(sz)) {
-                int32_t size = getMapSize();
-                if (size&& !value.empty())
-                    value.clear();
-                for (int32_t i = 0; i < size; ++i) {
-                    cJSON* lastItem = cur();
-                    std::string key;
-                    V item = V();
-                    getkeyValue(i, key, item);
-                    value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
-                    cur(lastItem);
-                }
-                if (pHas) *pHas = true;
-            }
-            cur(curItem);
+            // TODO
             return *this;
         }
 
         rapidjsonDecoder& convert(const char* sz, bool& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, uint32_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, int32_t& value, bool* pHas = NULL) {
-            _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-            return *this;
-        }
+        rapidjsonDecoder& convert(const char* sz, int32_t& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, uint64_t& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, int64_t& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, float& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, double& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, std::string& value, bool* pHas = NULL);
+
         rapidjsonDecoder& convert(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
         rapidjsonDecoder& convert(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
@@ -147,8 +115,13 @@ namespace struct2x {
         template<typename P>
         static void convertValue(P& value, const P& cValue, bool* pHas) {
             value = cValue;
-            if (pHas)
-                *pHas = true;
+            if (pHas) *pHas = true;
+        }
+
+        template<typename P>
+        static void convertArray(std::vector<P>& value, const P& cValue, bool* pHas) {
+            value.push_back(cValue);
+            if (pHas) *pHas = true;
         }
     };
 }
