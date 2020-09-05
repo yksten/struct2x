@@ -1,8 +1,8 @@
 #include <iostream>
 #include <assert.h>
 
-#include "json/JSONReader.h"
-#include "json/JSONWriter.h"
+#include "json/JSONEncoder.h"
+#include "json/JSONDecoder.h"
 
 #include "protobuf/encoder.h"
 #include "protobuf/decoder.h"
@@ -99,12 +99,12 @@ void testMap() {
     map["VARIABLE_TIMER"] = 4;
     map["VARIABLE_COUNTER"] = 5;
 
-    struct2x::JSONReader jrmap;
+    struct2x::JSONEncoder jrmap;
     jrmap << map;
     std::string str2;
     jrmap.toString(str2);
 
-    struct2x::JSONWriter jwmap(str2.c_str());
+    struct2x::JSONDecoder jwmap(str2.c_str());
     jwmap >> map2;
 
     assert(map == map2);
@@ -127,7 +127,7 @@ void testStructFunc() {
     info.no = 992;
     item.m2["2"] = info;
 
-    //struct2x::JSONReader jr;
+    //struct2x::JSONEncoder jr;
     //jr << item;
     //std::string str;
     //jr.toString(str);
@@ -137,7 +137,7 @@ void testStructFunc() {
     std::string str;
     encoder.toString(str);
 
-    struct2x::JSONWriter jw(str.c_str());
+    struct2x::JSONDecoder jw(str.c_str());
     struItem item2;
     jw >> item2;
     bool b = (item == item2);
@@ -157,13 +157,13 @@ void testVector() {
     std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
     s1.vec.push_back(v);
 
-    struct2x::JSONReader jr;
+    struct2x::JSONEncoder jr;
     jr << s1;
 
     std::string str;
     jr.toString(str);
 
-    struct2x::JSONWriter jw(str.c_str());
+    struct2x::JSONDecoder jw(str.c_str());
     jw >> s2;
     bool b = (s1.vec == s2.vec);
     assert(b);
@@ -189,12 +189,12 @@ void testProtobuf() {
     struct2x::PBEncoder encoder(buffer);
     encoder << items;
 
-    struct2x::JSONReader jr;
+    struct2x::JSONEncoder jr;
     jr << items;
     std::string strJson;
     jr.toString(strJson);
 
-    struct2x::JSONWriter(strJson.c_str()) >> items;
+    struct2x::JSONDecoder(strJson.c_str()) >> items;
 
     struct2x::PBDecoder decoder(buffer.data(), buffer.size());
     decoder >> items2;

@@ -28,20 +28,38 @@ SOURCE_GROUP("thirdParty\\rapidjson\\msinttypes" FILES ${RAPIDJSONMSINTTYPES})
 SET(RAPIDJSON "./thirdParty/rapidjson/allocators.h" "./thirdParty/rapidjson/document.h" "./thirdParty/rapidjson/encodedstream.h" "./thirdParty/rapidjson/encodings.h" "./thirdParty/rapidjson/filereadstream.h" "./thirdParty/rapidjson/filewritestream.h" "./thirdParty/rapidjson/fwd.h" "./thirdParty/rapidjson/istreamwrapper.h" "./thirdParty/rapidjson/memorybuffer.h" "./thirdParty/rapidjson/memorystream.h" "./thirdParty/rapidjson/ostreamwrapper.h" "./thirdParty/rapidjson/pointer.h" "./thirdParty/rapidjson/prettywriter.h" "./thirdParty/rapidjson/rapidjson.h" "./thirdParty/rapidjson/reader.h" "./thirdParty/rapidjson/schema.h" "./thirdParty/rapidjson/stream.h" "./thirdParty/rapidjson/stringbuffer.h" "./thirdParty/rapidjson/writer.h")
 SOURCE_GROUP("thirdParty\\rapidjson" FILES ${RAPIDJSON})
 
-SET(HEADER "./include/struct2x.h" "./include/json/JSONReader.h" "./include/json/JSONWriter.h" "./include/protobuf/encoder.h" "./include/protobuf/decoder.h" "./include/rapidjson/rapidjsonEncoder.h" "./include/rapidjson/rapidjsonDecoder.h")
-SOURCE_GROUP(header FILES ${HEADER})
+SET(INCLUDE "./include/struct2x.h")
+SOURCE_GROUP(include FILES ${INCLUDE})
 
-SET(SRC "./src/struct2x.cpp" "./src/json/JSONReader.cpp" "./src/json/JSONWriter.cpp" "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp" "./src/rapidjson/rapidjsonEncoder.cpp" "./src/rapidjson/rapidjsonDecoder.cpp")
+SET(INCLUDECJSON "./include/json/JSONEncoder.h" "./include/json/JSONDecoder.h")
+SOURCE_GROUP("include\\json" FILES ${INCLUDECJSON})
+
+SET(INCLUDERAPIDJSON "./include/rapidjson/rapidjsonEncoder.h" "./include/rapidjson/rapidjsonDecoder.h")
+SOURCE_GROUP("include\\rapidjson" FILES ${INCLUDERAPIDJSON})
+
+SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
+SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
+
+SET(SRC "./src/struct2x.cpp")
 SOURCE_GROUP(src FILES ${SRC})
+
+SET(SRCJSON "./src/json/JSONEncoder.cpp" "./src/json/JSONDecoder.cpp")
+SOURCE_GROUP("src\\json" FILES ${SRCJSON})
+
+SET(SRCRAPIDJSON "./src/rapidjson/rapidjsonEncoder.cpp" "./src/rapidjson/rapidjsonDecoder.cpp")
+SOURCE_GROUP("src\\rapidjson" FILES ${SRCRAPIDJSON})
+
+SET(SRCPROTOBUF "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp")
+SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
 
 SET(PARSE "./src/protobuf/parse/proto.h" "./src/protobuf/parse/proto.cpp")
 SOURCE_GROUP(parse FILES ${PARSE})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
-    ADD_LIBRARY(struct2x SHARED ${CJSON} ${RAPIDJSONERROR} ${RAPIDJSONINTERNAL} ${RAPIDJSONMSINTTYPES} ${RAPIDJSON} ${HEADER} ${SRC} ${PARSE} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x SHARED ${CJSON} ${RAPIDJSONERROR} ${RAPIDJSONINTERNAL} ${RAPIDJSONMSINTTYPES} ${RAPIDJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDERAPIDJSON} ${INCLUDEPROTOBUF} ${SRC} ${SRCJSON} ${SRCRAPIDJSON} ${SRCPROTOBUF} ${PARSE} ${DIR_SRCS})
 ELSE ()
-    ADD_LIBRARY(struct2x ${CJSON} ${RAPIDJSONERROR} ${RAPIDJSONINTERNAL} ${RAPIDJSONMSINTTYPES} ${RAPIDJSON} ${HEADER} ${SRC} ${PARSE} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x ${CJSON} ${RAPIDJSONERROR} ${RAPIDJSONINTERNAL} ${RAPIDJSONMSINTTYPES} ${RAPIDJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDERAPIDJSON} ${INCLUDEPROTOBUF} ${SRC} ${SRCJSON} ${SRCRAPIDJSON} ${SRCPROTOBUF} ${PARSE} ${DIR_SRCS})
 ENDIF (MSVC)
 
 

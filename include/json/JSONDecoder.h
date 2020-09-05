@@ -8,15 +8,15 @@
 struct cJSON;
 namespace struct2x {
 
-    class EXPORTAPI JSONWriter {
+    class EXPORTAPI JSONDecoder {
         cJSON* _root;
         cJSON* _cur;
-        JSONWriter();
-        JSONWriter(const JSONWriter&);
-        JSONWriter& operator=(const JSONWriter&);
+        JSONDecoder();
+        JSONDecoder(const JSONDecoder&);
+        JSONDecoder& operator=(const JSONDecoder&);
     public:
-        JSONWriter(const char* sz);
-        ~JSONWriter();
+        JSONDecoder(const char* sz);
+        ~JSONDecoder();
 
         template<typename T>
         bool operator >> (T& value) {
@@ -27,12 +27,12 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONWriter& operator&(serializeItem<T> value) {
+        JSONDecoder& operator&(serializeItem<T> value) {
             return convert(value.name, value.value);
         }
 
         template<typename T>
-        JSONWriter& convert(const char* sz, T& value, bool* pHas = NULL) {
+        JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
             if (getObject(sz)) {
                 internal::serializeWrapper(*this, value);
@@ -43,7 +43,7 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONWriter& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
+        JSONDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
             if (getObject(sz)) {
                 int32_t size = getArraySize();
@@ -63,7 +63,7 @@ namespace struct2x {
             return *this;
         }
         template<typename K, typename V>
-        JSONWriter& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
+        JSONDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
             cJSON* curItem = cur();
             if (getObject(sz)) {
                 int32_t size = getMapSize();
@@ -116,27 +116,27 @@ namespace struct2x {
             }
             return (_cur) ? true : false;
         }
-        JSONWriter& convert(const char* sz, bool& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, uint32_t& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, int32_t& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, uint64_t& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, int64_t& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, float& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, double& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::string& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<float>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<double>& value, bool* pHas = NULL);
-        JSONWriter& convert(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, bool& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, uint32_t& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, int32_t& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, uint64_t& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, int64_t& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, float& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, double& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::string& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<float>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<double>& value, bool* pHas = NULL);
+        JSONDecoder& convert(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
     private:
-        JSONWriter& operator >>(std::vector<int32_t>& value);
-        JSONWriter& operator >>(std::vector<float>& value);
-        JSONWriter& operator >>(std::vector<double>& value);
-        JSONWriter& operator >>(std::vector<std::string>& value);
+        JSONDecoder& operator >>(std::vector<int32_t>& value);
+        JSONDecoder& operator >>(std::vector<float>& value);
+        JSONDecoder& operator >>(std::vector<double>& value);
+        JSONDecoder& operator >>(std::vector<std::string>& value);
 
         bool getObject(const char* sz);
         int32_t getArraySize()const;
