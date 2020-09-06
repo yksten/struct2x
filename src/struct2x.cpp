@@ -2,12 +2,6 @@
 
 namespace struct2x {
 
-    void swap(size_t& first, size_t& second) {
-        first = first ^ second;
-        second = first ^ second;
-        first = first ^ second;
-    }
-
     BufferWrapper::BufferWrapper(size_t nSize) : _buffer(nSize), _index(0), _bCalculateFlag(false), _cumtomFieldSize(0) {
     }
 
