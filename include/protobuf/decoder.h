@@ -65,19 +65,19 @@ namespace proto {
         const uint8_t* data() const { return _sz; }
         unsigned int size() const { return _size; }
 
-        template<typename T, typename P>
-        bool bind(uint32_t number, void(*f)(T&, const P&, const uint32_t, bool*), T& value, const uint32_t type, bool* pHas) {
-            return _functionSet.insert(std::pair<uint32_t, converter>(number, converter(convert_t(f), &value, type, pHas))).second;
+        template<typename P, typename T>
+        bool bind(void(*f)(T&, const P&, const uint32_t, bool*), struct2x::serializeItem<T>& value) {
+            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
 
-        template<typename T, typename P>
-        bool bind(uint32_t number, void(*f)(std::vector<T>&, const P&, const uint32_t, bool*), std::vector<T>& value, const uint32_t type, bool* pHas) {
-            return _functionSet.insert(std::pair<uint32_t, converter>(number, converter(convert_t(f), &value, type, pHas))).second;
+        template<typename P, typename T>
+        bool bind(void(*f)(std::vector<T>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::vector<T> >& value) {
+            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
 
-        template<typename K, typename V, typename P>
-        bool bind(uint32_t number, void(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), std::map<K, V>& value, const uint32_t type, bool* pHas) {
-            return _functionSet.insert(std::pair<uint32_t, converter>(number, converter(convert_t(f), &value, type, pHas))).second;
+        template<typename P, typename K, typename V>
+        bool bind(void(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::map<K, V> >& value) {
+            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
 
         bool ParseFromBytes();
@@ -163,7 +163,7 @@ namespace struct2x {
 
     class EXPORTAPI PBDecoder {
         friend class proto::Message;
-        proto::Message* _msg;
+        proto::Message _msg;
 
         PBDecoder(const PBDecoder&);
         PBDecoder& operator=(const PBDecoder&);
@@ -193,7 +193,7 @@ namespace struct2x {
         template<typename K, typename V>
         PBDecoder& operator&(serializeItem<std::map<K, V> > value) {
             if (!value.value.empty()) value.value.clear();
-            _msg->bind<std::map<K, V>, proto::bin_type>(value.num, &proto::Message::convertMap, value.value, value.type, value.bHas);
+            _msg.bind<proto::bin_type, K, V>(&proto::Message::convertMap, value);
             return *this;
         }
         template<typename V>
@@ -201,12 +201,9 @@ namespace struct2x {
         template<typename V>
         PBDecoder& operator&(serializeItem<std::map<double, V> > value);
     private:
-        proto::Message* getMessage(int32_t number);
-        std::vector<proto::Message*>* getMessageArray(int32_t number);
-
         template<typename T>
         void decodeValue(serializeItem<T>& v) {
-            _msg->bind<T, proto::bin_type>(v.num, &proto::Message::convertCustom, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, T>(&proto::Message::convertCustom, v);
         }
         void decodeValue(serializeItem<bool>&);
         void decodeValue(serializeItem<int32_t>&);
@@ -219,7 +216,7 @@ namespace struct2x {
 
         template<typename T>
         void decodeRepaeted(serializeItem<std::vector<T> >& v) {
-            _msg->bind<std::vector<T>, proto::bin_type>(v.num, &proto::Message::convertCustomArray, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, std::vector<T> >(&proto::Message::convertCustomArray, v);
         }
         void decodeRepaeted(serializeItem<std::vector<bool> >&);
         void decodeRepaeted(serializeItem<std::vector<int32_t> >&);

@@ -127,95 +127,93 @@ namespace proto {
 namespace struct2x {
 
     PBDecoder::PBDecoder(const uint8_t* sz, unsigned int size)
-        : _msg(new proto::Message(sz, size)) {
+        : _msg(sz, size) {
     }
 
     PBDecoder::~PBDecoder() {
-        if (_msg)
-            delete _msg;
     }
 
     void PBDecoder::decodeValue(serializeItem<bool>& v) {
-        _msg->bind<bool, uint64_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, bool>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<int32_t>& v) {
-        _msg->bind<int32_t, uint64_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, int32_t>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<uint32_t>& v) {
-        _msg->bind<uint32_t, uint64_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, uint32_t>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<int64_t>& v) {
-        _msg->bind<int64_t, uint64_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, int64_t>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<uint64_t>& v) {
-        _msg->bind<uint64_t, uint64_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, uint64_t>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<float>& v) {
-        _msg->bind<float, uint32_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint32_t, float>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<double>& v) {
-        _msg->bind<double, uint64_t>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, double>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeValue(serializeItem<std::string>& v) {
-        _msg->bind<std::string, proto::bin_type>(v.num, &proto::Message::convertValue, v.value, v.type, v.bHas);
+        _msg.bind<proto::bin_type, std::string>(&proto::Message::convertValue, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<bool> >& v) {
         if (v.type == struct2x::TYPE_PACK)
-            _msg->bind<std::vector<bool>, proto::bin_type>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, std::vector<bool> >(&proto::Message::convertArray, v);
         else
-            _msg->bind<std::vector<bool>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<uint64_t, std::vector<bool> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<int32_t> >& v) {
         if (v.type == struct2x::TYPE_PACK)
-            _msg->bind<std::vector<int32_t>, proto::bin_type>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, std::vector<int32_t> >(&proto::Message::convertArray, v);
         else
-            _msg->bind<std::vector<int32_t>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<uint64_t, std::vector<int32_t> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint32_t> >& v) {
         if (v.type == struct2x::TYPE_PACK)
-            _msg->bind<std::vector<uint32_t>, proto::bin_type>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, std::vector<uint32_t> >(&proto::Message::convertArray, v);
         else
-            _msg->bind<std::vector<uint32_t>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<uint64_t, std::vector<uint32_t> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<int64_t> >& v) {
         if (v.type == struct2x::TYPE_PACK)
-            _msg->bind<std::vector<int64_t>, proto::bin_type>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, std::vector<int64_t> >(&proto::Message::convertArray, v);
         else
-            _msg->bind<std::vector<int64_t>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<uint64_t, std::vector<int64_t> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<uint64_t> >& v) {
         if (v.type == struct2x::TYPE_PACK)
-            _msg->bind<std::vector<uint64_t>, proto::bin_type>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<proto::bin_type, std::vector<uint64_t> >(&proto::Message::convertArray, v);
         else
-            _msg->bind<std::vector<uint64_t>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+            _msg.bind<uint64_t, std::vector<uint64_t> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<float> >& v) {
-        _msg->bind<std::vector<float>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, std::vector<float> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<double> >& v) {
-        _msg->bind<std::vector<double>, uint64_t>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+        _msg.bind<uint64_t, std::vector<double> >(&proto::Message::convertArray, v);
     }
 
     void PBDecoder::decodeRepaeted(serializeItem<std::vector<std::string> >& v) {
-        _msg->bind<std::vector<std::string>, proto::bin_type>(v.num, &proto::Message::convertArray, v.value, v.type, v.bHas);
+        _msg.bind<proto::bin_type, std::vector<std::string> >(&proto::Message::convertArray, v);
     }
 
     bool PBDecoder::ParseFromBytes() {
-        return _msg->ParseFromBytes();
+        return _msg.ParseFromBytes();
     }
 
 }
