@@ -170,11 +170,14 @@ void testVector() {
 }
 
 void testProtobuf() {
-    testStruct::struExample item;
+    testStruct::struExample item, item2;
     item.id = 1;
     item.str = "example";
     item.f = 9.7f;
     item.db = 19.8f;
+    item.v.push_back(1);
+    item.v.push_back(2);
+    item.v.push_back(3);
     testStruct::struExamples items, items2;
     items.v.push_back(item);
     items.m[1] = item;
@@ -193,7 +196,6 @@ void testProtobuf() {
     jr << items;
     std::string strJson;
     jr.toString(strJson);
-
     struct2x::JSONDecoder(strJson.c_str()) >> items;
 
     struct2x::PBDecoder decoder(buffer.data(), buffer.size());
@@ -206,14 +208,14 @@ int main() {
     //struct2x::converter f = struct2x::bind(&struct2x::rapidjsonDecoder::convertBool, b, NULL);
     //f(&b);
 
-    struInfo info;
-    struct2x::rapidjsonDecoder decoder("{\"no\":99,\"v\":[true]}");
-    decoder >> info;
+    //struInfo info;
+    //struct2x::rapidjsonDecoder decoder("{\"no\":99,\"v\":[true]}");
+    //decoder >> info;
 
     //testMap();
     //testStructFunc();
     //testVector();
-    //testProtobuf();
+    testProtobuf();
 
     return 0;
 }

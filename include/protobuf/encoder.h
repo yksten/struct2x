@@ -50,7 +50,7 @@ namespace struct2x {
                 return encodeRepaetedPack(value);
             }
 
-            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
             uint32_t size = (uint32_t)value.value.size();
             for (uint32_t i = 0; i < size; ++i) {
                 varInt(tag);
@@ -97,7 +97,7 @@ namespace struct2x {
             bfTemp.swap(_buffer);
             uint32_t size = (uint32_t)value.value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValue(value.value.at(i), value.type);
+                encodeValue(value.value.at(i), struct2x::TYPE_VARINT);
             }
             _buffer.swap(bfTemp);
             varInt(bfTemp.size());
