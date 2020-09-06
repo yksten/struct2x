@@ -168,7 +168,9 @@ namespace struct2x {
     }
 
     JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
-        cJSON_AddItemToObject(_cur, sz, cJSON_CreateIntArray(&value.front(), (int32_t)value.size()));
+        if (!value.empty()) {
+            cJSON_AddItemToObject(_cur, sz, cJSON_CreateIntArray(&value.front(), (int32_t)value.size()));
+        }
         return *this;
     }
 
@@ -207,12 +209,16 @@ namespace struct2x {
     }
 
     JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<float>& value, bool* pHas) {
-        cJSON_AddItemToObject(_cur, sz, cJSON_CreateFloatArray(&value.front(), (int32_t)value.size()));
+        if (!value.empty()) {
+            cJSON_AddItemToObject(_cur, sz, cJSON_CreateFloatArray(&value.front(), (int32_t)value.size()));
+        }
         return *this;
     }
 
     JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<double>& value, bool* pHas) {
-        cJSON_AddItemToObject(_cur, sz, cJSON_CreateDoubleArray(&value.front(), (int32_t)value.size()));
+        if (!value.empty()) {
+            cJSON_AddItemToObject(_cur, sz, cJSON_CreateDoubleArray(&value.front(), (int32_t)value.size()));
+        }
         return *this;
     }
 
