@@ -65,6 +65,8 @@ namespace proto {
         const uint8_t* data() const { return _sz; }
         unsigned int size() const { return _size; }
 
+        bool ParseFromBytes();
+
         template<typename P, typename T>
         bool bind(void(*f)(T&, const P&, const uint32_t, bool*), struct2x::serializeItem<T>& value) {
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
@@ -79,8 +81,6 @@ namespace proto {
         bool bind(void(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::map<K, V> >& value) {
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
-
-        bool ParseFromBytes();
 
         template<typename T, typename P>
         static void convertValue(T& value, const P& cValue, const uint32_t type, bool* pHas) {

@@ -41,6 +41,9 @@ namespace struct2x {
         size_t _index;
         enum { INITIALSIZE = 8 };
 
+        bool _bCalculateFlag;
+        size_t _cumtomFieldSize;
+
     public:
         explicit BufferWrapper(size_t nSize = INITIALSIZE);
 
@@ -49,7 +52,10 @@ namespace struct2x {
         size_t size() const { return _index; }
 
         void append(const void* data, size_t len);
-        void swap(BufferWrapper& that);
+
+        void startCalculateSize();
+        std::pair<bool, size_t> getCustomField() const { return std::pair<bool, size_t>(_bCalculateFlag, _cumtomFieldSize); }
+        void setCustomField(const std::pair<bool, size_t>& pair) { _bCalculateFlag = pair.first; _cumtomFieldSize = pair.second; }
     };
 
     template<typename VALUE>
@@ -185,12 +191,12 @@ namespace struct2x {
             //std::string
             template<> struct type<std::string> {
                 static inline const std::string& strto(const std::string& str) { return str; }
-                static inline const const char* tostr(const std::string& v) { return v.c_str(); }
+                static inline const char* tostr(const std::string& v) { return v.c_str(); }
             };
             //const std::string
             template<> struct type<const std::string> {
                 static inline const std::string& strto(const std::string& str) { return str; }
-                static inline const const char* tostr(const std::string& v) { return v.c_str(); }
+                static inline const char* tostr(const std::string& v) { return v.c_str(); }
             };
 
         }//namespace STOT

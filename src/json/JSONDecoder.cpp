@@ -127,7 +127,7 @@ namespace struct2x {
         cJSON* curItem = cur();
         if (getObject(sz)) {
             for (cJSON *c = _cur->child; c; c = c->next) {
-                value.push_back(c->valueint);
+                value.push_back((bool)c->valueint);
             }
             if (pHas) *pHas = true;
         }
@@ -166,7 +166,7 @@ namespace struct2x {
         cJSON* curItem = cur();
         if (getObject(sz)) {
             for (cJSON *c = _cur->child; c; c = c->next) {
-                value.push_back(c->valuedouble);
+                value.push_back((uint64_t)c->valuedouble);
             }
             if (pHas) *pHas = true;
         }
@@ -179,7 +179,7 @@ namespace struct2x {
         cJSON* curItem = cur();
         if (getObject(sz)) {
             for (cJSON *c = _cur->child; c; c = c->next) {
-                value.push_back(c->valuedouble);
+                value.push_back((int64_t)c->valuedouble);
             }
             if (pHas) *pHas = true;
         }
