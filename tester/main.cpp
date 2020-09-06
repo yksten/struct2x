@@ -199,7 +199,8 @@ void testProtobuf() {
     struct2x::JSONDecoder(strJson.c_str()) >> items;
 
     struct2x::PBDecoder decoder(buffer.data(), buffer.size());
-    decoder >> items2;
+    bool b = decoder >> items2;
+    assert(b);
 }
 
 

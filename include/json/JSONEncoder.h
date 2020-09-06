@@ -1,5 +1,6 @@
-#ifndef __JSON_READER_H__
-#define __JSON_READER_H__
+#ifndef __JSON_ENCOER_H__
+#define __JSON_ENCOER_H__
+
 #include <string>
 #include <map>
 #include "struct2x.h"

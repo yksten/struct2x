@@ -1,7 +1,6 @@
 #ifndef __PROTOBUF_DECODER_H__
 #define __PROTOBUF_DECODER_H__
 
-#include <assert.h>
 #include <string>
 #include <map>
 #include "struct2x.h"
@@ -30,35 +29,24 @@ namespace proto {
     };
 
 
-    // These are defined in:
-    // https://developers.google.com/protocol-buffers/docs/encoding
-    enum WireType {
-        WIRETYPE_VARINT = 0,                // int32,int64,uint32,uint64,sint32,sin64,bool,enum
-        WIRETYPE_64BIT = 1,                 // fixed64,sfixed64,double
-        WIRETYPE_LENGTH_DELIMITED = 2,      // string,bytes,embedded messages,packed repeated fields
-        WIRETYPE_GROUP_START = 3,           // Groups(deprecated)
-        WIRETYPE_GROUP_END = 4,             // Groups(deprecated)
-        WIRETYPE_32BIT = 5,                 // fixed32,sfixed32,float
-    };
-
     class EXPORTAPI Message {
-        typedef void(*convert_t)(void*, const void*, const uint32_t, bool*);
+        typedef bool(*convert_t)(void*, const void*, const uint32_t, bool*);
         class converter {
-            void convert(void*, const void*, const uint32_t, bool*);
+            bool convert(void*, const void*, const uint32_t, bool*);
             convert_t _func;
             void* _value;
             const uint32_t _type;
             bool* _pHas;
         public:
             converter(convert_t func, void* value, const uint32_t type, bool* pHas) :_func(func), _value(value), _type(type), _pHas(pHas) {}
-            void operator()(const void* cValue) const { (*_func)(_value, cValue, _type, _pHas); }
+            bool operator()(const void* cValue) const { return (*_func)(_value, cValue, _type, _pHas); }
         };
 
         const uint8_t* _sz;
         unsigned int _size;
         std::map<uint32_t, converter> _functionSet;
 
-        static uint64_t ReadVarInt(const uint8_t*& current, size_t& remaining);
+        static bool ReadVarInt(const uint8_t*& current, size_t& remaining, uint64_t& result);
     public:
         Message(const uint8_t* sz, uint32_t size);
 
@@ -68,91 +56,106 @@ namespace proto {
         bool ParseFromBytes();
 
         template<typename P, typename T>
-        bool bind(void(*f)(T&, const P&, const uint32_t, bool*), struct2x::serializeItem<T>& value) {
+        bool bind(bool(*f)(T&, const P&, const uint32_t, bool*), struct2x::serializeItem<T>& value) {
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
 
         template<typename P, typename T>
-        bool bind(void(*f)(std::vector<T>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::vector<T> >& value) {
+        bool bind(bool(*f)(std::vector<T>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::vector<T> >& value) {
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
 
         template<typename P, typename K, typename V>
-        bool bind(void(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::map<K, V> >& value) {
+        bool bind(bool(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::map<K, V> >& value) {
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), &value.value, value.type, value.bHas))).second;
         }
 
         template<typename T, typename P>
-        static void convertValue(T& value, const P& cValue, const uint32_t type, bool* pHas) {
+        static bool convertValue(T& value, const P& cValue, const uint32_t type, bool* pHas) {
             if (type == struct2x::TYPE_VARINT)
                 value = convertVarint<T, P>::value(cValue);
             else if (type == struct2x::TYPE_SVARINT) {
                 value = convertSvarint<T, P>::value(cValue);
             } else {
-                assert(false);
+                return false;
             }
             if (pHas) *pHas = true;
+            return true;
         }
 
-        static void convertValue(std::string& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
+        static bool convertValue(std::string& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
             value = std::string((const char*)cValue.first, cValue.second);
             if (pHas) *pHas = true;
+            return true;
         }
 
         template<typename T>
-        static void convertCustom(T& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
+        static bool convertCustom(T& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
             struct2x::PBDecoder decoder(cValue.first, cValue.second);
-            decoder >> value;
+            if (!decoder.operator>>(value))
+                return false;
             if (pHas) *pHas = true;
+            return true;
         }
 
         template<typename T, typename P>
-        static void convertArray(std::vector<T>& value, const P& cValue, const uint32_t type, bool* pHas) {
+        static bool convertArray(std::vector<T>& value, const P& cValue, const uint32_t type, bool* pHas) {
             if (type == struct2x::TYPE_VARINT)
                 value.push_back(convertVarint<T, P>::value(cValue));
             else if (type == struct2x::TYPE_SVARINT) {
                 value.push_back(convertSvarint<T, P>::value(cValue));
             } else {
-                assert(false);
+                return false;
             }
             if (pHas) *pHas = true;
+            return true;
         }
 
         template<typename T>
-        static void convertArray(std::vector<T>& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
+        static bool convertArray(std::vector<T>& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
             const uint8_t* current = cValue.first;
             size_t remaining = cValue.second;
             while (remaining) {
-                const uint64_t varint = Message::ReadVarInt(current, remaining);
+                uint64_t varint = 0;
+                if (!Message::ReadVarInt(current, remaining, varint))
+                    return false;
                 value.push_back(static_cast<T>(varint));
             }
             if (pHas) *pHas = true;
+            return true;
         }
 
-        static void convertArray(std::vector<std::string>& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
+        static bool convertArray(std::vector<std::string>& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
             value.push_back(std::string((const char*)cValue.first, cValue.second));
             if (pHas) *pHas = true;
+            return true;
         }
 
         template<typename T>
-        static void convertCustomArray(std::vector<T>& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
+        static bool convertCustomArray(std::vector<T>& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
             struct2x::PBDecoder decoder(cValue.first, cValue.second);
             typename T temp;
-            decoder >> temp;
+            if (!decoder.operator>>(temp))
+                return false;
             value.push_back(temp);
             if (pHas) *pHas = true;
+            return true;
         }
 
         template<typename K, typename V>
-        static void convertMap(std::map<K, V>& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
+        static bool convertMap(std::map<K, V>& value, const bin_type& cValue, const uint32_t type, bool* pHas) {
             struct2x::PBDecoder decoder(cValue.first, cValue.second);
             typename K key = typename K();
-            decoder.decodeValue(SERIALIZE(1, key));
+            if (!decoder.decodeValue(SERIALIZE(1, key)))
+                return false;
             typename V v = typename V();
-            decoder.decodeValue(SERIALIZE(2, v));
-            decoder.ParseFromBytes();
+            if (!decoder.decodeValue(SERIALIZE(2, v)))
+                return false;
+            if (!decoder.ParseFromBytes())
+                return false;
             value.insert(std::pair<K, V>(key, v));
             if (pHas) *pHas = true;
+            return true;
         }
 
     };
@@ -164,29 +167,31 @@ namespace struct2x {
     class EXPORTAPI PBDecoder {
         friend class proto::Message;
         proto::Message _msg;
+        bool _bParseResult;
 
         PBDecoder(const PBDecoder&);
         PBDecoder& operator=(const PBDecoder&);
     public:
         PBDecoder(const uint8_t* sz, uint32_t size);
-        ~PBDecoder();
 
         template<typename T>
         bool operator>>(T& value) {
             internal::serializeWrapper(*this, value);
-            return ParseFromBytes();
+            return (_bParseResult && ParseFromBytes());
         }
 
         template<typename T>
         PBDecoder& operator&(serializeItem<T> value) {
-            decodeValue(value);
+            if (_bParseResult)
+                _bParseResult = decodeValue(value);
             return *this;
         }
 
         template<typename T>
         PBDecoder& operator&(serializeItem<std::vector<T> > value) {
             if (!value.value.empty()) value.value.clear();
-            decodeRepaeted(value);
+            if (_bParseResult)
+                _bParseResult = decodeRepaeted(value);
             return *this;
         }
 
@@ -202,30 +207,30 @@ namespace struct2x {
         PBDecoder& operator&(serializeItem<std::map<double, V> > value);
     private:
         template<typename T>
-        void decodeValue(serializeItem<T>& v) {
-            _msg.bind<proto::bin_type, T>(&proto::Message::convertCustom, v);
+        bool decodeValue(serializeItem<T>& v) {
+            return _msg.bind<proto::bin_type, T>(&proto::Message::convertCustom, v);
         }
-        void decodeValue(serializeItem<bool>&);
-        void decodeValue(serializeItem<int32_t>&);
-        void decodeValue(serializeItem<uint32_t>&);
-        void decodeValue(serializeItem<int64_t>&);
-        void decodeValue(serializeItem<uint64_t>&);
-        void decodeValue(serializeItem<float>&);
-        void decodeValue(serializeItem<double>&);
-        void decodeValue(serializeItem<std::string>&);
+        bool decodeValue(serializeItem<bool>&);
+        bool decodeValue(serializeItem<int32_t>&);
+        bool decodeValue(serializeItem<uint32_t>&);
+        bool decodeValue(serializeItem<int64_t>&);
+        bool decodeValue(serializeItem<uint64_t>&);
+        bool decodeValue(serializeItem<float>&);
+        bool decodeValue(serializeItem<double>&);
+        bool decodeValue(serializeItem<std::string>&);
 
         template<typename T>
-        void decodeRepaeted(serializeItem<std::vector<T> >& v) {
-            _msg.bind<proto::bin_type, std::vector<T> >(&proto::Message::convertCustomArray, v);
+        bool decodeRepaeted(serializeItem<std::vector<T> >& v) {
+            return _msg.bind<proto::bin_type, std::vector<T> >(&proto::Message::convertCustomArray, v);
         }
-        void decodeRepaeted(serializeItem<std::vector<bool> >&);
-        void decodeRepaeted(serializeItem<std::vector<int32_t> >&);
-        void decodeRepaeted(serializeItem<std::vector<uint32_t> >&);
-        void decodeRepaeted(serializeItem<std::vector<int64_t> >&);
-        void decodeRepaeted(serializeItem<std::vector<uint64_t> >&);
-        void decodeRepaeted(serializeItem<std::vector<float> >&);
-        void decodeRepaeted(serializeItem<std::vector<double> >&);
-        void decodeRepaeted(serializeItem<std::vector<std::string> >&);
+        bool decodeRepaeted(serializeItem<std::vector<bool> >&);
+        bool decodeRepaeted(serializeItem<std::vector<int32_t> >&);
+        bool decodeRepaeted(serializeItem<std::vector<uint32_t> >&);
+        bool decodeRepaeted(serializeItem<std::vector<int64_t> >&);
+        bool decodeRepaeted(serializeItem<std::vector<uint64_t> >&);
+        bool decodeRepaeted(serializeItem<std::vector<float> >&);
+        bool decodeRepaeted(serializeItem<std::vector<double> >&);
+        bool decodeRepaeted(serializeItem<std::vector<std::string> >&);
 
         bool ParseFromBytes();
     };

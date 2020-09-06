@@ -1,5 +1,6 @@
 #ifndef __PROTOBUF_ENCODER_H__
 #define __PROTOBUF_ENCODER_H__
+
 #include <string>
 #include <map>
 #include "struct2x.h"
@@ -81,7 +82,7 @@ namespace struct2x {
 
         template<typename K, typename V>
         PBEncoder& operator&(const serializeItem<std::map<K, V> >& value) {
-            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::WIRETYPE_LENGTH_DELIMITED;
             for (std::map<K, V>::const_iterator it = value.value.begin(); it != value.value.end(); ++it) {
                 varInt(tag);
 
@@ -105,7 +106,7 @@ namespace struct2x {
     private:
         template<typename T>
         PBEncoder& encodeRepaetedPack(const serializeItem<std::vector<T> >& value) {
-            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::WIRETYPE_LENGTH_DELIMITED;
             varInt(tag);
             uint32_t size = (uint32_t)value.value.size();
             for (uint32_t i = 0; i < size; ++i) {
