@@ -42,20 +42,16 @@ namespace struct2x {
 
         template<typename T>
         PBEncoder& operator&(const serializeItem<T>& value) {
-            if (!internal::isMessage<T>::YES) {
-                uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
-                varInt(tag);
-                encodeValue(value.value, value.type);
-                return *this;
-            }
-            uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+            uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
             varInt(tag);
-            size_t nCustomFieldSize = 0;
-            do {
-                calculateFieldHelper h(_buffer, nCustomFieldSize);
-                encodeValue(value.value, value.type);
-            } while (0);
-            varInt(nCustomFieldSize);
+            if (internal::isMessage<T>::YES) {
+                size_t nCustomFieldSize = 0;
+                do {
+                    calculateFieldHelper h(_buffer, nCustomFieldSize);
+                    encodeValue(value.value, value.type);
+                } while (0);
+                varInt(nCustomFieldSize);
+            }
             encodeValue(value.value, value.type);
             return *this;
         }
