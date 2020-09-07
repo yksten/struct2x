@@ -67,9 +67,7 @@ namespace struct2x {
         bool operator >> (T& value) {
             internal::serializeWrapper(*this, value);
             convertHandler handler(_map);
-            rapidjson::Reader reader;
-            reader.Parse(_str, handler);
-            return true;
+            return rapidjson::Reader().Parse(_str, handler).IsError();
         }
 
         template<typename T>
@@ -124,6 +122,7 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
     };
+
 }
 
 

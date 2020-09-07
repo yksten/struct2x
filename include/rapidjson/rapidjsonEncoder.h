@@ -99,6 +99,7 @@ namespace struct2x {
         void StartArray(const char* sz);
         void EndArray();
     };
+
 }
 
 

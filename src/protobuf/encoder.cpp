@@ -1,6 +1,7 @@
 #include "protobuf/encoder.h"
 
 namespace struct2x {
+
     PBEncoder::writeValue const PBEncoder::functionArray[] = { &PBEncoder::varInt, &PBEncoder::svarInt, &PBEncoder::fixed32, &PBEncoder::fixed64, };
     PBEncoder::PBEncoder(BufferWrapper& buffer) :_buffer(buffer) {
     }
@@ -103,4 +104,5 @@ namespace struct2x {
         buffer[i++] = byte;
         _buffer.append(buffer, i);
     }
+
 }

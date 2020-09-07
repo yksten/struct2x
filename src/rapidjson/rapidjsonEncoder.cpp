@@ -185,4 +185,5 @@ namespace struct2x {
     void rapidjsonEncoder::EndArray() {
         _writer->EndArray();
     }
+
 }
