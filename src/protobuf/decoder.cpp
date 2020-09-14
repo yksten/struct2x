@@ -83,7 +83,7 @@ namespace proto {
                         uint64_t value = 0;
                         if (!ReadVarInt(current, remaining, value) || !it->second(&value))
                             return false;
-                    } // else 新协议数据兼容老协议
+                    }
                 } break;
                 case struct2x::internal::WIRETYPE_64BIT: {
                     std::map<uint32_t, converter>::const_iterator it = _functionSet.find(field_number);
@@ -91,7 +91,7 @@ namespace proto {
                         uint64_t value = 0;
                         if (!ReadFromBytes(current, remaining, value) || !it->second(&value))
                             return false;
-                    } // else 新协议数据兼容老协议
+                    }
                 } break;
                 case struct2x::internal::WIRETYPE_LENGTH_DELIMITED: {
                     std::map<uint32_t, converter>::const_iterator it = _functionSet.find(field_number);
@@ -105,7 +105,7 @@ namespace proto {
                         bin_type bin(data, size);
                         if (!it->second(&bin))
                             return false;
-                    } // else 新协议数据兼容老协议
+                    }
                 } break;
                 case struct2x::internal::WIRETYPE_GROUP_START:
                 case struct2x::internal::WIRETYPE_GROUP_END:
@@ -116,7 +116,7 @@ namespace proto {
                         uint32_t value = 0;
                         if (!ReadFromBytes(current, remaining, value) || !it->second(&value))
                             return false;
-                    } // else 新协议数据兼容老协议
+                    }
                 } break;
                 default: {
                     return false;
