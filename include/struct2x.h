@@ -129,16 +129,50 @@ namespace struct2x {
             serialize(t, c);
         }
 
-        template<typename T>
+        template<typename From, typename To>
+        class is_convertible {
+            typedef char one;
+            typedef int  two;
+
+            template<typename To1>
+            static one test(To1);
+
+            template<typename>
+            static two test(...);
+        public:
+            static const bool value = sizeof(test<To>(From())) == sizeof(one);
+        };
+
+        template <class T> struct is_integral { static const bool value = false; };
+        template <> struct is_integral<bool> { static const bool value = true; };
+        template <> struct is_integral<int32_t> { static const bool value = true; };
+        template <> struct is_integral<uint32_t> { static const bool value = true; };
+        template <> struct is_integral<int64_t> { static const bool value = true; };
+        template <> struct is_integral<uint64_t> { static const bool value = true; };
+        template <> struct is_integral<float> { static const bool value = true; };
+        template <> struct is_integral<double> { static const bool value = true; };
+
+        template <class T>
+        struct is_enum {
+            static const bool value = is_convertible<T, int32_t>::value & !is_integral<T>::value;
+        };
+
+        template<typename T, bool isEnum = is_enum<T>::value>
         struct TypeTraits {
             typedef T Type;
             static bool isVector() { return false; }
         };
 
-        template<typename T>
-        struct TypeTraits<std::vector<T> > {
+        template<typename T, bool isEnum>
+        struct TypeTraits<std::vector<T>, isEnum> {
             typedef std::vector<T> Type;
             static bool isVector() { return true; }
+        };
+
+        template<typename T>
+        struct TypeTraits<T, true> {
+            typedef int32_t Type;
+            static bool isVector() { return false; }
         };
 
         namespace STOT {

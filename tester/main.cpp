@@ -203,8 +203,41 @@ void testProtobuf() {
     assert(b);
 }
 
+enum EnumType {
+    ET1,
+    ET2,
+    ET3,
+};
+
+struct struExampleEnum {
+    struExampleEnum() : id(), has_id(false), has_str(false), f(), db(), e(ET3) {}
+    int32_t id;
+    bool has_id;
+    std::string str;
+    bool has_str;
+    float f;
+    double db;
+    std::vector<int32_t> v;
+    EnumType e;
+
+    template<typename T>
+    void serialize(T& t) {
+        SERIALIZATION(t, id, str, f, db, v, e);
+    }
+};
 
 int main() {
+    struExampleEnum item;
+    item.e = ET2;
+    struct2x::JSONEncoder jr;
+    jr << item;
+    std::string strJson;
+    jr.toString(strJson);
+
+    struct2x::JSONDecoder jw("{\"id\":0,\"str\":\"\",\"f\":0,\"db\":0,\"e\":2}");
+    jw >> item;
+
+
     //bool b = true;
     //struct2x::converter f = struct2x::bind(&struct2x::rapidjsonDecoder::convertBool, b, NULL);
     //f(&b);
