@@ -53,7 +53,7 @@ namespace struct2x {
                 } while (0);
                 varInt(nCustomFieldSize);
             }
-            encodeValue(value.value, value.type);
+            encodeValue(*(internal::TypeTraits<T>::Type*)(&value.value), value.type);
             return *this;
         }
 

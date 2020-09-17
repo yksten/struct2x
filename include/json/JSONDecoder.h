@@ -47,7 +47,7 @@ namespace struct2x {
                     std::string key = getChildName(i);
                     V item = V();
                     setValue(key.c_str(), item, NULL);
-                    value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
+                    value.insert(std::pair<K, V>(static_cast<K>(internal::STOT::type<internal::TypeTraits<K>::Type>::strto(key.c_str())), item));
                 }
             }
             return (_cur) ? true : false;

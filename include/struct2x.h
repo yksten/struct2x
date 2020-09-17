@@ -135,12 +135,15 @@ namespace struct2x {
             typedef int  two;
 
             template<typename To1>
+            static To1 create();
+
+            template<typename To1>
             static one test(To1);
 
             template<typename>
             static two test(...);
         public:
-            static const bool value = sizeof(test<To>(From())) == sizeof(one);
+            static const bool value = (sizeof(test<To>(create<From>())) == sizeof(one));
         };
 
         template <class T> struct is_integral { static const bool value = false; };
