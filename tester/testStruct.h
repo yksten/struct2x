@@ -8,9 +8,15 @@
 
 namespace testStruct {
 
+    enum EnumType {
+        ET1,
+        ET2,
+        ET3,
+    };
+
     struct struExample {
         struExample() : id(), has_id(false), has_str(false), f(), db() {}
-        int32_t id;
+        EnumType id;
         bool has_id;
         std::string str;
         bool has_str;

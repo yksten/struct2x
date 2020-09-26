@@ -171,7 +171,7 @@ void testVector() {
 
 void testProtobuf() {
     testStruct::struExample item, item2;
-    item.id = 1;
+    item.id = testStruct::ET2;
     item.str = "example";
     item.f = 9.7f;
     item.db = 19.8f;
@@ -181,7 +181,7 @@ void testProtobuf() {
     testStruct::struExamples items, items2;
     items.v.push_back(item);
     items.m[1] = item;
-    item.id = 2;
+    item.id = testStruct::ET3;
     item.str = "afexample";
     item.f = 5.7f;
     item.db = 89.8f;

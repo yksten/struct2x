@@ -102,33 +102,6 @@ namespace struct2x {
             WIRETYPE_32BIT = 5,                 // fixed32,sfixed32,float
         };
 
-        template <typename T> struct isMessage { enum { YES = 1, WRITE_TYPE = WIRETYPE_LENGTH_DELIMITED }; };
-        template<> struct isMessage<std::string> { enum { YES = 0, WRITE_TYPE = WIRETYPE_LENGTH_DELIMITED }; };
-        template<> struct isMessage<bool> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
-        template<> struct isMessage<int32_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
-        template<> struct isMessage<uint32_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
-        template<> struct isMessage<int64_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
-        template<> struct isMessage<uint64_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
-        template<> struct isMessage<float> { enum { YES = 0, WRITE_TYPE = WIRETYPE_32BIT }; };
-        template<> struct isMessage<double> { enum { YES = 0, WRITE_TYPE = WIRETYPE_64BIT }; };
-
-        struct access {
-            template<class T, class C>
-            static void serialize(T& t, C& c) {
-                c.serialize(t);
-            }
-        };
-
-        template<class T, class C>
-        inline void serialize(T& t, C& c) {
-            access::serialize(t, c);
-        }
-
-        template<class T, class C>
-        inline void serializeWrapper(T& t, C& c) {
-            serialize(t, c);
-        }
-
         template<typename From, typename To>
         class is_convertible {
             typedef char one;
@@ -159,6 +132,27 @@ namespace struct2x {
         struct is_enum {
             static const bool value = is_convertible<T, int32_t>::value & !is_integral<T>::value;
         };
+
+        template <typename T, bool isEnum = is_enum<T>::value> struct isMessage { enum { YES = 1, WRITE_TYPE = WIRETYPE_LENGTH_DELIMITED }; };
+        template <typename T> struct isMessage<T, true> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
+        template<> struct isMessage<std::string> { enum { YES = 0, WRITE_TYPE = WIRETYPE_LENGTH_DELIMITED }; };
+        template<> struct isMessage<bool> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
+        template<> struct isMessage<int32_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
+        template<> struct isMessage<uint32_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
+        template<> struct isMessage<int64_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
+        template<> struct isMessage<uint64_t> { enum { YES = 0, WRITE_TYPE = WIRETYPE_VARINT }; };
+        template<> struct isMessage<float> { enum { YES = 0, WRITE_TYPE = WIRETYPE_32BIT }; };
+        template<> struct isMessage<double> { enum { YES = 0, WRITE_TYPE = WIRETYPE_64BIT }; };
+
+        template<class T, class C>
+        inline void serialize(T& t, C& c) {
+            c.serialize(t);
+        }
+
+        template<class T, class C>
+        inline void serializeWrapper(T& t, C& c) {
+            serialize(t, c);
+        }
 
         template<typename T, bool isEnum = is_enum<T>::value>
         struct TypeTraits {
