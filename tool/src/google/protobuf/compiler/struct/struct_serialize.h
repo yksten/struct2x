@@ -29,10 +29,13 @@ namespace google {
                     ~codeSerialize();
 
                     void print(google::protobuf::io::Printer& printer, const char* szName)const;
+                    static std::string FieldName(const FieldDescriptor& field);
                 private:
+                    void prepareMsgs();
                     static bool sortMsgs(std::vector<FieldDescriptorArr>& msgs);
                     static uint32_t getInsertIdx(const std::vector<FieldDescriptorArr>& msgs, const FieldDescriptorArr& item);
                     void printInclude(google::protobuf::io::Printer& printer)const;
+                    void printEnum(google::protobuf::io::Printer& printer)const;
                     void printStruct(google::protobuf::io::Printer& printer, FileDescriptor::Syntax syntax)const;
                     void printSerialize(google::protobuf::io::Printer& printer)const;
                     bool hasInt(google::protobuf::io::Printer& printer)const;

@@ -9,6 +9,31 @@ namespace google {
         namespace compiler {
             namespace cpp {
 
+                const char* const kKeywordList[] = {
+                    "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor",
+                    "bool", "break", "case", "catch", "char", "class", "compl", "const",
+                    "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
+                    "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+                    "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
+                    "mutable", "namespace", "new", "noexcept", "not", "not_eq", "NULL",
+                    "operator", "or", "or_eq", "private", "protected", "public", "register",
+                    "reinterpret_cast", "return", "short", "signed", "sizeof", "static",
+                    "static_assert", "static_cast", "struct", "switch", "template", "this",
+                    "thread_local", "throw", "true", "try", "typedef", "typeid", "typename",
+                    "union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t",
+                    "while", "xor", "xor_eq"
+                };
+
+                hash_set<string> MakeKeywordsMap() {
+                    hash_set<string> result;
+                    for (int i = 0; i < GOOGLE_ARRAYSIZE(kKeywordList); i++) {
+                        result.insert(kKeywordList[i]);
+                    }
+                    return result;
+                }
+
+                hash_set<string> kKeywords = MakeKeywordsMap();
+
                 const char* type2string(const FieldDescriptor& field, const char* sz = "") {
                     switch (field.type()) {
                     case FieldDescriptor::TYPE_DOUBLE:
@@ -26,8 +51,13 @@ namespace google {
                     case FieldDescriptor::TYPE_UINT32:
                     case FieldDescriptor::TYPE_SFIXED32:
                     case FieldDescriptor::TYPE_SINT32:
-                    case FieldDescriptor::TYPE_ENUM:
                         return "int32_t";
+                    case FieldDescriptor::TYPE_ENUM:
+                    {
+                        static std::string strRet;
+                        strRet = sz + ClassName(field.enum_type(), true);
+                        return strRet.c_str();
+                    }
                     case FieldDescriptor::TYPE_BOOL:
                         return "bool";
                     case FieldDescriptor::TYPE_STRING:
@@ -117,7 +147,7 @@ namespace google {
 
                     if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                         if (field.label() == FieldDescriptor::LABEL_OPTIONAL)
-                            strResult.append(", &has_").append(FieldName(&field));
+                            strResult.append(", &has_").append(codeSerialize::FieldName(field));
                     }
 
                     return strResult.c_str();
@@ -143,7 +173,14 @@ namespace google {
                 };
 
                 codeSerialize::codeSerialize(const FileDescriptor* file, const Options& options) :scc_analyzer_(options), _file(file) {
-                    std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
+                    prepareMsgs();
+                }
+
+                codeSerialize::~codeSerialize() {
+                }
+
+                void codeSerialize::prepareMsgs() {
+                    std::vector<const Descriptor*> msgs = FlattenMessagesInFile(_file);
                     for (int i = 0; i < msgs.size(); ++i) {
                         const Descriptor* descriptor = msgs[i];
                         FieldDescriptorArr optimized_order;
@@ -160,9 +197,6 @@ namespace google {
                     }
                     //sort
                     sortMsgs(_message_generators);
-                }
-
-                codeSerialize::~codeSerialize() {
                 }
 
                 bool codeSerialize::sortMsgs(std::vector<FieldDescriptorArr>& msgs) {
@@ -206,6 +240,7 @@ namespace google {
                         //3.namespace
                         std::vector<string> package_parts = Split(_file->package(), ".", true);
                         packagePartsWrapper ins(package_parts, printer);
+                        printEnum(printer);
                         //struct
                         //constructed function
                         //Initialization fidlds
@@ -253,6 +288,21 @@ namespace google {
                     printer.Print("\n");
                 }
 
+                void codeSerialize::printEnum(google::protobuf::io::Printer& printer)const {
+                    for (int i = 0; i < _file->enum_type_count(); ++i) {
+                        const EnumDescriptor* item = _file->enum_type(i);
+                        printer.Print("\n");
+                        printer.Print("    enum $enumName$ \{\n", "enumName", item->name());
+                        for (int idx = 0; idx < item->value_count(); ++idx) {
+                            const EnumValueDescriptor* value = item->value(idx);
+                            char sz[64] = { 0 };
+                            sprintf(sz, "%d", value->number());
+                            printer.Print("        $valueName$ = $value$,\n", "valueName", value->name(), "value", sz);
+                        }
+                        printer.Print("    };\n");
+                    }
+                }
+
                 void codeSerialize::printStruct(google::protobuf::io::Printer& printer, FileDescriptor::Syntax syntax)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
@@ -270,7 +320,7 @@ namespace google {
                                     && field->type() != FieldDescriptor::TYPE_MESSAGE);
                                 if (init) {
                                     if (!flag) printer.Print(" : "); else printer.Print(", ");
-                                    printer.Print("$fieldName$\(", "fieldName", FieldName(field));
+                                    printer.Print("$fieldName$\(", "fieldName", FieldName(*field));
                                     if (field->has_default_value())
                                         printer.Print("$value$", "value", type2value(*field));
                                     printer.Print(")");
@@ -279,7 +329,7 @@ namespace google {
                                 //has init
                                 if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                                     if (field->label() == FieldDescriptor::LABEL_OPTIONAL)
-                                        printer.Print(", has_$fieldName$\(false)", "fieldName", FieldName(field));
+                                        printer.Print(", has_$fieldName$\(false)", "fieldName", FieldName(*field));
                                 }
                                 fields.append("    ");
                                 if (field->is_map()) {
@@ -289,11 +339,11 @@ namespace google {
                                 } else {
                                     fields.append("    ").append(type2string(*field));
                                 }
-                                fields.append(" ").append(FieldName(field)).append(";\n");
+                                fields.append(" ").append(FieldName(*field)).append(";\n");
                                 //has declare
                                 if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                                     if (field->label() == FieldDescriptor::LABEL_OPTIONAL)
-                                        fields.append("        bool has_").append(FieldName(field)).append(";\n");
+                                        fields.append("        bool has_").append(FieldName(*field)).append(";\n");
                                 }
                             }
                         }
@@ -306,7 +356,7 @@ namespace google {
                                 char sz[20] = { 0 };
                                 sprintf(sz, "%d", field->number());
                                 const std::string& strOrgName = field->name();
-                                std::string fieldName(FieldName(field));
+                                std::string fieldName(FieldName(*field));
                                 if (strOrgName != fieldName) {
                                     printer.Print(" & struct2x::makeItem(\"$orgName$\", $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 } else {
@@ -409,6 +459,15 @@ namespace google {
                         }
                     }
                     return false;
+                }
+
+                std::string codeSerialize::FieldName(const FieldDescriptor& field) {
+                    string result = field.name();
+                    LowerString(&result);
+                    if (kKeywords.count(result) > 0) {
+                        result.append("_");
+                    }
+                    return result;
                 }
             }
         }
