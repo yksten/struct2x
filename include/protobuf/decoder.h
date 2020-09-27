@@ -92,7 +92,7 @@ namespace struct2x {
         template<typename T>
         PBDecoder& operator&(serializeItem<T> value) {
             if (_bParseResult)
-                _bParseResult = decodeValue(*(serializeItem<internal::TypeTraits<T>::Type>*)(&value));
+                _bParseResult = decodeValue(*(typename serializeItem<internal::TypeTraits<T>::Type>*)(&value));
             return *this;
         }
 
@@ -100,7 +100,7 @@ namespace struct2x {
         PBDecoder& operator&(serializeItem<std::vector<T> > value) {
             if (!value.value.empty()) value.value.clear();
             if (_bParseResult)
-                _bParseResult = decodeRepaeted(*(serializeItem<std::vector<internal::TypeTraits<T>::Type> >*)(&value));
+                _bParseResult = decodeRepaeted(*(typename serializeItem<std::vector<internal::TypeTraits<T>::Type> >*)(&value));
             return *this;
         }
 
@@ -220,11 +220,11 @@ namespace struct2x {
             struct2x::PBDecoder decoder(cValue.first, cValue.second);
             K key = K();
             struct2x::serializeItem<K> kItem = SERIALIZE(1, key);
-            if (!decoder.decodeValue(*(serializeItem<internal::TypeTraits<K>::Type>*)(&kItem)))
+            if (!decoder.decodeValue(*(typename serializeItem<internal::TypeTraits<K>::Type>*)(&kItem)))
                 return false;
             V v = V();
             struct2x::serializeItem<V> vItem = SERIALIZE(2, v);
-            if (!decoder.decodeValue(*(serializeItem<internal::TypeTraits<V>::Type>*)(&vItem)))
+            if (!decoder.decodeValue(*(typename serializeItem<internal::TypeTraits<V>::Type>*)(&vItem)))
                 return false;
             if (!decoder.ParseFromBytes())
                 return false;

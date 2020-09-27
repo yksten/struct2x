@@ -108,7 +108,7 @@ namespace struct2x {
             typedef int  two;
 
             template<typename To1>
-            static To1 create();
+            static To1& create();
 
             template<typename To1>
             static one test(To1);
