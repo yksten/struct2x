@@ -49,11 +49,11 @@ namespace struct2x {
                 size_t nCustomFieldSize = 0;
                 do {
                     calculateFieldHelper h(_buffer, nCustomFieldSize);
-                    encodeValue(*(typename const internal::TypeTraits<T>::Type*)(&value.value), value.type);
+                    encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.value), value.type);
                 } while (0);
                 varInt(nCustomFieldSize);
             }
-            encodeValue(*(typename const internal::TypeTraits<T>::Type*)(&value.value), value.type);
+            encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.value), value.type);
             return *this;
         }
 
@@ -71,11 +71,11 @@ namespace struct2x {
                     size_t nCustomFieldSize = 0;
                     do {
                         calculateFieldHelper h(_buffer, nCustomFieldSize);
-                        encodeValue(*(typename const internal::TypeTraits<T>::Type*)(&value.value.at(i)), value.type);
+                        encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.value.at(i)), value.type);
                     } while (0);
                     varInt(nCustomFieldSize);
                 }
-                encodeValue(*(typename const internal::TypeTraits<T>::Type*)(&value.value.at(i)), value.type);
+                encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.value.at(i)), value.type);
             }
             return *this;
         }
@@ -90,13 +90,13 @@ namespace struct2x {
                 do {
                     calculateFieldHelper h(_buffer, nCustomFieldSize);
                     varInt(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE);
-                    encodeValue(*(typename const internal::TypeTraits<K>::Type*)(&it->first), TYPE_VARINT);
+                    encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), TYPE_VARINT);
                     operator&(SERIALIZE(2, *const_cast<V*>(&it->second)));
                 } while (0);
                 varInt(nCustomFieldSize);
 
                 varInt(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE);
-                encodeValue(*(typename const internal::TypeTraits<K>::Type*)(&it->first), TYPE_VARINT);
+                encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), TYPE_VARINT);
                 operator&(SERIALIZE(2, *const_cast<V*>(&it->second)));
             }
             return *this;
@@ -110,7 +110,7 @@ namespace struct2x {
             varInt(tag);
             uint32_t size = (uint32_t)value.value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValue(*(typename const internal::TypeTraits<T>::Type*)(&value.value.at(i)), struct2x::TYPE_VARINT);
+                encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.value.at(i)), struct2x::TYPE_VARINT);
             }
             return *this;
         }
