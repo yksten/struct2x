@@ -26,7 +26,7 @@ namespace struct2x {
         template<typename T>
         JSONEncoder& operator << (const T& value) {
             const typename internal::TypeTraits<T>::Type& v = value;
-            if (typename internal::TypeTraits<T>::isVector()) {
+            if (internal::TypeTraits<T>::isVector()) {
                 operator << (v);
             } else {
                 if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
@@ -68,7 +68,7 @@ namespace struct2x {
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
                 cJSON* lastItem = cur();
-                if (typename internal::TypeTraits<T>::isVector())
+                if (internal::TypeTraits<T>::isVector())
                     addArrayToArray();
                 else
                     addItemToArray();
