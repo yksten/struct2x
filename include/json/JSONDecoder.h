@@ -29,12 +29,12 @@ namespace struct2x {
 
         template<typename T>
         JSONDecoder& operator&(serializeItem<T> value) {
-            return setValue(value.name, *(internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+            return setValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            return setValue(sz, *(internal::TypeTraits<T>::Type*)(&value), pHas);
+            return setValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
         }
 
         template<typename K, typename V>
@@ -47,7 +47,7 @@ namespace struct2x {
                     std::string key = getChildName(i);
                     V item = V();
                     setValue(key.c_str(), item, NULL);
-                    value.insert(std::pair<K, V>(static_cast<K>(internal::STOT::type<internal::TypeTraits<K>::Type>::strto(key.c_str())), item));
+                    value.insert(std::pair<K, V>(static_cast<K>(internal::STOT::type<typename internal::TypeTraits<K>::Type>::strto(key.c_str())), item));
                 }
             }
             return (_cur) ? true : false;

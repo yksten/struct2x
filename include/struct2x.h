@@ -1,9 +1,8 @@
 #ifndef __STRUCT_MACRO_H__
 #define __STRUCT_MACRO_H__
 
-#ifdef _MSC_VER
 #include <stdlib.h>
-#define _atoi64(val)     strtoll(val, NULL, 10)
+#ifdef _MSC_VER
 #ifdef EXPORTAPI 
 #define EXPORTAPI _declspec(dllimport)
 #else 
@@ -193,12 +192,12 @@ namespace struct2x {
             };
             //int64_t
             template<> struct type<int64_t> {
-                static inline int64_t strto(const char* str) { return _atoi64(str); }
+                static inline int64_t strto(const char* str) { return atoll(str); }
                 static inline const char* tostr(int64_t v) { sprintf(szTransbuf, "%lld", (long long)v); return szTransbuf; }
             };
             //uint64_t
             template<> struct type<uint64_t> {
-                static inline uint64_t strto(const char* str) { return (uint64_t)_atoi64(str); }
+                static inline uint64_t strto(const char* str) { return (uint64_t)atoll(str); }
                 static inline const char* tostr(uint64_t v) { sprintf(szTransbuf, "%lld", (long long)v); return szTransbuf; }
             };
             //float

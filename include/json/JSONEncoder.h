@@ -20,13 +20,13 @@ namespace struct2x {
 
         template<typename T>
         JSONEncoder& operator&(serializeItem<T> value) {
-            return getValue(value.name, *(internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+            return getValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
         }
 
         template<typename T>
         JSONEncoder& operator << (const T& value) {
             const typename internal::TypeTraits<T>::Type& v = value;
-            if (internal::TypeTraits<T>::isVector()) {
+            if (typename internal::TypeTraits<T>::isVector()) {
                 operator << (v);
             } else {
                 if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
@@ -47,7 +47,7 @@ namespace struct2x {
 
         template<typename T>
         JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
-            return getValue(sz, *(internal::TypeTraits<T>::Type*)(&value), pHas);
+            return getValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
         }
 
         bool toString(std::string& str, bool bUnformatted = true);
@@ -68,7 +68,7 @@ namespace struct2x {
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
                 cJSON* lastItem = cur();
-                if (internal::TypeTraits<T>::isVector())
+                if (typename internal::TypeTraits<T>::isVector())
                     addArrayToArray();
                 else
                     addItemToArray();
