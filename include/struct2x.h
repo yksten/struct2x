@@ -37,18 +37,16 @@ namespace struct2x {
     };
 
     class EXPORTAPI BufferWrapper {
-        std::vector<uint8_t> _buffer;
+        std::string _buffer;
         size_t _index;
-        enum { INITIALSIZE = 8 };
 
         bool _bCalculateFlag;
         size_t _cumtomFieldSize;
 
     public:
-        explicit BufferWrapper(size_t nSize = INITIALSIZE);
+        BufferWrapper();
 
-        uint8_t* data() { return &(*_buffer.begin()); }
-        const uint8_t* data() const { return &(*_buffer.begin()); }
+        const uint8_t* data() const { return (const uint8_t*)_buffer.c_str(); }
         size_t size() const { return _index; }
 
         void append(const void* data, size_t len);
