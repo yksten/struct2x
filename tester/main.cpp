@@ -248,9 +248,9 @@ int main() {
         printf("%02x ", 0xff & mpBuf[i]);
     printf("\n");
 
-    //struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
-    //struExampleEnum item2;
-    //mpd >> item2;
+    struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
+    struExampleEnum item2;
+    mpd >> item2;
 
     return 0;
 

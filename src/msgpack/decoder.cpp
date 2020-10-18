@@ -96,28 +96,32 @@ namespace msgpack {
                 ++size;
             }break;
             case 0xca: {  // float
-                ++sz; ++size;
+                ++sz; --size;
                 union { float f; uint32_t i; };
-                for (int8_t shift = 0; shift < 4; ++shift) {
-                    const uint8_t next_number = sz[shift + 1];
-                    i += (next_number & 0x7f) << shift;
-                    i += (uint32_t)(next_number & 0x7f) << shift;
+                i = 0;
+                for (int8_t idx = 0; idx < 4; ++idx) {
+                    const uint8_t next_number = sz[idx];
+                    i <<= (sizeof(uint8_t) * 8);
+                    i += (uint32_t)(next_number & 0x7f);
                 }
                 sz += 4; size -= 4;
                 value.type = Value::VALUEFLOAT;
                 value.f = f;
+                bResult = true;
             }break;
             case 0xcb: { // double
-                ++sz; ++size;
+                ++sz; --size;
                 union { double db; uint64_t i; };
-                for (int8_t shift = 0; shift < 8; ++shift) {
-                    const uint8_t next_number = sz[shift + 1];
-                    i += (next_number & 0x7f) << shift;
-                    i += (uint64_t)(next_number & 0x7f) << shift;
+                i = 0;
+                for (int8_t idx = 0; idx < 8; ++idx) {
+                    const uint8_t next_number = sz[idx];
+                    i <<= (sizeof(uint8_t) * 8);
+                    i += (uint64_t)(next_number & 0x7f);
                 }
                 sz += 8; size -= 8;
-                value.type = Value::VALUEFLOAT;
+                value.type = Value::VALUEDOUBLE;
                 value.db = db;
+                bResult = true;
             }break;
             case 0xcc: { // unsigned int  8
                 value.type = Value::VALUEINT;
@@ -144,10 +148,16 @@ namespace msgpack {
                 value.type = Value::VALUEINT;
             }break;
                 //...TODO
-            // (0x00 <= *p && *p <= 0x7f) int
             default: {
-                value.type = Value::VALUESTR;
-                return getFieldName(sz, size, value.bin);
+                if (0x00 <= *sz && *sz <= 0x7f) { //int
+                    value.type = Value::VALUEINT;
+                    value.i = *sz - 0x00;
+                    bResult = true;
+                } else {
+                    value.type = Value::VALUESTR;
+                    bResult = getFieldName(sz, size, value.bin);
+                    return bResult;
+                }
             }
         }
 
