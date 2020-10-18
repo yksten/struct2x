@@ -234,7 +234,7 @@ namespace struct2x {
     }
 
     void MPHelper::setValue(const std::string& v) {
-        if (checkEmpty(v)) {
+        if (!checkEmpty(v)) {
             size_t l = v.size();
             if (l < 32) {
                 unsigned char d = 0xa0 | (uint8_t)l;
