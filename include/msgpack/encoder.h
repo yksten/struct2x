@@ -78,7 +78,6 @@ namespace struct2x {
             return *this;
         }
 
-        bool toString(std::string& str, bool bUnformatted = true);
     private:
         template<typename T>
         void setValue(const char* sz, const T& value) {

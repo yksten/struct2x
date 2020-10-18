@@ -46,9 +46,6 @@ namespace proto {
     public:
         Message(const uint8_t* sz, uint32_t size);
 
-        const uint8_t* data() const { return _sz; }
-        unsigned int size() const { return _size; }
-
         static bool ReadVarInt(const uint8_t*& current, size_t& remaining, uint64_t& result);
         bool ParseFromBytes();
 

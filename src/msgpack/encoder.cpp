@@ -70,7 +70,7 @@ namespace struct2x {
 
     bool MPHelper::setKey(const char* sz) {
         if (_flag) {
-            size_t l = std::strlen(sz);
+            size_t l = strlen(sz);
             if (l < 32) {
                 unsigned char d = 0xa0 | (uint8_t)l;
                 _buffer.append((const char*)&TAKE8_8(d), 1);

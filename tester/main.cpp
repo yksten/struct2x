@@ -11,6 +11,9 @@
 #include "rapidjson/rapidjsonEncoder.h"
 #include "rapidjson/rapidjsonDecoder.h"
 
+#include "msgpack/encoder.h"
+#include "msgpack/decoder.h"
+
 struct struInfo {
     struInfo() :no(99) {}
     int no;
@@ -222,7 +225,7 @@ struct struExampleEnum {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, id, str, f, db, v, e);
+        SERIALIZATION(t, /*id,*/ str, f, db/*, v*/, e);
     }
 };
 
@@ -234,9 +237,22 @@ int main() {
     std::string strJson;
     jr.toString(strJson);
 
-    struct2x::JSONDecoder jw("{\"id\":0,\"str\":\"\",\"f\":0,\"db\":0,\"e\":2}");
+    struct2x::JSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
     jw >> item;
 
+    std::string mpBuf;
+    struct2x::MPEncoder mpe(mpBuf);
+    mpe << item;
+
+    for (size_t i = 0; i < mpBuf.size(); ++i)
+        printf("%02x ", 0xff & mpBuf[i]);
+    printf("\n");
+
+    //struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
+    //struExampleEnum item2;
+    //mpd >> item2;
+
+    return 0;
 
     //bool b = true;
     //struct2x::converter f = struct2x::bind(&struct2x::rapidjsonDecoder::convertBool, b, NULL);

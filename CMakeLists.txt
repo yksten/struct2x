@@ -40,7 +40,7 @@ SOURCE_GROUP("include\\rapidjson" FILES ${INCLUDERAPIDJSON})
 SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
 
-SET(INCLUDEMSGPACK "./include/msgpack/encoder.h")
+SET(INCLUDEMSGPACK "./include/msgpack/encoder.h" "./include/msgpack/decoder.h")
 SOURCE_GROUP("include\\msgpack" FILES ${INCLUDEMSGPACK})
 
 SET(SRC "./src/struct2x.cpp")
@@ -55,7 +55,7 @@ SOURCE_GROUP("src\\rapidjson" FILES ${SRCRAPIDJSON})
 SET(SRCPROTOBUF "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp")
 SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
 
-SET(SRCMSGPACK "./src/msgpack/encoder.cpp")
+SET(SRCMSGPACK "./src/msgpack/encoder.cpp" "./src/msgpack/decoder.cpp")
 SOURCE_GROUP("src\\msgpack" FILES ${SRCMSGPACK})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
