@@ -16,7 +16,7 @@ namespace struct2x {
         JSONDecoder(const JSONDecoder&);
         JSONDecoder& operator=(const JSONDecoder&);
     public:
-        JSONDecoder(const char* sz);
+        explicit JSONDecoder(const char* sz);
         ~JSONDecoder();
 
         template<typename T>
@@ -29,12 +29,14 @@ namespace struct2x {
 
         template<typename T>
         JSONDecoder& operator&(serializeItem<T> value) {
-            return setValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+            decodeValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+            return *this;
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            return setValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
+            decodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
+            return *this;
         }
 
         template<typename K, typename V>
@@ -46,7 +48,7 @@ namespace struct2x {
                 for (int32_t i = 0; i < size; ++i) {
                     std::string key = getChildName(i);
                     V item = V();
-                    setValue(key.c_str(), item, NULL);
+                    decodeValue(key.c_str(), item, NULL);
                     value.insert(std::pair<K, V>(static_cast<K>(internal::STOT::type<typename internal::TypeTraits<K>::Type>::strto(key.c_str())), item));
                 }
             }
@@ -55,18 +57,17 @@ namespace struct2x {
 
     private:
         template<typename T>
-        JSONDecoder& setValue(const char* sz, T& value, bool* pHas) {
+        void decodeValue(const char* sz, T& value, bool* pHas) {
             cJSON* curItem = cur();
             if (getObject(sz)) {
                 internal::serializeWrapper(*this, value);
                 if (pHas) *pHas = true;
             }
             cur(curItem);
-            return *this;
         }
 
         template<typename T>
-        JSONDecoder& setValue(const char* sz, std::vector<T>& value, bool* pHas) {
+        void decodeValue(const char* sz, std::vector<T>& value, bool* pHas) {
             cJSON* curItem = cur();
             if (getObject(sz)) {
                 int32_t size = getArraySize();
@@ -83,10 +84,9 @@ namespace struct2x {
                 if (pHas) *pHas = true;
             }
             cur(curItem);
-            return *this;
         }
         template<typename K, typename V>
-        JSONDecoder& setValue(const char* sz, std::map<K, V>& value, bool* pHas) {
+        void decodeValue(const char* sz, std::map<K, V>& value, bool* pHas) {
             cJSON* curItem = cur();
             if (getObject(sz)) {
                 int32_t size = getMapSize();
@@ -96,14 +96,13 @@ namespace struct2x {
                     cJSON* lastItem = cur();
                     std::string key = getChildName(i);
                     V item = V();
-                    setValue(key.c_str(), item, NULL);
+                    decodeValue(key.c_str(), item, NULL);
                     value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
                     cur(lastItem);
                 }
                 if (pHas) *pHas = true;
             }
             cur(curItem);
-            return *this;
         }
 
         template<typename T>
@@ -124,22 +123,22 @@ namespace struct2x {
             return (_cur) ? true : false;
         }
 
-        JSONDecoder& setValue(const char* sz, bool& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, uint32_t& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, int32_t& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, uint64_t& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, int64_t& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, float& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, double& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::string& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<bool>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<uint32_t>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<int32_t>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<uint64_t>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<int64_t>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<float>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<double>& value, bool* pHas);
-        JSONDecoder& setValue(const char* sz, std::vector<std::string>& value, bool* pHas);
+        void decodeValue(const char* sz, bool& value, bool* pHas);
+        void decodeValue(const char* sz, uint32_t& value, bool* pHas);
+        void decodeValue(const char* sz, int32_t& value, bool* pHas);
+        void decodeValue(const char* sz, uint64_t& value, bool* pHas);
+        void decodeValue(const char* sz, int64_t& value, bool* pHas);
+        void decodeValue(const char* sz, float& value, bool* pHas);
+        void decodeValue(const char* sz, double& value, bool* pHas);
+        void decodeValue(const char* sz, std::string& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<bool>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<uint32_t>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<int32_t>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<uint64_t>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<int64_t>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<float>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<double>& value, bool* pHas);
+        void decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas);
 
         JSONDecoder& operator >>(std::vector<int32_t>& value);
         JSONDecoder& operator >>(std::vector<float>& value);

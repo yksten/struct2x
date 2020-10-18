@@ -61,7 +61,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, bool& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, bool& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_False)
                 value = false;
@@ -69,80 +69,72 @@ namespace struct2x {
                 value = true;
             if (pHas) *pHas = true;
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, uint32_t& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, uint32_t& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_Number) {
                 value = item->valueint;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, int32_t& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, int32_t& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_Number) {
                 value = item->valueint;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, uint64_t& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, uint64_t& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_Number) {
                 value = item->valuedouble;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, int64_t& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, int64_t& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_Number) {
                 value = item->valuedouble;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, float& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, float& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_Number) {
                 value = (float)item->valuedouble;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, double& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, double& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_Number) {
                 value = item->valuedouble;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::string& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::string& value, bool* pHas) {
         if (cJSON * item = cJSON_GetObjectItem(_cur, sz)) {
             if (item->type == cJSON_String) {
                 value = item->valuestring;
                 if (pHas) *pHas = true;
             }
         }
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<bool>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<bool>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -152,10 +144,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<uint32_t>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<uint32_t>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -165,10 +156,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<int32_t>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<int32_t>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -178,10 +168,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<uint64_t>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<uint64_t>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -191,10 +180,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<int64_t>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<int64_t>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -204,10 +192,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<float>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<float>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -217,10 +204,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<double>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<double>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -230,10 +216,9 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
-    JSONDecoder& JSONDecoder::setValue(const char* sz, std::vector<std::string>& value, bool* pHas) {
+    void JSONDecoder::decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas) {
         if (!value.empty()) value.clear();
         cJSON* curItem = cur();
         if (getObject(sz) && (_cur->type == cJSON_Array)) {
@@ -243,7 +228,6 @@ namespace struct2x {
             if (pHas) *pHas = true;
         }
         cur(curItem);
-        return *this;
     }
 
     bool JSONDecoder::getObject(const char* sz) {

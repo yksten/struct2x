@@ -20,7 +20,8 @@ namespace struct2x {
 
         template<typename T>
         JSONEncoder& operator&(serializeItem<T> value) {
-            return getValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+            encodeValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value));
+            return *this;
         }
 
         template<typename T>
@@ -40,29 +41,29 @@ namespace struct2x {
         JSONEncoder& operator <<(const std::map<K, V>& value) {
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
-                getValue(internal::STOT::type<K>::tostr(it->first), item, NULL);
+                encodeValue(internal::STOT::type<K>::tostr(it->first), item);
             }
             return *this;
         }
 
         template<typename T>
         JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
-            return getValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
+            encodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value));
+            return *this;
         }
 
         bool toString(std::string& str, bool bUnformatted = true);
     private:
         template<typename T>
-        JSONEncoder& getValue(const char* sz, const T& value, bool* pHas) {
+        void encodeValue(const char* sz, const T& value) {
             cJSON* curItem = cur();
             createObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             cur(curItem);
-            return *this;
         }
 
         template<typename T>
-        JSONEncoder& getValue(const char* sz, const std::vector<T>& value, bool* pHas) {
+        void encodeValue(const char* sz, const std::vector<T>& value) {
             cJSON* curItem = cur();
             createArray(sz);
             int32_t size = (int32_t)value.size();
@@ -77,39 +78,37 @@ namespace struct2x {
                 cur(lastItem);
             }
             cur(curItem);
-            return *this;
         }
 
         template<typename K, typename V>
-        JSONEncoder& getValue(const char* sz, const std::map<K, V>& value, bool* pHas) {
+        void encodeValue(const char* sz, const std::map<K, V>& value) {
             cJSON* curItem = cur();
             createObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 cJSON* lastItem = cur();
                 const V& item = it->second;
-                getValue(internal::STOT::type<K>::tostr(it->first), item, NULL);
+                encodeValue(internal::STOT::type<K>::tostr(it->first), item);
                 cur(lastItem);
             }
             cur(curItem);
-            return *this;
         }
 
-        JSONEncoder& getValue(const char* sz, bool value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, uint32_t value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, int32_t value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, uint64_t value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, int64_t value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, float value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, double value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::string& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<bool>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<int32_t>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<int64_t>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<float>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<double>& value, bool* pHas);
-        JSONEncoder& getValue(const char* sz, const std::vector<std::string>& value, bool* pHas);
+        void encodeValue(const char* sz, bool value);
+        void encodeValue(const char* sz, uint32_t value);
+        void encodeValue(const char* sz, int32_t value);
+        void encodeValue(const char* sz, uint64_t value);
+        void encodeValue(const char* sz, int64_t value);
+        void encodeValue(const char* sz, float value);
+        void encodeValue(const char* sz, double value);
+        void encodeValue(const char* sz, const std::string& value);
+        void encodeValue(const char* sz, const std::vector<bool>& value);
+        void encodeValue(const char* sz, const std::vector<uint32_t>& value);
+        void encodeValue(const char* sz, const std::vector<int32_t>& value);
+        void encodeValue(const char* sz, const std::vector<uint64_t>& value);
+        void encodeValue(const char* sz, const std::vector<int64_t>& value);
+        void encodeValue(const char* sz, const std::vector<float>& value);
+        void encodeValue(const char* sz, const std::vector<double>& value);
+        void encodeValue(const char* sz, const std::vector<std::string>& value);
 
         JSONEncoder& operator<<(const std::vector<int32_t>& value);
         JSONEncoder& operator<<(const std::vector<float>& value);
