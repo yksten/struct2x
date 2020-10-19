@@ -147,13 +147,25 @@ namespace msgpack {
             case 0xd3: { // signed int 64
                 value.type = Value::VALUEINT;
             }break;
+            case 0xdc: { // array 16
+            }break;
+            case 0xdd: { // array 32
+            }break;
+            case 0xde: { // map 16
+            }break;
+            case 0xdf: { // map 32
+            }break;
                 //...TODO
             default: {
-                if (0x00 <= *sz && *sz <= 0x7f) { //int
+                if (0x80 <= *sz && *sz <= 0x8f) { // FixMap
+                    //
+                } else if (0x00 <= *sz && *sz <= 0x7f) { // Positive Fixnum
                     value.type = Value::VALUEINT;
                     value.i = *sz - 0x00;
                     bResult = true;
                     ++sz; --size;
+                } else if (0x90 <= *sz && *sz <= 0x9f) { // FixArray
+
                 } else {
                     value.type = Value::VALUESTR;
                     bResult = getFieldName(sz, size, value.bin);
