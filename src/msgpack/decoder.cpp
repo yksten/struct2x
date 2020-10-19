@@ -86,14 +86,14 @@ namespace msgpack {
                 value.b = false;
                 bResult = true;
                 ++sz;
-                ++size;
+                --size;
             }break;
             case 0xc3: { // true
                 value.type = Value::VALUEBOOL;
                 value.b = true;
                 bResult = true;
                 ++sz;
-                ++size;
+                --size;
             }break;
             case 0xca: {  // float
                 ++sz; --size;
@@ -153,6 +153,7 @@ namespace msgpack {
                     value.type = Value::VALUEINT;
                     value.i = *sz - 0x00;
                     bResult = true;
+                    ++sz; --size;
                 } else {
                     value.type = Value::VALUESTR;
                     bResult = getFieldName(sz, size, value.bin);
@@ -179,6 +180,10 @@ namespace msgpack {
                         switch (value.type) {
                             case Value::VALUEBOOL: {
                                 if (!(*pFunction)(&value.b))
+                                    return false;
+                            }break;
+                            case Value::VALUEINT: {
+                                if (!(*pFunction)(&value.i))
                                     return false;
                             }break;
                             case Value::VALUEFLOAT: {

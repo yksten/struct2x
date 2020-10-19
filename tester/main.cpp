@@ -225,7 +225,7 @@ struct struExampleEnum {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, /*id,*/ str, f, db/*, v*/, e);
+        SERIALIZATION(t, id, str, f, db/*, v*/, e);
     }
 };
 
