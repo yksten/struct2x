@@ -78,7 +78,7 @@ namespace msgpack {
         return bResult;
     }
 
-    bool Message::getValue(const uint8_t*& sz, size_t& size, Value& value) {
+    bool Message::getValue(const uint8_t*& sz, size_t& size, Value& value, const Message::converter* pFunction) {
         bool bResult = false;
         switch (*sz) {
             case 0xc2:{ // false
@@ -165,7 +165,15 @@ namespace msgpack {
                     bResult = true;
                     ++sz; --size;
                 } else if (0x90 <= *sz && *sz <= 0x9f) { // FixArray
-
+                    uint8_t nSize = *sz - 0x90;
+                    ++sz; --size;
+                    for (uint8_t idx = 0; idx < nSize; ++idx) {
+                        Value temp;
+                        if (getValue(sz, size, temp) && pFunction) {
+                            doFunction(*pFunction, temp);
+                        }
+                    }
+                    bResult = false;
                 } else {
                     value.type = Value::VALUESTR;
                     bResult = getFieldName(sz, size, value.bin);
@@ -174,6 +182,28 @@ namespace msgpack {
             }
         }
 
+        return bResult;
+    }
+
+    bool Message::doFunction(const Message::converter& pFunction, const Value& value) {
+        bool bResult = false;
+        switch (value.type) {
+            case Value::VALUEBOOL: {
+                bResult = (pFunction)(&value.b);
+            }break;
+            case Value::VALUEINT: {
+                bResult = (pFunction)(&value.i);
+            }break;
+            case Value::VALUEFLOAT: {
+                bResult = (pFunction)(&value.f);
+            }break;
+            case Value::VALUEDOUBLE: {
+                bResult = (pFunction)(&value.db);
+            }break;
+            case Value::VALUESTR: {
+                bResult = (pFunction)(&value.bin);
+            }break;
+        }
         return bResult;
     }
 
@@ -188,31 +218,8 @@ namespace msgpack {
                 // getValue
                 if (const Message::converter* pFunction = getFunction((const char*)fieldName.first, fieldName.second)) {
                     Value value;
-                    if (getValue(current, remaining, value)) {
-                        switch (value.type) {
-                            case Value::VALUEBOOL: {
-                                if (!(*pFunction)(&value.b))
-                                    return false;
-                            }break;
-                            case Value::VALUEINT: {
-                                if (!(*pFunction)(&value.i))
-                                    return false;
-                            }break;
-                            case Value::VALUEFLOAT: {
-                                if (!(*pFunction)(&value.f))
-                                    return false;
-                            }break;
-                            case Value::VALUEDOUBLE: {
-                                if (!(*pFunction)(&value.db))
-                                    return false;
-                            }break;
-                            case Value::VALUESTR: {
-                                if (!(*pFunction)(&value.bin))
-                                    return false;
-                            }break;
-                            default:
-                                return false;
-                        }
+                    if (getValue(current, remaining, value, pFunction)) {
+                        doFunction(*pFunction, value);
                     }
                 }
             }
@@ -233,6 +240,7 @@ namespace msgpack {
 }
 
 namespace struct2x {
+
     MPDecoder::MPDecoder(const uint8_t* sz, uint32_t size) :_msg(sz, size) {
     }
 
@@ -266,6 +274,38 @@ namespace struct2x {
 
     void MPDecoder::decodeValue(const char* sz, std::string& v, bool* pHas) {
         _msg.bind<msgpack::bin_type, std::string>(&MPDecoder::convertValue, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<bool>& v, bool* pHas) {
+        return _msg.bind<bool, std::vector<bool> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<int32_t>& v, bool* pHas) {
+        return _msg.bind<int32_t, std::vector<int32_t> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<uint32_t>& v, bool* pHas) {
+        return _msg.bind<uint32_t, std::vector<uint32_t> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<int64_t>& v, bool* pHas) {
+        return _msg.bind<int64_t, std::vector<int64_t> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<uint64_t>& v, bool* pHas) {
+        return _msg.bind<uint64_t, std::vector<uint64_t> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<float>& v, bool* pHas) {
+        return _msg.bind<float, std::vector<float> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<double>& v, bool* pHas) {
+        return _msg.bind<double, std::vector<double> >(&MPDecoder::convertArray, sz, v, pHas);
+    }
+
+    void MPDecoder::decodeValue(const char* sz, std::vector<std::string>& v, bool* pHas) {
+        return _msg.bind<std::string, std::vector<std::string> >(&MPDecoder::convertArray, sz, v, pHas);
     }
 
     bool MPDecoder::ParseFromBytes() {

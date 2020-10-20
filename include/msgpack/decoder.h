@@ -11,14 +11,6 @@ namespace msgpack {
     typedef std::pair<const uint8_t*, size_t> bin_type;
 
     class EXPORTAPI Message {
-        struct Value {
-            enum { VALUENULL = -1, VALUEBOOL, VALUEINT, VALUEFLOAT, VALUEDOUBLE, VALUESTR };
-            uint8_t type;
-            union { bool b; int64_t i; float f; double db; };
-            bin_type bin;
-            Value() :type(VALUENULL), i(0) {}
-        };
-
         typedef bool(*convert_t)(void*, const void*, bool*);
         class converter {
             bool convert(void*, const void*, const uint32_t, bool*);
@@ -35,11 +27,20 @@ namespace msgpack {
         std::vector<std::pair<const char*, converter> > _functionSet;
 
     public:
+        struct Value {
+            enum { VALUENULL = -1, VALUEBOOL, VALUEINT, VALUEFLOAT, VALUEDOUBLE, VALUESTR };
+            uint8_t type;
+            union { bool b; int64_t i; float f; double db; };
+            bin_type bin;
+            Value() :type(VALUENULL), i(0) {}
+        };
+
         Message(const uint8_t* sz, uint32_t size);
 
         static uint32_t getFieldSize(const uint8_t*& sz, size_t& size);
         static bool getFieldName(const uint8_t*& sz, size_t& size, msgpack::bin_type& result);
-        bool getValue(const uint8_t*& sz, size_t& size, Value& value);
+        static bool getValue(const uint8_t*& sz, size_t& size, Value& value, const Message::converter* pFunction = NULL);
+        static bool doFunction(const Message::converter& pFunction, const Value& value);
 
         bool ParseFromBytes();
 
@@ -99,7 +100,7 @@ namespace struct2x {
         MPDecoder& operator&(serializeItem<std::vector<T> > value) {
             if (!value.value.empty()) value.value.clear();
             if (_bParseResult)
-                _bParseResult = decodeRepaeted(value.name, *(std::vector<typename internal::TypeTraits<T>::Type>*)(&value));
+                _bParseResult = decodeValue(value.name, *(std::vector<typename internal::TypeTraits<T>::Type>*)(&value));
             return *this;
         }
 
@@ -114,10 +115,10 @@ namespace struct2x {
         template<typename V>
         MPDecoder& operator&(serializeItem<std::map<double, V> > value);
     private:
-        /*template<typename T>
+        template<typename T>
         void decodeValue(const char* sz, const T& v) {
             return _msg.bind<msgpack::bin_type, T>(&MPDecoder::convertCustom, v);
-        }*/
+        }
         void decodeValue(const char* sz, bool &v, bool* pHas);
         void decodeValue(const char* sz, int32_t &v, bool* pHas);
         void decodeValue(const char* sz, uint32_t &v, bool* pHas);
@@ -128,17 +129,17 @@ namespace struct2x {
         void decodeValue(const char* sz, std::string& v, bool* pHas);
 
         template<typename T>
-        bool decodeRepaeted(const char* sz, std::vector<T>& v) {
+        bool decodeValue(const char* sz, std::vector<T>& v) {
             return _msg.bind<msgpack::bin_type, std::vector<T> >(&MPDecoder::convertCustomArray, v);
         }
-        bool decodeRepaeted(const char* sz, std::vector<bool>& v);
-        bool decodeRepaeted(const char* sz, std::vector<int32_t>& v);
-        bool decodeRepaeted(const char* sz, std::vector<uint32_t>& v);
-        bool decodeRepaeted(const char* sz, std::vector<int64_t>& v);
-        bool decodeRepaeted(const char* sz, std::vector<uint64_t>& v);
-        bool decodeRepaeted(const char* sz, std::vector<float>& v);
-        bool decodeRepaeted(const char* sz, std::vector<double>& v);
-        bool decodeRepaeted(const char* sz, std::vector<std::string>& v);
+        void decodeValue(const char* sz, std::vector<bool>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<int32_t>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<uint32_t>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<int64_t>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<uint64_t>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<float>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<double>& v, bool* pHas);
+        void decodeValue(const char* sz, std::vector<std::string>& v, bool* pHas);
 
         bool ParseFromBytes();
 
@@ -166,12 +167,12 @@ namespace struct2x {
         static bool convertArray(std::vector<T>& value, const msgpack::bin_type& cValue, bool* pHas) {
             const uint8_t* current = cValue.first;
             size_t remaining = cValue.second;
-            while (remaining) {
-                uint64_t varint = 0;
-                if (!msgpack::Message::ReadVarInt(current, remaining, varint))
-                    return false;
-                value.push_back(static_cast<T>(varint));
-            }
+            //while (remaining) {
+            //    uint64_t varint = 0;
+            //    if (!msgpack::Message::ReadVarInt(current, remaining, varint))
+            //        return false;
+            //    value.push_back(static_cast<T>(varint));
+            //}
             if (pHas) *pHas = true;
             return true;
         }

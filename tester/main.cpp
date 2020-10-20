@@ -225,7 +225,8 @@ struct struExampleEnum {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, id, str, f, db/*, v*/, e);
+        SERIALIZATION(t, id, str, f, db, v, e);
+        //SERIALIZATION(t, v);
     }
 };
 
@@ -240,6 +241,7 @@ int main() {
     struct2x::JSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
     jw >> item;
 
+    item.v.push_back(15); item.v.push_back(35);
     std::string mpBuf;
     struct2x::MPEncoder mpe(mpBuf);
     mpe << item;
