@@ -231,38 +231,39 @@ struct struExampleEnum {
 };
 
 int main() {
-    struExampleEnum item;
-    item.e = ET2;
-    struct2x::JSONEncoder jr;
-    jr << item;
-    std::string strJson;
-    jr.toString(strJson);
+    //struExampleEnum item;
+    //item.e = ET2;
+    //struct2x::JSONEncoder jr;
+    //jr << item;
+    //std::string strJson;
+    //jr.toString(strJson);
 
-    struct2x::JSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
-    jw >> item;
+    //struct2x::JSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
+    //jw >> item;
 
-    item.v.push_back(15); item.v.push_back(35);
-    std::string mpBuf;
-    struct2x::MPEncoder mpe(mpBuf);
-    mpe << item;
+    //item.v.push_back(15); item.v.push_back(35);
+    //std::string mpBuf;
+    //struct2x::MPEncoder mpe(mpBuf);
+    //mpe << item;
 
-    for (size_t i = 0; i < mpBuf.size(); ++i)
-        printf("%02x ", 0xff & mpBuf[i]);
-    printf("\n");
+    //for (size_t i = 0; i < mpBuf.size(); ++i)
+    //    printf("%02x ", 0xff & mpBuf[i]);
+    //printf("\n");
 
-    struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
-    struExampleEnum item2;
-    mpd >> item2;
+    //struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
+    //struExampleEnum item2;
+    //mpd >> item2;
 
-    return 0;
+    //return 0;
 
     //bool b = true;
     //struct2x::converter f = struct2x::bind(&struct2x::rapidjsonDecoder::convertBool, b, NULL);
     //f(&b);
 
-    //struInfo info;
-    //struct2x::rapidjsonDecoder decoder("{\"no\":99,\"v\":[true]}");
-    //decoder >> info;
+    struInfo info;
+	std::string strJson("{\"no\":99,\"v\":[true]}");
+    struct2x::rapidjsonDecoder decoder(strJson.c_str());
+    decoder >> info;
 
     //testMap();
     //testStructFunc();

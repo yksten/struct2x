@@ -58,16 +58,16 @@ namespace struct2x {
 
     class EXPORTAPI rapidjsonDecoder {
         std::map<std::string, converter> _map;
-        rapidjson::StringStream _str;
+        rapidjson::InsituStringStream _str;
     public:
-        rapidjsonDecoder(const char* sz) :_str(sz) {}
+        rapidjsonDecoder(const char* sz) :_str(const_cast<char*>(sz)) {}
         ~rapidjsonDecoder() {}
 
         template<typename T>
         bool operator >> (T& value) {
             internal::serializeWrapper(*this, value);
             convertHandler handler(_map);
-            return rapidjson::Reader().Parse(_str, handler).IsError();
+            return rapidjson::Reader().Parse<rapidjson::kParseInsituFlag>(_str, handler).IsError();
         }
 
         template<typename T>
