@@ -1,179 +1,605 @@
 #include "rapidjson/rapidjsonDecoder.h"
-//#include "thirdParty/rapidjson/reader.h"
+#include <assert.h>
 
 
 namespace struct2x {
 
-    bool convertHandler::Null() {
+    Handler::Handler(const std::vector<function_value>& set) :_converter(NULL), _set(&set) {
+    }
+
+    bool Handler::Key(const char* sz, unsigned length) {
+        uint32_t nSize = _set->size();
+        for (uint32_t idx = 0; idx < nSize; ++idx) {
+            const function_value& item = _set->at(idx);
+            if (strncmp(sz, item.first, length) == 0) {
+                _converter = &item.second;
+                break;
+            }
+        }
+
         return true;
     }
 
-    bool convertHandler::Bool(bool b) {
+    bool Handler::Value(const char* sz, unsigned length) {
         if (_converter) {
-            (*_converter)(&b);
-            return true;
+            (*_converter)(sz, length);
+            _converter = NULL;
         }
-        return false;
-    }
-
-    bool convertHandler::Int(int i) {
-        if (_converter) {
-            (*_converter)(&i);
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::Uint(unsigned u) {
-        if (_converter) {
-            (*_converter)(&u);
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::Int64(int64_t i) {
-        if (_converter) {
-            (*_converter)(&i);
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::Uint64(uint64_t u) {
-        if (_converter) {
-            (*_converter)(&u);
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::Double(double d) {
-        if (_converter) {
-            (*_converter)(&d);
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::RawNumber(const char* str, unsigned length, bool copy) {
-        return true;
-    }
-
-    bool convertHandler::String(const char* str, unsigned length, bool copy) {
-        if (_converter) {
-            std::string strValue(str, length);
-            (*_converter)(&strValue);
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::StartObject() {
-        return true;
-    }
-
-    bool convertHandler::Key(const char* str, unsigned length, bool copy) {
-        std::map<std::string, converter>::const_iterator it = _map.find(str);
-        if (it != _map.end()) {
-            _converter = &it->second;
-            return true;
-        }
-        return false;
-    }
-
-    bool convertHandler::EndObject(unsigned memberCount) {
-        return true;
-    }
-
-    bool convertHandler::StartArray() {
-        return true;
-    }
-
-    bool convertHandler::EndArray(unsigned elementCount) {
         return true;
     }
 
     /*------------------------------------------------------------------------------*/
-
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, bool& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    static bool Consume(StringStream& is, const char expect) {
+        if (is.Peek() == expect) {
+            is.Take();
+            return true;
+        }
+        else
+            return false;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, uint32_t& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    static void SkipWhitespace(StringStream& is) {
+        for (;;) {
+            const char c = is.Peek();
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                is.Take();
+            }
+            else {
+                break;
+            }
+        }
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, int32_t& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    GenericReader::GenericReader() :_result(true) {
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, uint64_t& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    bool GenericReader::Parse(StringStream& is, BaseHandler& handler) {
+        if (is.Peek() != '\0') {
+            ParseValue(is, handler, false);
+        }
+        return _result;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, int64_t& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    const char* GenericReader::getError()const {
+        return _strError.c_str();
+    }
+    void GenericReader::setError(const char* sz) {
+        _result = false;
+        _strError.append(sz);
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, float& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    void GenericReader::ParseValue(StringStream& is, BaseHandler& handler, bool bSkipObj) {
+        void(GenericReader::*set[])(StringStream&, BaseHandler&) = { &GenericReader::ParseObject, &GenericReader::ParseObjectAsStr };
+        switch (is.Peek()) {
+        case 'n': ParseNull(is, handler); break;
+        case 't': ParseTrue(is, handler); break;
+        case 'f': ParseFalse(is, handler); break;
+        case '"': ParseString(is, handler); break;
+        case '{': (this->*set[bSkipObj])(is, handler); break;
+        case '[': ParseArray(is, handler); break;
+        default:
+            ParseNumber(is, handler);
+            break;
+        }
+        if (!_result)
+            return;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, double& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    void GenericReader::ParseKey(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == '\"');
+        is.Take();  // Skip '\"'
+        const char* szStart = is.Strart();
+
+        for (; is.Peek() != '\0'; is.Take()) {
+            if (is.Peek() == '\"') {
+                handler.Key(szStart, is.Strart() - szStart);
+                is.Take();  // Skip '\"'
+                return;
+            }
+        }
+        setError("KeyInvalid");
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::string& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertValue, value, pHas)));
-        return *this;
+    void GenericReader::ParseNull(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == 'n');
+        is.Take();
+
+        if (Consume(is, 'u') && Consume(is, 'l') && Consume(is, 'l')) {
+            handler.Value("", 0);
+        }
+        else {
+            setError("ValueInvalid");
+        }
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<bool>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseTrue(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == 't');
+        const char* szStart = is.Strart();
+        is.Take();
+
+        if (Consume(is, 'r') && Consume(is, 'u') && Consume(is, 'e')) {
+            handler.Value(szStart, is.Strart() - szStart);
+        }
+        else {
+            setError("ValueInvalid");
+        }
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<uint32_t>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseFalse(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == 'f');
+        const char* szStart = is.Strart();
+        is.Take();
+
+        if (Consume(is, 'a') && Consume(is, 'l') && Consume(is, 's') && Consume(is, 'e')) {
+            handler.Value(szStart, is.Strart() - szStart);
+        }
+        else {
+            setError("ValueInvalid");
+        }
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<int32_t>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseString(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == '\"');
+        is.Take();  // Skip '\"'
+        const char* szStart = is.Strart();
+
+        for (; is.Peek() != '\0'; is.Take()) {
+            if (is.Peek() == '\"') {
+                handler.Value(szStart, is.Strart() - szStart);
+                is.Take();  // Skip '\"'
+                return;
+            }
+        }
+        setError("ValueInvalid");
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<uint64_t>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseArray(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == '[');
+        is.Take();  // Skip '['
+        const char* szStart = is.Strart();
+
+        for (uint32_t nCount = 1; is.Peek() != '\0'; is.Take()) {
+            if (is.Peek() == ']') {
+                --nCount;
+                if (!nCount) {
+                    handler.Value(szStart, is.Strart() - szStart);
+                    is.Take();  // Skip ']'
+                    return;
+                }
+            }
+            else if (is.Peek() == '[')
+                ++nCount;
+        }
+        setError("ValueArrayInvalid");
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<int64_t>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseNumber(StringStream& is, BaseHandler& handler) {
+        const char* szStart = is.Strart();
+
+        for (; is.Peek() != '\0'; is.Take()) {
+            if (is.Peek() >= '0' && is.Peek() <= '9') {
+                continue;
+            }
+            else {
+                handler.Value(szStart, is.Strart() - szStart);
+                return;
+            }
+        }
+        setError("ValueInvalid");
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<float>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseObject(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == '{');
+        const char* szStart = is.Strart();
+        is.Take();  // Skip '{'
+
+        SkipWhitespace(is);
+        if (is.Peek() == '}') {
+            handler.Value(szStart, is.Strart() - szStart + 1);// empty object
+            return;
+        }
+
+        for (;;) {
+            if (is.Peek() != '"') {
+                setError("ObjectMissName");
+                return;
+            }
+            ParseKey(is, handler);
+
+            SkipWhitespace(is);
+            if (!Consume(is, ':')) {
+                setError("ObjectMissColon");
+                return;
+            }
+
+            SkipWhitespace(is);
+            ParseValue(is, handler, true);
+
+            SkipWhitespace(is);
+            switch (is.Peek()) {
+            case ',':
+                is.Take();
+                SkipWhitespace(is);
+                break;
+            case '}':
+                is.Take();
+                //setError("Termination");
+                return;
+            default:
+                setError("ObjectMissCommaOrCurlyBracket");
+                break; // This useless break is only for making warning and coverage happy
+            }
+        }
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<double>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void GenericReader::ParseObjectAsStr(StringStream& is, BaseHandler& handler) {
+        assert(is.Peek() == '{');
+        const char* szStart = is.Strart();
+        is.Take();  // Skip '{'
+
+        for (uint32_t nCount = 1; is.Peek() != '\0'; is.Take()) {
+            if (is.Peek() == '}') {
+                --nCount;
+                if (!nCount) {
+                    handler.Value(szStart, is.Strart() - szStart + 1);
+                    is.Take();  // Skip '\"'
+                    return;
+                }
+            }
+            else if (is.Peek() == '{')
+                ++nCount;
+        }
+        setError("ValueObjectInvalid");
+    }
+    /*------------------------------------------------------------------------------*/
+
+    void rapidjsonDecoder::convertValue(bool& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        if (strncmp("true", sz, length) == 0) {
+            value = true;
+        }
+        else if (strncmp("false", sz, length) == 0) {
+            value = false;
+        }
+        else {
+            assert(false);
+        }
+        if (pHas) *pHas = true;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<std::string>& value, bool* pHas) {
-        _map.insert(std::pair<std::string, converter>(sz, bind(&struct2x::rapidjsonDecoder::convertArray, value, pHas)));
-        return *this;
+    void rapidjsonDecoder::convertValue(int32_t& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value = 0;
+        bool bMinus = false;
+        if (sz[0] == '-') {
+            bMinus = true;
+        }
+        for (uint32_t idx = bMinus; idx < length; ++idx) {
+            value *= 10;
+            value += sz[idx] - '0';
+        }
+        if (bMinus) value = 0 - value;
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value = 0;
+        for (uint32_t idx = 0; idx < length; ++idx) {
+            value *= 10;
+            value += sz[idx] - '0';
+        }
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertValue(int64_t& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value = 0;
+        bool bMinus = false;
+        if (sz[0] == '-') {
+            bMinus = true;
+        }
+        for (uint32_t idx = bMinus; idx < length; ++idx) {
+            value *= 10;
+            value += sz[idx] - '0';
+        }
+        if (bMinus) value = 0 - value;
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value = 0;
+        for (uint32_t idx = 0; idx < length; ++idx) {
+            value *= 10;
+            value += sz[idx] - '0';
+        }
+        if (pHas) *pHas = true;
+    }
+
+    static inline double decimal(uint8_t n, uint32_t num) {
+        double db = 0.0f;
+        while (num--)
+            db = n / 10;
+        return db;
+    }
+
+    void rapidjsonDecoder::convertValue(float& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value = 0;
+        bool bMinus = false;
+        if (sz[0] == '-') {
+            bMinus = true;
+        }
+        for (uint32_t idx = bMinus, bFlag = false, num = 0; idx < length; ++idx) {
+            const char& c = sz[idx];
+            if (c == '.') {
+                bFlag = true;
+            }
+            uint8_t n = c - '0';
+            if (!bFlag) {
+                value *= 10;
+                value += n;
+            }
+            else {
+                ++num;
+                value += decimal(n, num);
+            }
+        }
+        if (bMinus) value = 0 - value;
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertValue(double& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value = 0;
+        for (uint32_t idx = 0, bFlag = false, num = 0; idx < length; ++idx) {
+            const char& c = sz[idx];
+            if (c == '.') {
+                bFlag = true;
+            }
+            uint8_t n = c - '0';
+            if (!bFlag) {
+                value *= 10;
+                value += n;
+            }
+            else {
+                ++num;
+                value += decimal(n, num);
+            }
+        }
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertValue(std::string& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+        value.clear();
+        value.append(sz, length);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                bool v = false;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        bool v = false;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                int32_t v = 0;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        int32_t v = 0;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                uint32_t v = 0;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        uint32_t v = 0;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                int64_t v = 0;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        int64_t v = 0;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                uint64_t v = 0;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        uint64_t v = 0;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                float v = 0.0f;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        float v = 0.0f;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                double v = 0.0f;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        double v = 0.0f;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
+    }
+
+    void rapidjsonDecoder::convertArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas) {
+        if (!length) return;
+
+        uint32_t n = 0;
+        for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+            const char c = sz[idx];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                continue;
+            }
+            if (c == ',') {
+                std::string v;
+                convertValue(v, sz + n, idx - n, NULL);
+                value.push_back(v);
+                bFlag = true;
+            }
+            else {
+                if (bFlag) {
+                    n = idx;
+                    bFlag = false;
+                }
+            }
+        }
+        std::string v;
+        convertValue(v, sz + n, length - n, NULL);
+        value.push_back(v);
+        if (pHas) *pHas = true;
     }
 
 }

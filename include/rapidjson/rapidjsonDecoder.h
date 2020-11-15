@@ -3,71 +3,95 @@
 #include "struct2x.h"
 #include <string>
 #include <map>
-#include "thirdParty/rapidjson/reader.h"
 
 
 namespace struct2x {
 
-    class converter {
-    public:
-        void convert(void*, const void*, bool*);
-        typedef void(*convert_t)(void*, const void*, bool*);
+    struct converter {
+        typedef void(*function_type)(void*, const char*, uint32_t, bool*);
+        converter(function_type func, void* value, bool* pHas) :_func(func), _value(value), _pHas(pHas) {}
+        void operator()(const char* cValue, uint32_t length) const {
+            (*_func)(_value, cValue, length, _pHas);
+        }
+        template<typename T>
+        static converter bind(void(*f)(T&, const char*, uint32_t, bool*), T& value, bool* pHas) {
+            return converter(function_type(f), &value, pHas);
+        }
 
-        converter(convert_t func, void* value, bool* pHas) :_func(func), _value(value), _pHas(pHas) {}
-
-        void operator()(const void* cValue) const {
-            (*_func)(_value, cValue, _pHas);
+        template<typename T>
+        static converter bind(void(*f)(std::vector<T>&, const char*, uint32_t, bool*), std::vector<T>& value, bool* pHas) {
+            return converter(function_type(f), &value, pHas);
         }
     private:
-        convert_t _func;
+        function_type _func;
         void* _value;
         bool* _pHas;
     };
 
-    template<typename P>
-    inline converter bind(void(*f)(P&, const P&, bool*), P& value, bool* pHas) {
-        return converter(converter::convert_t(f), &value, pHas);
-    }
-
-    template<typename P>
-    inline converter bind(void(*f)(std::vector<P>&, const P&, bool*), std::vector<P>& value, bool* pHas) {
-        return converter(converter::convert_t(f), &value, pHas);
-    }
-
-    class EXPORTAPI convertHandler {
-        const converter* _converter;
-        const std::map<std::string, converter>& _map;
+    class StringStream {
+        typedef const char Ch;
+        Ch* _src;
+        uint32_t _length;
     public:
-        convertHandler(const std::map<std::string, converter>& map) :_converter(NULL), _map(map) {}
+        StringStream(Ch* src, uint32_t length) : _src(src),_length(length) {}
+        // Read
+        Ch Peek() { if (isEnd()) return '\0';  return *_src; }
+        Ch Take() { --_length; return *_src++; }
+        Ch* Strart() const { return _src; }
+        bool isEnd() const { return (_length == 0); }
+    };
 
-        bool Null();
-        bool Bool(bool b);
-        bool Int(int i);
-        bool Uint(unsigned u);
-        bool Int64(int64_t i);
-        bool Uint64(uint64_t u);
-        bool Double(double d);
-        bool RawNumber(const char* str, unsigned length, bool copy);
-        bool String(const char* str, unsigned length, bool copy);
-        bool StartObject();
-        bool Key(const char* str, unsigned length, bool copy);
-        bool EndObject(unsigned memberCount);
-        bool StartArray();
-        bool EndArray(unsigned elementCount);
+    class EXPORTAPI BaseHandler {
+    public:
+        virtual ~BaseHandler() {}
+        virtual bool Key(const char* sz, unsigned length) = 0;
+        virtual bool Value(const char* sz, unsigned length) = 0;
+    };
+
+    typedef std::pair<const char*, converter> function_value;
+    class EXPORTAPI Handler :public BaseHandler {
+    protected:
+        const converter* _converter;
+        const std::vector<function_value>* _set;
+    public:
+        Handler(const std::vector<function_value>& set);
+        virtual bool Key(const char* sz, unsigned length);
+        virtual bool Value(const char* sz, unsigned length);
+    };
+
+    class EXPORTAPI GenericReader {
+        bool _result;
+        std::string _strError;
+    public:
+        GenericReader();
+        bool Parse(StringStream& is, BaseHandler& handler);
+        const char* getError()const;
+    private:
+        void setError(const char* sz);
+        void ParseValue(StringStream& is, BaseHandler& handler, bool bSkipObj);
+        void ParseKey(StringStream& is, BaseHandler& handler);
+        void ParseNull(StringStream& is, BaseHandler& handler);
+        void ParseTrue(StringStream& is, BaseHandler& handler);
+        void ParseFalse(StringStream& is, BaseHandler& handler);
+        void ParseString(StringStream& is, BaseHandler& handler);
+        void ParseNumber(StringStream& is, BaseHandler& handler);
+        void ParseArray(StringStream& is, BaseHandler& handler);
+        void ParseObject(StringStream& is, BaseHandler& handler);
+        void ParseObjectAsStr(StringStream& is, BaseHandler& handler);
     };
 
     class EXPORTAPI rapidjsonDecoder {
-        std::map<std::string, converter> _map;
-        rapidjson::InsituStringStream _str;
+        StringStream _str;
+        std::vector<function_value> _set;
     public:
-        rapidjsonDecoder(const char* sz) :_str(const_cast<char*>(sz)) {}
+        rapidjsonDecoder(const char* sz, uint32_t length) :_str(sz, length) {}
         ~rapidjsonDecoder() {}
 
         template<typename T>
         bool operator >> (T& value) {
             internal::serializeWrapper(*this, value);
-            convertHandler handler(_map);
-            return rapidjson::Reader().Parse<rapidjson::kParseInsituFlag>(_str, handler).IsError();
+            Handler handler(_set);
+            return GenericReader().Parse(_str, handler);
         }
 
         template<typename T>
@@ -77,49 +101,102 @@ namespace struct2x {
 
         template<typename T>
         rapidjsonDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            // TODO
+            _set.push_back(function_value(sz, converter::bind(&rapidjsonDecoder::convertValue, value, pHas)));
             return *this;
         }
 
         template<typename T>
         rapidjsonDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            // TODO
+            _set.push_back(function_value(sz, converter::bind(&rapidjsonDecoder::convertArray, value, pHas)));
             return *this;
         }
         template<typename K, typename V>
         rapidjsonDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            // TODO
+            _set.push_back(function_value(sz, converter::bind(&rapidjsonDecoder::convertMap, value, pHas)));
             return *this;
         }
+    private:
+        static void convertValue(bool& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(int32_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(int64_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(float& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(double& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertValue(std::string& value, const char* sz, uint32_t length, bool* pHas);
 
-        rapidjsonDecoder& convert(const char* sz, bool& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, uint32_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, int32_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, uint64_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, int64_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, float& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, double& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::string& value, bool* pHas = NULL);
+        static void convertArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas);
 
-        rapidjsonDecoder& convert(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<float>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<double>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
-
-        template<typename P>
-        static void convertValue(P& value, const P& cValue, bool* pHas) {
-            value = cValue;
-            if (pHas) *pHas = true;
+        template<typename T>
+        static void convertValue(T& value, const char* cValue, uint32_t length, bool* pHas) {
+            if (length) {
+                rapidjsonDecoder decoder(cValue.first, cValue.second);
+                if (!decoder.operator>>(value))
+                    return;
+                if (pHas) *pHas = true;
+            }
         }
 
-        template<typename P>
-        static void convertArray(std::vector<P>& value, const P& cValue, bool* pHas) {
-            value.push_back(cValue);
-            if (pHas) *pHas = true;
+        template<typename T>
+        static void convertArray(std::vector<T>& value, const char* cValue, uint32_t length, bool* pHas) {
+            if (length) {
+                value.clear();
+                std::vector<const char*> stack;
+                for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+                    const char c = sz[idx];
+                    if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                        continue;
+                    }
+                    if (c == '{') {
+                        stack.push_back(sz + idx);
+                    }
+                    else if (c == '}') {
+                        T temp = T();
+                        const char* szBin = stack[stack.size() - 1];
+                        rapidjsonDecoder decoder(szBin, (sz + idx) - szBin);
+                        if (decoder.operator>>(temp))
+                            value.push_back(temp);
+                        stack.erase(stack.begin + stack.size() - 1);
+                    }
+                }
+                if (pHas) *pHas = true;
+            }
+        }
+
+        template<typename K, typename V>
+        class MapHandler : public BaseHandler {
+            K _key;
+            V _value;
+            std::map<K, V>& _map;
+        public:
+            MapHandler(std::map<K, V>& map) :_map(map) {}
+            bool Key(const char* sz, unsigned length) {
+                convertValue(_key, sz, length, NULL);
+                return true;
+            }
+            bool Value(const char* sz, unsigned length) {
+                convertValue(_value, sz, length, NULL);
+                _map.insert(std::pair<K, V>(_key, _value));
+                return true;
+            }
+        };
+
+        template<typename K, typename V>
+        static void convertMap(std::map<K, V>& value, const char* cValue, uint32_t length, bool* pHas) {
+            if (length) {
+                StringStream str(cValue, length);
+                MapHandler<K, V> handler(value);
+                GenericReader().Parse(str, handler);
+
+                if (pHas) *pHas = true;
+            }
         }
     };
 

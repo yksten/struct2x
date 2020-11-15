@@ -18,6 +18,7 @@ struct struInfo {
     struInfo() :no(99) {}
     int no;
     std::vector<bool> v;
+    std::map<int, int> m;
 
     bool operator ==(const struInfo& in)const {
         if (no != in.no)
@@ -33,7 +34,7 @@ struct struInfo {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, no, v);
+        SERIALIZATION(t, no, v, m);
     }
 };
 
@@ -233,11 +234,6 @@ struct struExampleEnum {
 int main() {
     //struExampleEnum item;
     //item.e = ET2;
-    //struct2x::JSONEncoder jr;
-    //jr << item;
-    //std::string strJson;
-    //jr.toString(strJson);
-
     //struct2x::JSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
     //jw >> item;
 
@@ -254,21 +250,16 @@ int main() {
     //struExampleEnum item2;
     //mpd >> item2;
 
-    //return 0;
-
-    //bool b = true;
-    //struct2x::converter f = struct2x::bind(&struct2x::rapidjsonDecoder::convertBool, b, NULL);
-    //f(&b);
-
     struInfo info;
-	std::string strJson("{\"no\":99,\"v\":[true]}");
-    struct2x::rapidjsonDecoder decoder(strJson.c_str());
+	std::string strJson("{\"no\":\"99\",\"v\":[true, false],\"m\":{\"1\":9, \"2\":29}}");
+    struct2x::rapidjsonDecoder decoder(strJson.c_str(), strJson.length());
     decoder >> info;
+    return 0;
 
     //testMap();
     //testStructFunc();
     //testVector();
-    testProtobuf();
+    //testProtobuf();
 
     return 0;
 }
