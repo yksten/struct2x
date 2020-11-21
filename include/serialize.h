@@ -113,16 +113,16 @@ namespace serialize {
             static const bool value = is_convertible<T, int32_t>::value & !is_integral<T>::value;
         };
 
-        template <typename T, bool isEnum = is_enum<T>::value> struct isMessage { enum { YES = 1, WRITE_TYPE = WT_LENGTH_DELIMITED }; };
-        template <typename T> struct isMessage<T, true> { enum { YES = 0, WRITE_TYPE = WT_VARINT }; };
-        template<> struct isMessage<std::string> { enum { YES = 0, WRITE_TYPE = WT_LENGTH_DELIMITED }; };
-        template<> struct isMessage<bool> { enum { YES = 0, WRITE_TYPE = WT_VARINT }; };
-        template<> struct isMessage<int32_t> { enum { YES = 0, WRITE_TYPE = WT_VARINT }; };
-        template<> struct isMessage<uint32_t> { enum { YES = 0, WRITE_TYPE = WT_VARINT }; };
-        template<> struct isMessage<int64_t> { enum { YES = 0, WRITE_TYPE = WT_VARINT }; };
-        template<> struct isMessage<uint64_t> { enum { YES = 0, WRITE_TYPE = WT_VARINT }; };
-        template<> struct isMessage<float> { enum { YES = 0, WRITE_TYPE = WT_32BIT }; };
-        template<> struct isMessage<double> { enum { YES = 0, WRITE_TYPE = WT_64BIT }; };
+        template <typename T, bool isEnum = is_enum<T>::value> struct isMessage { enum { WRITE_TYPE = WT_LENGTH_DELIMITED }; };
+        template <typename T> struct isMessage<T, true> { enum { WRITE_TYPE = WT_VARINT }; };
+        template<> struct isMessage<std::string> { enum { WRITE_TYPE = WT_LENGTH_DELIMITED }; };
+        template<> struct isMessage<bool> { enum { WRITE_TYPE = WT_VARINT }; };
+        template<> struct isMessage<int32_t> { enum { WRITE_TYPE = WT_VARINT }; };
+        template<> struct isMessage<uint32_t> { enum { WRITE_TYPE = WT_VARINT }; };
+        template<> struct isMessage<int64_t> { enum { WRITE_TYPE = WT_VARINT }; };
+        template<> struct isMessage<uint64_t> { enum { WRITE_TYPE = WT_VARINT }; };
+        template<> struct isMessage<float> { enum { WRITE_TYPE = WT_32BIT }; };
+        template<> struct isMessage<double> { enum { WRITE_TYPE = WT_64BIT }; };
 
         template<class T, class C>
         inline void serialize(T& t, C& c) {

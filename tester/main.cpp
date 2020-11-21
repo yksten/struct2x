@@ -10,11 +10,25 @@
 
 #include "json/encoder.h"
 #include "json/decoder.h"
+#include "rapidjson/encoder.h"
+#include "rapidjson/decoder.h"
 
+struct testStru {
+    testStru() :i(0), db(0.0) {}
+    int i;
+    double db;
+
+    template<typename T>
+    void serialize(T& t) {
+        SERIALIZE(t, i, db);
+    }
+};
 
 struct struInfo {
     struInfo() :no(99) {}
     int no;
+    testStru ts;
+    std::vector<testStru> vts;
     std::vector<bool> v;
     std::map<int, int> m;
 
@@ -32,7 +46,7 @@ struct struInfo {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZE(t, no, v, m);
+        SERIALIZE(t, no, ts, vts, v, m);
     }
 };
 
@@ -134,9 +148,11 @@ void testStructFunc() {
     //std::string str;
     //jr.toString(str);
 
-    std::string str;
-    serialize::JSONEncoder encoder(str);
+    serialize::rapidjsonEncoder encoder;
     encoder << item;
+    std::string str;
+    serialize::JSONEncoder encoder2(str);
+    encoder2 << item;
     //encoder.toString(str);
 
     serialize::CJSONDecoder jw(str.c_str());
@@ -258,6 +274,13 @@ struct vecObject {
 };
 
 int main(int argc, char* argv[]) {
+    struInfo info;
+    info.no = 11;
+    //std::string strJson2("{\"m\":{\"1\":9, \"2\":29}}");
+    std::string strJson2("{\"v\":[true, false],\"vts\":[{\"i\":1, \"db\":3.14},{\"i\":2, \"db\":5.14}],\"no\":99, \"ts\":{\"i\":1, \"db\":3.14},\"m\":{\"1\":9, \"2\":29}}");
+    serialize::rapidjsonDecoder decoder2(strJson2.c_str());
+    decoder2 >> info;
+    return 0;
     //vecObject v;
     //arrayXy a;
     //a.arr.push_back(intXy(1, 1));
@@ -297,7 +320,7 @@ int main(int argc, char* argv[]) {
     serialize::JSONEncoder encoder(str);
     bool bEncode = encoder << ins;
 
-    //return 0;
+    return 0;
 
     //testMap();
     //testStructFunc();
