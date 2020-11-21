@@ -16,26 +16,14 @@ AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 SET(CJSON "./thirdParty/cjson/cJSON.h" "./thirdParty/cjson/cJSON.c")
 SOURCE_GROUP("thirdParty\\cjson" FILES ${CJSON})
 
-SET(RAPIDJSONERROR "./thirdParty/rapidjson/error/en.h" "./thirdParty/rapidjson/error/error.h")
-SOURCE_GROUP("thirdParty\\rapidjson\\error" FILES ${RAPIDJSONERROR})
-
-SET(RAPIDJSONINTERNAL "./thirdParty/rapidjson/internal/biginteger.h" "./thirdParty/rapidjson/internal/diyfp.h" "./thirdParty/rapidjson/internal/dtoa.h" "./thirdParty/rapidjson/internal/ieee754.h" "./thirdParty/rapidjson/internal/itoa.h" "./thirdParty/rapidjson/internal/meta.h" "./thirdParty/rapidjson/internal/pow10.h" "./thirdParty/rapidjson/internal/regex.h" "./thirdParty/rapidjson/internal/stack.h" "./thirdParty/rapidjson/internal/strfunc.h" "./thirdParty/rapidjson/internal/strtod.h" "./thirdParty/rapidjson/internal/swap.h")
-SOURCE_GROUP("thirdParty\\rapidjson\\internal" FILES ${RAPIDJSONINTERNAL})
-
-SET(RAPIDJSONMSINTTYPES "./thirdParty/rapidjson/msinttypes/inttypes.h" "./thirdParty/rapidjson/msinttypes/stdint.h")
-SOURCE_GROUP("thirdParty\\rapidjson\\msinttypes" FILES ${RAPIDJSONMSINTTYPES})
-
-SET(RAPIDJSON "./thirdParty/rapidjson/allocators.h" "./thirdParty/rapidjson/document.h" "./thirdParty/rapidjson/encodedstream.h" "./thirdParty/rapidjson/encodings.h" "./thirdParty/rapidjson/filereadstream.h" "./thirdParty/rapidjson/filewritestream.h" "./thirdParty/rapidjson/fwd.h" "./thirdParty/rapidjson/istreamwrapper.h" "./thirdParty/rapidjson/memorybuffer.h" "./thirdParty/rapidjson/memorystream.h" "./thirdParty/rapidjson/ostreamwrapper.h" "./thirdParty/rapidjson/pointer.h" "./thirdParty/rapidjson/prettywriter.h" "./thirdParty/rapidjson/rapidjson.h" "./thirdParty/rapidjson/reader.h" "./thirdParty/rapidjson/schema.h" "./thirdParty/rapidjson/stream.h" "./thirdParty/rapidjson/stringbuffer.h" "./thirdParty/rapidjson/writer.h")
-SOURCE_GROUP("thirdParty\\rapidjson" FILES ${RAPIDJSON})
-
 SET(INCLUDE "./include/struct2x.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
 SET(INCLUDECJSON "./include/json/JSONEncoder.h" "./include/json/JSONDecoder.h")
 SOURCE_GROUP("include\\json" FILES ${INCLUDECJSON})
 
-SET(INCLUDERAPIDJSON "./include/rapidjson/rapidjsonEncoder.h" "./include/rapidjson/rapidjsonDecoder.h")
-SOURCE_GROUP("include\\rapidjson" FILES ${INCLUDERAPIDJSON})
+SET(INCLUDEFASTJSON "./include/fastjson/fastjsonEncoder.h" "./include/fastjson/fastjsonDecoder.h")
+SOURCE_GROUP("include\\fastjson" FILES ${INCLUDEFASTJSON})
 
 SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
@@ -49,8 +37,8 @@ SOURCE_GROUP(src FILES ${SRC})
 SET(SRCJSON "./src/json/JSONEncoder.cpp" "./src/json/JSONDecoder.cpp")
 SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
-SET(SRCRAPIDJSON "./src/rapidjson/rapidjsonEncoder.cpp" "./src/rapidjson/rapidjsonDecoder.cpp")
-SOURCE_GROUP("src\\rapidjson" FILES ${SRCRAPIDJSON})
+SET(SRCFASTJSON "./src/fastjson/fastjsonEncoder.cpp" "./src/fastjson/fastjsonDecoder.cpp")
+SOURCE_GROUP("src\\fastjson" FILES ${SRCFASTJSON})
 
 SET(SRCPROTOBUF "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp")
 SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
@@ -60,9 +48,9 @@ SOURCE_GROUP("src\\msgpack" FILES ${SRCMSGPACK})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
-    ADD_LIBRARY(struct2x SHARED ${CJSON} ${RAPIDJSONERROR} ${RAPIDJSONINTERNAL} ${RAPIDJSONMSINTTYPES} ${RAPIDJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDERAPIDJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCRAPIDJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x SHARED ${CJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDEFASTJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCFASTJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
 ELSE ()
-    ADD_LIBRARY(struct2x ${CJSON} ${RAPIDJSONERROR} ${RAPIDJSONINTERNAL} ${RAPIDJSONMSINTTYPES} ${RAPIDJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDERAPIDJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCRAPIDJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x ${CJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDEFASTJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCFASTJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
 ENDIF (MSVC)
 
 

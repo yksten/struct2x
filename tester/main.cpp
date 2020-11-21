@@ -8,8 +8,8 @@
 #include "protobuf/decoder.h"
 #include "testStruct.h"
 
-#include "rapidjson/rapidjsonEncoder.h"
-#include "rapidjson/rapidjsonDecoder.h"
+#include "fastjson/fastjsonEncoder.h"
+#include "fastjson/fastjsonDecoder.h"
 
 #include "msgpack/encoder.h"
 #include "msgpack/decoder.h"
@@ -136,7 +136,7 @@ void testStructFunc() {
     //std::string str;
     //jr.toString(str);
 
-    struct2x::rapidjsonEncoder encoder;
+    struct2x::fastjsonEncoder encoder;
     encoder << item;
     std::string str;
     encoder.toString(str);
@@ -252,8 +252,14 @@ int main() {
 
     struInfo info;
 	std::string strJson("{\"no\":\"99\",\"v\":[true, false],\"m\":{\"1\":9, \"2\":29}}");
-    struct2x::rapidjsonDecoder decoder(strJson.c_str(), strJson.length());
+    struct2x::fastjsonDecoder decoder(strJson.c_str(), strJson.length());
     decoder >> info;
+
+    struct2x::fastjsonEncoder encoder;
+    encoder << info;
+    std::string str;
+    encoder.toString(str);
+
     return 0;
 
     //testMap();

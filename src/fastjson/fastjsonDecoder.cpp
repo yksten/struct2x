@@ -1,4 +1,4 @@
-#include "rapidjson/rapidjsonDecoder.h"
+#include "fastjson/fastjsonDecoder.h"
 #include <assert.h>
 
 
@@ -253,7 +253,7 @@ namespace struct2x {
     }
     /*------------------------------------------------------------------------------*/
 
-    void rapidjsonDecoder::convertValue(bool& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(bool& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         if (strncmp("true", sz, length) == 0) {
             value = true;
@@ -267,7 +267,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertValue(int32_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(int32_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         bool bMinus = false;
@@ -282,7 +282,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         for (uint32_t idx = 0; idx < length; ++idx) {
@@ -292,7 +292,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertValue(int64_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(int64_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         bool bMinus = false;
@@ -307,7 +307,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         for (uint32_t idx = 0; idx < length; ++idx) {
@@ -324,7 +324,7 @@ namespace struct2x {
         return db;
     }
 
-    void rapidjsonDecoder::convertValue(float& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(float& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         bool bMinus = false;
@@ -350,7 +350,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertValue(double& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(double& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         for (uint32_t idx = 0, bFlag = false, num = 0; idx < length; ++idx) {
@@ -371,14 +371,14 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertValue(std::string& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertValue(std::string& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value.clear();
         value.append(sz, length);
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -406,7 +406,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -434,7 +434,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -462,7 +462,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -490,7 +490,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -518,7 +518,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -546,7 +546,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -574,7 +574,7 @@ namespace struct2x {
         if (pHas) *pHas = true;
     }
 
-    void rapidjsonDecoder::convertArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas) {
+    void fastjsonDecoder::convertArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;

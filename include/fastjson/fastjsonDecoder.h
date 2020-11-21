@@ -1,5 +1,5 @@
-#ifndef __RAPIDJSON_DECODER_H__
-#define __RAPIDJSON_DECODER_H__
+#ifndef __FASTJSON_DECODER_H__
+#define __FASTJSON_DECODER_H__
 #include "struct2x.h"
 #include <string>
 #include <map>
@@ -80,12 +80,12 @@ namespace struct2x {
         void ParseObjectAsStr(StringStream& is, BaseHandler& handler);
     };
 
-    class EXPORTAPI rapidjsonDecoder {
+    class EXPORTAPI fastjsonDecoder {
         StringStream _str;
         std::vector<function_value> _set;
     public:
-        rapidjsonDecoder(const char* sz, uint32_t length) :_str(sz, length) {}
-        ~rapidjsonDecoder() {}
+        fastjsonDecoder(const char* sz, uint32_t length) :_str(sz, length) {}
+        ~fastjsonDecoder() {}
 
         template<typename T>
         bool operator >> (T& value) {
@@ -95,24 +95,24 @@ namespace struct2x {
         }
 
         template<typename T>
-        rapidjsonDecoder& operator&(serializeItem<T> value) {
+        fastjsonDecoder& operator&(serializeItem<T> value) {
             return convert(value.name, value.value);
         }
 
         template<typename T>
-        rapidjsonDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind(&rapidjsonDecoder::convertValue, value, pHas)));
+        fastjsonDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
+            _set.push_back(function_value(sz, converter::bind(&fastjsonDecoder::convertValue, value, pHas)));
             return *this;
         }
 
         template<typename T>
-        rapidjsonDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind(&rapidjsonDecoder::convertArray, value, pHas)));
+        fastjsonDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
+            _set.push_back(function_value(sz, converter::bind(&fastjsonDecoder::convertArray, value, pHas)));
             return *this;
         }
         template<typename K, typename V>
-        rapidjsonDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind(&rapidjsonDecoder::convertMap, value, pHas)));
+        fastjsonDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
+            _set.push_back(function_value(sz, converter::bind(&fastjsonDecoder::convertMap, value, pHas)));
             return *this;
         }
     private:
@@ -137,7 +137,7 @@ namespace struct2x {
         template<typename T>
         static void convertValue(T& value, const char* cValue, uint32_t length, bool* pHas) {
             if (length) {
-                rapidjsonDecoder decoder(cValue.first, cValue.second);
+                fastjsonDecoder decoder(cValue.first, cValue.second);
                 if (!decoder.operator>>(value))
                     return;
                 if (pHas) *pHas = true;
@@ -160,7 +160,7 @@ namespace struct2x {
                     else if (c == '}') {
                         T temp = T();
                         const char* szBin = stack[stack.size() - 1];
-                        rapidjsonDecoder decoder(szBin, (sz + idx) - szBin);
+                        fastjsonDecoder decoder(szBin, (sz + idx) - szBin);
                         if (decoder.operator>>(temp))
                             value.push_back(temp);
                         stack.erase(stack.begin + stack.size() - 1);
