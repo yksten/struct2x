@@ -9,23 +9,23 @@
 struct cJSON;
 namespace struct2x {
 
-    class EXPORTAPI JSONEncoder {
+    class EXPORTAPI CJSONEncoder {
         cJSON* _root;
         cJSON* _cur;
-        JSONEncoder(const JSONEncoder&);
-        JSONEncoder& operator=(const JSONEncoder&);
+        CJSONEncoder(const CJSONEncoder&);
+        CJSONEncoder& operator=(const CJSONEncoder&);
     public:
-        JSONEncoder();
-        ~JSONEncoder();
+        CJSONEncoder();
+        ~CJSONEncoder();
 
         template<typename T>
-        JSONEncoder& operator&(serializeItem<T> value) {
+        CJSONEncoder& operator&(serializeItem<T> value) {
             encodeValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value));
             return *this;
         }
 
         template<typename T>
-        JSONEncoder& operator << (const T& value) {
+        CJSONEncoder& operator << (const T& value) {
             const typename internal::TypeTraits<T>::Type& v = value;
             if (internal::TypeTraits<T>::isVector()) {
                 operator << (v);
@@ -38,7 +38,7 @@ namespace struct2x {
         }
 
         template<typename K, typename V>
-        JSONEncoder& operator <<(const std::map<K, V>& value) {
+        CJSONEncoder& operator <<(const std::map<K, V>& value) {
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
                 encodeValue(internal::STOT::type<K>::tostr(it->first), item);
@@ -47,7 +47,7 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
+        CJSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
             encodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value));
             return *this;
         }
@@ -110,10 +110,10 @@ namespace struct2x {
         void encodeValue(const char* sz, const std::vector<double>& value);
         void encodeValue(const char* sz, const std::vector<std::string>& value);
 
-        JSONEncoder& operator<<(const std::vector<int32_t>& value);
-        JSONEncoder& operator<<(const std::vector<float>& value);
-        JSONEncoder& operator<<(const std::vector<double>& value);
-        JSONEncoder& operator<<(const std::vector<std::string>& value);
+        CJSONEncoder& operator<<(const std::vector<int32_t>& value);
+        CJSONEncoder& operator<<(const std::vector<float>& value);
+        CJSONEncoder& operator<<(const std::vector<double>& value);
+        CJSONEncoder& operator<<(const std::vector<std::string>& value);
 
         void createObject(const char* sz);
         void createArray(const char* sz);

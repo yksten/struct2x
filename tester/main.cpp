@@ -1,15 +1,15 @@
 #include <iostream>
 #include <assert.h>
 
-#include "json/JSONEncoder.h"
-#include "json/JSONDecoder.h"
+#include "cjson/CJSONEncoder.h"
+#include "cjson/CJSONDecoder.h"
 
 #include "protobuf/encoder.h"
 #include "protobuf/decoder.h"
 #include "testStruct.h"
 
-#include "fastjson/fastjsonEncoder.h"
-#include "fastjson/fastjsonDecoder.h"
+#include "json/encoder.h"
+#include "json/decoder.h"
 
 #include "msgpack/encoder.h"
 #include "msgpack/decoder.h"
@@ -103,12 +103,12 @@ void testMap() {
     map["VARIABLE_TIMER"] = 4;
     map["VARIABLE_COUNTER"] = 5;
 
-    struct2x::JSONEncoder jrmap;
+    struct2x::CJSONEncoder jrmap;
     jrmap << map;
     std::string str2;
     jrmap.toString(str2);
 
-    struct2x::JSONDecoder jwmap(str2.c_str());
+    struct2x::CJSONDecoder jwmap(str2.c_str());
     jwmap >> map2;
 
     assert(map == map2);
@@ -131,17 +131,17 @@ void testStructFunc() {
     info.no = 992;
     item.m2["2"] = info;
 
-    //struct2x::JSONEncoder jr;
+    //struct2x::CJSONEncoder jr;
     //jr << item;
     //std::string str;
     //jr.toString(str);
 
-    struct2x::fastjsonEncoder encoder;
+    struct2x::JSONEncoder encoder;
     encoder << item;
     std::string str;
     encoder.toString(str);
 
-    struct2x::JSONDecoder jw(str.c_str());
+    struct2x::CJSONDecoder jw(str.c_str());
     struItem item2;
     jw >> item2;
     bool b = (item == item2);
@@ -161,13 +161,13 @@ void testVector() {
     std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
     s1.vec.push_back(v);
 
-    struct2x::JSONEncoder jr;
+    struct2x::CJSONEncoder jr;
     jr << s1;
 
     std::string str;
     jr.toString(str);
 
-    struct2x::JSONDecoder jw(str.c_str());
+    struct2x::CJSONDecoder jw(str.c_str());
     jw >> s2;
     bool b = (s1.vec == s2.vec);
     assert(b);
@@ -196,11 +196,11 @@ void testProtobuf() {
     struct2x::PBEncoder encoder(buffer);
     encoder << items;
 
-    struct2x::JSONEncoder jr;
+    struct2x::CJSONEncoder jr;
     jr << items;
     std::string strJson;
     jr.toString(strJson);
-    struct2x::JSONDecoder(strJson.c_str()) >> items;
+    struct2x::CJSONDecoder(strJson.c_str()) >> items;
 
     struct2x::PBDecoder decoder(buffer.data(), buffer.size());
     bool b = decoder >> items2;
@@ -234,7 +234,7 @@ struct struExampleEnum {
 int main() {
     //struExampleEnum item;
     //item.e = ET2;
-    //struct2x::JSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
+    //struct2x::CJSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
     //jw >> item;
 
     //item.v.push_back(15); item.v.push_back(35);
@@ -252,10 +252,10 @@ int main() {
 
     struInfo info;
 	std::string strJson("{\"no\":\"99\",\"v\":[true, false],\"m\":{\"1\":9, \"2\":29}}");
-    struct2x::fastjsonDecoder decoder(strJson.c_str(), strJson.length());
+    struct2x::JSONDecoder decoder(strJson.c_str(), strJson.length());
     decoder >> info;
 
-    struct2x::fastjsonEncoder encoder;
+    struct2x::JSONEncoder encoder;
     encoder << info;
     std::string str;
     encoder.toString(str);

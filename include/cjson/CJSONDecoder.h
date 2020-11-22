@@ -9,15 +9,15 @@
 struct cJSON;
 namespace struct2x {
 
-    class EXPORTAPI JSONDecoder {
+    class EXPORTAPI CJSONDecoder {
         cJSON* _root;
         cJSON* _cur;
-        JSONDecoder();
-        JSONDecoder(const JSONDecoder&);
-        JSONDecoder& operator=(const JSONDecoder&);
+        CJSONDecoder();
+        CJSONDecoder(const CJSONDecoder&);
+        CJSONDecoder& operator=(const CJSONDecoder&);
     public:
-        explicit JSONDecoder(const char* sz);
-        ~JSONDecoder();
+        explicit CJSONDecoder(const char* sz);
+        ~CJSONDecoder();
 
         template<typename T>
         bool operator >> (T& value) {
@@ -28,13 +28,13 @@ namespace struct2x {
         }
 
         template<typename T>
-        JSONDecoder& operator&(serializeItem<T> value) {
+        CJSONDecoder& operator&(serializeItem<T> value) {
             decodeValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
             return *this;
         }
 
         template<typename T>
-        JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
+        CJSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
             decodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
             return *this;
         }
@@ -140,10 +140,10 @@ namespace struct2x {
         void decodeValue(const char* sz, std::vector<double>& value, bool* pHas);
         void decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas);
 
-        JSONDecoder& operator >>(std::vector<int32_t>& value);
-        JSONDecoder& operator >>(std::vector<float>& value);
-        JSONDecoder& operator >>(std::vector<double>& value);
-        JSONDecoder& operator >>(std::vector<std::string>& value);
+        CJSONDecoder& operator >>(std::vector<int32_t>& value);
+        CJSONDecoder& operator >>(std::vector<float>& value);
+        CJSONDecoder& operator >>(std::vector<double>& value);
+        CJSONDecoder& operator >>(std::vector<std::string>& value);
 
         bool getObject(const char* sz);
         int32_t getArraySize()const;

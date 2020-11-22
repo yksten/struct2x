@@ -1,4 +1,4 @@
-#include "fastjson/fastjsonEncoder.h"
+#include "json/encoder.h"
 #include <assert.h>
 
 
@@ -920,65 +920,65 @@ namespace struct2x {
     }
 
     /*------------------------------------------------------------------------------*/
-    fastjsonEncoder::fastjsonEncoder() {
+    JSONEncoder::JSONEncoder() {
     }
 
-    fastjsonEncoder::~fastjsonEncoder() {
+    JSONEncoder::~JSONEncoder() {
     }
 
-    bool fastjsonEncoder::toString(std::string& str) {
+    bool JSONEncoder::toString(std::string& str) {
         return _writer.toString(str);
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, bool value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, bool value, bool* pHas) {
         _writer.Key(sz);
         _writer.Bool(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, uint32_t value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, uint32_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Uint(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, int32_t value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, int32_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Int(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, uint64_t value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, uint64_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Uint64(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, int64_t value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, int64_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Int64(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, float value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, float value, bool* pHas) {
         _writer.Key(sz);
         _writer.Double(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, double value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, double value, bool* pHas) {
         _writer.Key(sz);
         _writer.Double(value);
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::string& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::string& value, bool* pHas) {
         _writer.Key(sz);
         _writer.String(value.c_str());
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<bool>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<bool>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -989,7 +989,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1000,7 +1000,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1011,7 +1011,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1022,7 +1022,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1033,7 +1033,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<float>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<float>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1044,7 +1044,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<double>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<double>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1055,7 +1055,7 @@ namespace struct2x {
         return *this;
     }
 
-    fastjsonEncoder& fastjsonEncoder::convert(const char* sz, const std::vector<std::string>& value, bool* pHas) {
+    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<std::string>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1066,23 +1066,23 @@ namespace struct2x {
         return *this;
     }
 
-    void fastjsonEncoder::StartObject(const char* sz) {
+    void JSONEncoder::StartObject(const char* sz) {
         if (sz)
             _writer.Key(sz);
         _writer.StartObject();
     }
 
-    void fastjsonEncoder::EndObject() {
+    void JSONEncoder::EndObject() {
         _writer.EndObject();
     }
 
-    void fastjsonEncoder::StartArray(const char* sz) {
+    void JSONEncoder::StartArray(const char* sz) {
         if (sz)
             _writer.Key(sz);
         _writer.StartArray();
     }
 
-    void fastjsonEncoder::EndArray() {
+    void JSONEncoder::EndArray() {
         _writer.EndArray();
     }
 

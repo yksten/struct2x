@@ -1,18 +1,18 @@
-#include "json/JSONEncoder.h"
+#include "cjson/CJSONEncoder.h"
 #include "thirdParty/cjson/cJSON.h"
 
 namespace struct2x {
 
-    JSONEncoder::JSONEncoder()
+    CJSONEncoder::CJSONEncoder()
         : _root(cJSON_CreateObject())
         , _cur(_root) {
     }
 
-    JSONEncoder::~JSONEncoder() {
+    CJSONEncoder::~CJSONEncoder() {
         cJSON_Delete(_root);
     }
 
-    bool JSONEncoder::toString(std::string& str, bool bUnformatted) {
+    bool CJSONEncoder::toString(std::string& str, bool bUnformatted) {
         if (_root) {
             char *out = NULL;
             if (bUnformatted) {
@@ -29,7 +29,7 @@ namespace struct2x {
         return false;
     }
 
-    JSONEncoder& JSONEncoder::operator<<(const std::vector<int32_t>& value) {
+    CJSONEncoder& CJSONEncoder::operator<<(const std::vector<int32_t>& value) {
         int32_t count = (int32_t)value.size();
         cJSON *n = 0, *p = 0, *a = _cur;
         for (int32_t i = 0; a && i < count; i++) {
@@ -45,7 +45,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONEncoder& JSONEncoder::operator<<(const std::vector<float>& value) {
+    CJSONEncoder& CJSONEncoder::operator<<(const std::vector<float>& value) {
         int32_t count = (int32_t)value.size();
         cJSON *n = 0, *p = 0, *a = _cur;
         for (int32_t i = 0; a && i < count; i++) {
@@ -61,7 +61,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONEncoder& JSONEncoder::operator<<(const std::vector<double>& value) {
+    CJSONEncoder& CJSONEncoder::operator<<(const std::vector<double>& value) {
         int32_t count = (int32_t)value.size();
         cJSON *n = 0, *p = 0, *a = _cur;
         for (int32_t i = 0; a && i < count; i++) {
@@ -77,7 +77,7 @@ namespace struct2x {
         return *this;
     }
 
-    JSONEncoder& JSONEncoder::operator<<(const std::vector<std::string>& value) {
+    CJSONEncoder& CJSONEncoder::operator<<(const std::vector<std::string>& value) {
         int32_t count = (int32_t)value.size();
         cJSON *n = 0, *p = 0, *a = _cur;
         for (int32_t i = 0; a && i < count; i++) {
@@ -93,39 +93,39 @@ namespace struct2x {
         return *this;
     }
 
-    void JSONEncoder::encodeValue(const char* sz, bool value) {
+    void CJSONEncoder::encodeValue(const char* sz, bool value) {
         cJSON_AddBoolToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, uint32_t value) {
+    void CJSONEncoder::encodeValue(const char* sz, uint32_t value) {
         cJSON_AddNumberToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, int32_t value) {
+    void CJSONEncoder::encodeValue(const char* sz, int32_t value) {
         cJSON_AddNumberToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, uint64_t value) {
+    void CJSONEncoder::encodeValue(const char* sz, uint64_t value) {
         cJSON_AddNumberToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, int64_t value) {
+    void CJSONEncoder::encodeValue(const char* sz, int64_t value) {
         cJSON_AddNumberToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, float value) {
+    void CJSONEncoder::encodeValue(const char* sz, float value) {
         cJSON_AddNumberToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, double value) {
+    void CJSONEncoder::encodeValue(const char* sz, double value) {
         cJSON_AddNumberToObject(_cur, sz, value);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::string& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::string& value) {
         cJSON_AddStringToObject(_cur, sz, value.c_str());
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<bool>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<bool>& value) {
         cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
         int32_t count = (int32_t)value.size();
         for (int32_t i = 0; a && i < count; i++) {
@@ -141,7 +141,7 @@ namespace struct2x {
         cJSON_AddItemToObject(_cur, sz, a);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<uint32_t>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<uint32_t>& value) {
         cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
         int32_t count = (int32_t)value.size();
         for (int32_t i = 0; a && i < count; i++) {
@@ -157,13 +157,13 @@ namespace struct2x {
         cJSON_AddItemToObject(_cur, sz, a);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<int32_t>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<int32_t>& value) {
         if (!value.empty()) {
             cJSON_AddItemToObject(_cur, sz, cJSON_CreateIntArray(&value.front(), (int32_t)value.size()));
         }
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<uint64_t>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<uint64_t>& value) {
         cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
         int32_t count = (int32_t)value.size();
         for (int32_t i = 0; a && i < count; i++) {
@@ -179,7 +179,7 @@ namespace struct2x {
         cJSON_AddItemToObject(_cur, sz, a);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<int64_t>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<int64_t>& value) {
         cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
         int32_t count = (int32_t)value.size();
         for (int32_t i = 0; a && i < count; i++) {
@@ -195,19 +195,19 @@ namespace struct2x {
         cJSON_AddItemToObject(_cur, sz, a);
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<float>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<float>& value) {
         if (!value.empty()) {
             cJSON_AddItemToObject(_cur, sz, cJSON_CreateFloatArray(&value.front(), (int32_t)value.size()));
         }
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<double>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<double>& value) {
         if (!value.empty()) {
             cJSON_AddItemToObject(_cur, sz, cJSON_CreateDoubleArray(&value.front(), (int32_t)value.size()));
         }
     }
 
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<std::string>& value) {
+    void CJSONEncoder::encodeValue(const char* sz, const std::vector<std::string>& value) {
         cJSON *n = 0, *p = 0, *a = cJSON_CreateArray();
         int32_t count = (int32_t)value.size();
         for (int32_t i = 0; a && i < count; i++) {
@@ -223,25 +223,25 @@ namespace struct2x {
         cJSON_AddItemToObject(_cur, sz, a);
     }
 
-    void JSONEncoder::createObject(const char* sz) {
+    void CJSONEncoder::createObject(const char* sz) {
         cJSON *fmt = cJSON_CreateObject();
         cJSON_AddItemToObject(_cur, sz, fmt);
         _cur = fmt;
     }
 
-    void JSONEncoder::createArray(const char* sz) {
+    void CJSONEncoder::createArray(const char* sz) {
         cJSON *fmt = cJSON_CreateArray();
         cJSON_AddItemToObject(_cur, sz, fmt);
         _cur = fmt;
     }
 
-    void JSONEncoder::addItemToArray() {
+    void CJSONEncoder::addItemToArray() {
         cJSON *fmt = cJSON_CreateObject();
         cJSON_AddItemToArray(_cur, fmt);
         _cur = fmt;
     }
 
-    void JSONEncoder::addArrayToArray() {
+    void CJSONEncoder::addArrayToArray() {
         cJSON *fmt = cJSON_CreateArray();
         cJSON_AddItemToArray(_cur, fmt);
         _cur = fmt;

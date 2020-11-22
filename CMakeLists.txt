@@ -19,11 +19,11 @@ SOURCE_GROUP("thirdParty\\cjson" FILES ${CJSON})
 SET(INCLUDE "./include/struct2x.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
-SET(INCLUDECJSON "./include/json/JSONEncoder.h" "./include/json/JSONDecoder.h")
-SOURCE_GROUP("include\\json" FILES ${INCLUDECJSON})
+SET(INCLUDEJSON "./include/json/encoder.h" "./include/json/decoder.h")
+SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
 
-SET(INCLUDEFASTJSON "./include/fastjson/fastjsonEncoder.h" "./include/fastjson/fastjsonDecoder.h")
-SOURCE_GROUP("include\\fastjson" FILES ${INCLUDEFASTJSON})
+SET(INCLUDECJSON "./include/cjson/CJSONEncoder.h" "./include/cjson/CJSONDecoder.h")
+SOURCE_GROUP("include\\cjson" FILES ${INCLUDECJSON})
 
 SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
@@ -34,11 +34,11 @@ SOURCE_GROUP("include\\msgpack" FILES ${INCLUDEMSGPACK})
 SET(SRC "./src/struct2x.cpp")
 SOURCE_GROUP(src FILES ${SRC})
 
-SET(SRCJSON "./src/json/JSONEncoder.cpp" "./src/json/JSONDecoder.cpp")
+SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
 SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
-SET(SRCFASTJSON "./src/fastjson/fastjsonEncoder.cpp" "./src/fastjson/fastjsonDecoder.cpp")
-SOURCE_GROUP("src\\fastjson" FILES ${SRCFASTJSON})
+SET(SRCCJSON "./src/cjson/CJSONEncoder.cpp" "./src/cjson/CJSONDecoder.cpp")
+SOURCE_GROUP("src\\cjson" FILES ${SRCCJSON})
 
 SET(SRCPROTOBUF "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp")
 SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
@@ -48,9 +48,9 @@ SOURCE_GROUP("src\\msgpack" FILES ${SRCMSGPACK})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
-    ADD_LIBRARY(struct2x SHARED ${CJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDEFASTJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCFASTJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x SHARED ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
 ELSE ()
-    ADD_LIBRARY(struct2x ${CJSON} ${INCLUDE} ${INCLUDECJSON} ${INCLUDEFASTJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCFASTJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
 ENDIF (MSVC)
 
 
