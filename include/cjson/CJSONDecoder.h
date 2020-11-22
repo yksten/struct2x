@@ -1,5 +1,5 @@
-#ifndef __JSON_DECODER_H__
-#define __JSON_DECODER_H__
+#ifndef __CJSON_DECODER_H__
+#define __CJSON_DECODER_H__
 
 #include <string>
 #include <map>

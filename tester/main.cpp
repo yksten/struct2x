@@ -11,8 +11,6 @@
 #include "json/encoder.h"
 #include "json/decoder.h"
 
-#include "msgpack/encoder.h"
-#include "msgpack/decoder.h"
 
 struct struInfo {
     struInfo() :no(99) {}

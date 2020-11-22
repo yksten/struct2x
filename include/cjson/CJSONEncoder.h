@@ -1,5 +1,5 @@
-#ifndef __JSON_ENCOER_H__
-#define __JSON_ENCOER_H__
+#ifndef __CJSON_ENCOER_H__
+#define __CJSON_ENCOER_H__
 
 #include <string>
 #include <map>

@@ -1,5 +1,5 @@
-#ifndef __FASTJSON_DECODER_H__
-#define __FASTJSON_DECODER_H__
+#ifndef __JSON_DECODER_H__
+#define __JSON_DECODER_H__
 #include "struct2x.h"
 #include <string>
 #include <map>

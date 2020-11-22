@@ -28,9 +28,6 @@ SOURCE_GROUP("include\\cjson" FILES ${INCLUDECJSON})
 SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
 
-SET(INCLUDEMSGPACK "./include/msgpack/encoder.h" "./include/msgpack/decoder.h")
-SOURCE_GROUP("include\\msgpack" FILES ${INCLUDEMSGPACK})
-
 SET(SRC "./src/struct2x.cpp")
 SOURCE_GROUP(src FILES ${SRC})
 
@@ -43,14 +40,11 @@ SOURCE_GROUP("src\\cjson" FILES ${SRCCJSON})
 SET(SRCPROTOBUF "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp")
 SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
 
-SET(SRCMSGPACK "./src/msgpack/encoder.cpp" "./src/msgpack/decoder.cpp")
-SOURCE_GROUP("src\\msgpack" FILES ${SRCMSGPACK})
-
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
-    ADD_LIBRARY(struct2x SHARED ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x SHARED ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${DIR_SRCS})
 ELSE ()
-    ADD_LIBRARY(struct2x ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${INCLUDEMSGPACK} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${SRCMSGPACK} ${DIR_SRCS})
+    ADD_LIBRARY(struct2x ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${DIR_SRCS})
 ENDIF (MSVC)
 
 
