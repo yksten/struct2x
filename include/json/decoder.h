@@ -150,20 +150,20 @@ namespace struct2x {
                 value.clear();
                 std::vector<const char*> stack;
                 for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
-                    const char c = sz[idx];
+                    const char c = cValue[idx];
                     if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
                         continue;
                     }
                     if (c == '{') {
-                        stack.push_back(sz + idx);
+                        stack.push_back(cValue + idx);
                     }
                     else if (c == '}') {
                         T temp = T();
                         const char* szBin = stack[stack.size() - 1];
-                        JSONDecoder decoder(szBin, (sz + idx) - szBin);
+                        JSONDecoder decoder(szBin, (cValue + idx) - szBin);
                         if (decoder.operator>>(temp))
                             value.push_back(temp);
-                        stack.erase(stack.begin + stack.size() - 1);
+                        stack.erase(stack.begin() + stack.size() - 1);
                     }
                 }
                 if (pHas) *pHas = true;
