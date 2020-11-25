@@ -177,7 +177,7 @@ namespace struct2x {
         const char* szStart = is.Strart();
 
         for (; is.Peek() != '\0'; is.Take()) {
-            if (is.Peek() >= '0' && is.Peek() <= '9') {
+            if (is.Peek() == '-' || (is.Peek() >= '0' && is.Peek() <= '9')) {
                 continue;
             }
             else {

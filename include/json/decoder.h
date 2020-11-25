@@ -136,8 +136,8 @@ namespace struct2x {
 
         template<typename T>
         static void convertValue(T& value, const char* cValue, uint32_t length, bool* pHas) {
-            if (length) {
-                JSONDecoder decoder(cValue.first, cValue.second);
+            if (length > 2) {
+                JSONDecoder decoder(cValue, length);
                 if (!decoder.operator>>(value))
                     return;
                 if (pHas) *pHas = true;
@@ -176,7 +176,7 @@ namespace struct2x {
             V _value;
             std::map<K, V>& _map;
         public:
-            MapHandler(std::map<K, V>& map) :_map(map) {}
+            MapHandler(std::map<K, V>& map) :_key(), _value(), _map(map) {}
             bool Key(const char* sz, unsigned length) {
                 convertValue(_key, sz, length, NULL);
                 return true;
@@ -190,7 +190,7 @@ namespace struct2x {
 
         template<typename K, typename V>
         static void convertMap(std::map<K, V>& value, const char* cValue, uint32_t length, bool* pHas) {
-            if (length) {
+            if (length > 2) {
                 StringStream str(cValue, length);
                 MapHandler<K, V> handler(value);
                 GenericReader().Parse(str, handler);

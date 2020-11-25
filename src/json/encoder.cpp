@@ -862,8 +862,17 @@ namespace struct2x {
             return;
         }
 
+        value_type& vt = _stack.top();
+        if (vt.first == kNullType) {
+            ;
+        } else if (vt.first == kkeyType) {
+            _str.append(1, ':');
+        } else if (vt.first == kValueType) {
+            _str.append(1, ',');
+        }
         char buffer[25];
         char* end = internal::dtoa(d, buffer);
+        _str.append(buffer, end - buffer);
     }
 
     void GenericWriter::Key(const char* szKey) {
