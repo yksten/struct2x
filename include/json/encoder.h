@@ -16,8 +16,9 @@ namespace struct2x {
         };
         typedef std::pair<Type, uint32_t> value_type;
         std::stack<value_type> _stack;
-        std::string _str;
+        std::string& _str;
     public:
+        explicit GenericWriter(std::string& str);
         void Null();
         void Bool(bool b);
         void Int(int32_t i);
@@ -31,20 +32,21 @@ namespace struct2x {
         void EndObject();
         void StartArray();
         void EndArray();
+        void Separation();
         bool toString(std::string& str);
     };
 
     class EXPORTAPI JSONEncoder {
         GenericWriter _writer;
     public:
-        JSONEncoder();
+        explicit JSONEncoder(std::string& str);
         ~JSONEncoder();
 
         bool toString(std::string& str);
 
         template<typename T>
         JSONEncoder& operator&(serializeItem<T> value) {
-            setValue(value.name, *<internal::TypeTraits<T>::Type*>&value.value);
+            setValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>&value.value, value.bHas);
             return *this;
         }
 
@@ -92,6 +94,7 @@ namespace struct2x {
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
                 const typename internal::TypeTraits<T>::Type& item = value.at(i);
+                if (i) _writer.Separation();
                 this->operator<<(item);
             }
             EndArray();

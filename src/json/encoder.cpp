@@ -745,6 +745,9 @@ namespace struct2x {
 
     } // namespace internal
 
+    GenericWriter::GenericWriter(std::string& str) :_str(str) {
+    }
+
     void GenericWriter::Null() {
         value_type& vt = _stack.top();
         if (vt.first == kNullType) {
@@ -901,7 +904,7 @@ namespace struct2x {
     }
 
     void GenericWriter::StartObject() {
-        if (!_stack.empty()) {
+        if (!_stack.empty() && _stack.top().first == kkeyType) {
             _str.append(1, ':');
         }
         _stack.push(value_type(kNullType, 0));
@@ -923,13 +926,17 @@ namespace struct2x {
         _stack.pop();
     }
 
+    void GenericWriter::Separation() {
+        _str.append(",");
+    }
+
     bool GenericWriter::toString(std::string& str) {
         str = _str;
         return true;
     }
 
     /*------------------------------------------------------------------------------*/
-    JSONEncoder::JSONEncoder() {
+    JSONEncoder::JSONEncoder(std::string& str) : _writer(str) {
     }
 
     JSONEncoder::~JSONEncoder() {
