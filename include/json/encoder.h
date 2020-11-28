@@ -44,7 +44,14 @@ namespace struct2x {
 
         template<typename T>
         JSONEncoder& operator&(serializeItem<T> value) {
-            return convert(value.name, value.value);
+            setValue(value.name, *<internal::TypeTraits<T>::Type*>&value.value);
+            return *this;
+        }
+
+        template<typename T>
+        JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
+            setValue(sz, *(const typename internal::TypeTraits<T>::Type*)&value, pHas);
+            return *this;
         }
 
         template<typename T>
@@ -62,16 +69,25 @@ namespace struct2x {
             return *this;
         }
 
+        template<typename K, typename V>
+        JSONEncoder& operator <<(const std::map<K, V>& value) {
+            for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
+                typename internal::TypeTraits<K>::Type* pKey = const_cast<typename internal::TypeTraits<K>::Type*>(&(it->first));
+                typename internal::TypeTraits<V>::Type* pValue = const_cast<typename internal::TypeTraits<V>::Type*>(&(it->second));
+                convert(internal::STOT::type<typename internal::TypeTraits<T>::Type>::tostr(*pKey), *pValue);
+            }
+            return *this;
+        }
+    private:
         template<typename T>
-        JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
+        void setValue(const char* sz, const T& value, bool* pHas) {
             StartObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             EndObject();
-            return *this;
         }
 
         template<typename T>
-        JSONEncoder& convert(const char* sz, const std::vector<T>& value, bool* pHas = NULL) {
+        void setValue(const char* sz, const std::vector<T>& value, bool* pHas) {
             StartArray(sz);
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
@@ -79,45 +95,33 @@ namespace struct2x {
                 this->operator<<(item);
             }
             EndArray();
-            return *this;
         }
         template<typename K, typename V>
-        JSONEncoder& convert(const char* sz, const std::map<K, V>& value, bool* pHas = NULL) {
+        void setValue(const char* sz, const std::map<K, V>& value, bool* pHas) {
             StartObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
                 convert(internal::STOT::type<K>::tostr(it->first), item);
             }
             EndObject();
-            return *this;
         }
 
-        template<typename K, typename V>
-        JSONEncoder& operator <<(const std::map<K, V>& value) {
-            for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
-                const V& item = it->second;
-                convert(internal::STOT::type<K>::tostr(it->first), item);
-            }
-            return *this;
-        }
-
-        JSONEncoder& convert(const char* sz, bool value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, uint32_t value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, int32_t value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, uint64_t value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, int64_t value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, float value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, double value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::string& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<bool>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<int32_t>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<int64_t>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<float>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<double>& value, bool* pHas = NULL);
-        JSONEncoder& convert(const char* sz, const std::vector<std::string>& value, bool* pHas = NULL);
-    private:
+        void setValue(const char* sz, bool value, bool* pHas);
+        void setValue(const char* sz, uint32_t value, bool* pHas);
+        void setValue(const char* sz, int32_t value, bool* pHas);
+        void setValue(const char* sz, uint64_t value, bool* pHas);
+        void setValue(const char* sz, int64_t value, bool* pHas);
+        void setValue(const char* sz, float value, bool* pHas);
+        void setValue(const char* sz, double value, bool* pHas);
+        void setValue(const char* sz, const std::string& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<bool>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<int32_t>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<int64_t>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<float>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<double>& value, bool* pHas);
+        void setValue(const char* sz, const std::vector<std::string>& value, bool* pHas);
         void StartObject(const char* sz);
         void EndObject();
         void StartArray(const char* sz);

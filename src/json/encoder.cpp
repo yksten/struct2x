@@ -939,55 +939,47 @@ namespace struct2x {
         return _writer.toString(str);
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, bool value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, bool value, bool* pHas) {
         _writer.Key(sz);
         _writer.Bool(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, uint32_t value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, uint32_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Uint(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, int32_t value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, int32_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Int(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, uint64_t value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, uint64_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Uint64(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, int64_t value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, int64_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Int64(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, float value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, float value, bool* pHas) {
         _writer.Key(sz);
         _writer.Double(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, double value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, double value, bool* pHas) {
         _writer.Key(sz);
         _writer.Double(value);
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::string& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::string& value, bool* pHas) {
         _writer.Key(sz);
         _writer.String(value.c_str());
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<bool>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<bool>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -995,10 +987,9 @@ namespace struct2x {
             _writer.Bool(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1006,10 +997,9 @@ namespace struct2x {
             _writer.Uint(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1017,10 +1007,9 @@ namespace struct2x {
             _writer.Int(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1028,10 +1017,9 @@ namespace struct2x {
             _writer.Uint64(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1039,10 +1027,9 @@ namespace struct2x {
             _writer.Int64(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<float>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<float>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1050,10 +1037,9 @@ namespace struct2x {
             _writer.Double(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<double>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<double>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1061,10 +1047,9 @@ namespace struct2x {
             _writer.Double(value.at(i));
         }
         _writer.EndArray();
-        return *this;
     }
 
-    JSONEncoder& JSONEncoder::convert(const char* sz, const std::vector<std::string>& value, bool* pHas) {
+    void JSONEncoder::setValue(const char* sz, const std::vector<std::string>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1072,7 +1057,6 @@ namespace struct2x {
             _writer.String(value.at(i).c_str());
         }
         _writer.EndArray();
-        return *this;
     }
 
     void JSONEncoder::StartObject(const char* sz) {

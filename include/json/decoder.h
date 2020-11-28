@@ -101,7 +101,7 @@ namespace struct2x {
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind(&JSONDecoder::convertValue, value, pHas)));
+            _set.push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::convertValue, value, pHas)));
             return *this;
         }
 
