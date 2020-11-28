@@ -134,10 +134,10 @@ void testStructFunc() {
     //std::string str;
     //jr.toString(str);
 
-    struct2x::JSONEncoder encoder;
-    encoder << item;
     std::string str;
-    encoder.toString(str);
+    struct2x::JSONEncoder encoder(str);
+    encoder << item;
+    //encoder.toString(str);
 
     struct2x::CJSONDecoder jw(str.c_str());
     struItem item2;
@@ -224,7 +224,7 @@ struct struExampleEnum {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, id, str, f, db, v, e);
+        SERIALIZATION(t, id, str, f, db, v);
         //SERIALIZATION(t, v);
     }
 };
@@ -248,15 +248,15 @@ int main() {
     //struExampleEnum item2;
     //mpd >> item2;
 
-    struInfo info;
-	std::string strJson("{\"no\":\"99\",\"v\":[true, false],\"m\":{\"1\":9, \"2\":29}}");
+    struItem ins;
+	std::string strJson("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
     struct2x::JSONDecoder decoder(strJson.c_str(), strJson.length());
-    decoder >> info;
+    decoder >> ins;
 
-    struct2x::JSONEncoder encoder;
-    encoder << info;
     std::string str;
-    encoder.toString(str);
+    struct2x::JSONEncoder encoder(str);
+    encoder << ins;
+    //encoder.toString(str);
 
     return 0;
 
