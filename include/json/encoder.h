@@ -1,12 +1,12 @@
 #ifndef __JSON_ENCODER_H__
 #define __JSON_ENCODER_H__
-#include "struct2x.h"
+#include "serialize.h"
 #include <string>
 #include <map>
 #include <stack>
 
 
-namespace struct2x {
+namespace serialize {
 
     class EXPORTAPI GenericWriter {
         enum Type {

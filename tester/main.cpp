@@ -32,7 +32,7 @@ struct struInfo {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, no, v, m);
+        SERIALIZE(t, no, v, m);
     }
 };
 
@@ -64,7 +64,7 @@ struct struItem {
     template<typename T>
     void serialize(T& t)
     {
-        SERIALIZATION(t, id, str, info, v, v2, m, m2);
+        SERIALIZE(t, id, str, info, v, v2, m, m2);
     }
 };
 
@@ -72,7 +72,7 @@ struct struItem {
 //template<typename T>
 //void serialize(T& t, struItem& item)
 //{
-//    NISERIALIZATION(t, item, id, str, info, v, v2, m, m2);
+//    NISERIALIZE(t, item, id, str, info, v, v2, m, m2);
 //}
 
 
@@ -101,12 +101,12 @@ void testMap() {
     map["VARIABLE_TIMER"] = 4;
     map["VARIABLE_COUNTER"] = 5;
 
-    struct2x::CJSONEncoder jrmap;
+    serialize::CJSONEncoder jrmap;
     jrmap << map;
     std::string str2;
     jrmap.toString(str2);
 
-    struct2x::CJSONDecoder jwmap(str2.c_str());
+    serialize::CJSONDecoder jwmap(str2.c_str());
     jwmap >> map2;
 
     assert(map == map2);
@@ -129,17 +129,17 @@ void testStructFunc() {
     info.no = 992;
     item.m2["2"] = info;
 
-    //struct2x::CJSONEncoder jr;
+    //serialize::CJSONEncoder jr;
     //jr << item;
     //std::string str;
     //jr.toString(str);
 
     std::string str;
-    struct2x::JSONEncoder encoder(str);
+    serialize::JSONEncoder encoder(str);
     encoder << item;
     //encoder.toString(str);
 
-    struct2x::CJSONDecoder jw(str.c_str());
+    serialize::CJSONDecoder jw(str.c_str());
     struItem item2;
     jw >> item2;
     bool b = (item == item2);
@@ -150,7 +150,7 @@ struct myStruct {
     std::vector<std::vector<int> > vec;
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, vec);
+        SERIALIZE(t, vec);
     }
 };
 
@@ -159,13 +159,13 @@ void testVector() {
     std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
     s1.vec.push_back(v);
 
-    struct2x::CJSONEncoder jr;
+    serialize::CJSONEncoder jr;
     jr << s1;
 
     std::string str;
     jr.toString(str);
 
-    struct2x::CJSONDecoder jw(str.c_str());
+    serialize::CJSONDecoder jw(str.c_str());
     jw >> s2;
     bool b = (s1.vec == s2.vec);
     assert(b);
@@ -190,17 +190,17 @@ void testProtobuf() {
     items.v.push_back(item);
     items.m[2] = item;
 
-    struct2x::BufferWrapper buffer;
-    struct2x::PBEncoder encoder(buffer);
+    serialize::BufferWrapper buffer;
+    serialize::PBEncoder encoder(buffer);
     encoder << items;
 
-    struct2x::CJSONEncoder jr;
+    serialize::CJSONEncoder jr;
     jr << items;
     std::string strJson;
     jr.toString(strJson);
-    struct2x::CJSONDecoder(strJson.c_str()) >> items;
+    serialize::CJSONDecoder(strJson.c_str()) >> items;
 
-    struct2x::PBDecoder decoder(buffer.data(), buffer.size());
+    serialize::PBDecoder decoder(buffer.data(), buffer.size());
     bool b = decoder >> items2;
     assert(b);
 }
@@ -224,37 +224,37 @@ struct struExampleEnum {
 
     template<typename T>
     void serialize(T& t) {
-        SERIALIZATION(t, id, str, f, db, v);
-        //SERIALIZATION(t, v);
+        SERIALIZE(t, id, str, f, db, v);
+        //SERIALIZE(t, v);
     }
 };
 
 int main() {
     //struExampleEnum item;
     //item.e = ET2;
-    //struct2x::CJSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
+    //serialize::CJSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
     //jw >> item;
 
     //item.v.push_back(15); item.v.push_back(35);
     //std::string mpBuf;
-    //struct2x::MPEncoder mpe(mpBuf);
+    //serialize::MPEncoder mpe(mpBuf);
     //mpe << item;
 
     //for (size_t i = 0; i < mpBuf.size(); ++i)
     //    printf("%02x ", 0xff & mpBuf[i]);
     //printf("\n");
 
-    //struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
+    //serialize::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
     //struExampleEnum item2;
     //mpd >> item2;
 
     struItem ins;
 	std::string strJson("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
-    struct2x::JSONDecoder decoder(strJson);
+    serialize::JSONDecoder decoder(strJson);
     decoder >> ins;
 
     std::string str;
-    struct2x::JSONEncoder encoder(str);
+    serialize::JSONEncoder encoder(str);
     encoder << ins;
 
     return 0;

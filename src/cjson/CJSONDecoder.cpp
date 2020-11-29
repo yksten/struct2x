@@ -2,7 +2,7 @@
 #include "thirdParty/cjson/cJSON.h"
 #include <assert.h>
 
-namespace struct2x {
+namespace serialize {
 
     CJSONDecoder::CJSONDecoder(const char* sz)
         : _root(cJSON_Parse(sz))

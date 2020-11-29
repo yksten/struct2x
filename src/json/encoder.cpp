@@ -2,7 +2,7 @@
 #include <assert.h>
 
 
-namespace struct2x {
+namespace serialize {
 
 
 #ifndef FASTJSON_UINT64_C2

@@ -1,7 +1,7 @@
 #include "cjson/CJSONEncoder.h"
 #include "thirdParty/cjson/cJSON.h"
 
-namespace struct2x {
+namespace serialize {
 
     CJSONEncoder::CJSONEncoder()
         : _root(cJSON_CreateObject())

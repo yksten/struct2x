@@ -1,4 +1,4 @@
-PROJECT(struct2x)
+PROJECT(serialize)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 INCLUDE(CheckIncludeFileCXX)
 
@@ -16,7 +16,7 @@ AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 SET(CJSON "./thirdParty/cjson/cJSON.h" "./thirdParty/cjson/cJSON.c")
 SOURCE_GROUP("thirdParty\\cjson" FILES ${CJSON})
 
-SET(INCLUDE "./include/struct2x.h")
+SET(INCLUDE "./include/serialize.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
 SET(INCLUDEJSON "./include/json/encoder.h" "./include/json/decoder.h")
@@ -27,9 +27,6 @@ SOURCE_GROUP("include\\cjson" FILES ${INCLUDECJSON})
 
 SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
-
-SET(SRC "./src/struct2x.cpp")
-SOURCE_GROUP(src FILES ${SRC})
 
 SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
 SOURCE_GROUP("src\\json" FILES ${SRCJSON})
@@ -42,9 +39,9 @@ SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
 
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
-    ADD_LIBRARY(struct2x SHARED ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${DIR_SRCS})
+    ADD_LIBRARY(serialize SHARED ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${DIR_SRCS})
 ELSE ()
-    ADD_LIBRARY(struct2x ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF} ${SRC} ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${DIR_SRCS})
+    ADD_LIBRARY(serialize ${CJSON} ${INCLUDE} ${INCLUDEJSON} ${INCLUDECJSON} ${INCLUDEPROTOBUF}  ${SRCJSON} ${SRCCJSON} ${SRCPROTOBUF} ${DIR_SRCS})
 ENDIF (MSVC)
 
 
@@ -52,4 +49,4 @@ SET(TESTER "./tester/main.cpp" "./tester/testStruct.h")
 SOURCE_GROUP(tester FILES ${TESTER})
 
 ADD_EXECUTABLE(tester ${TESTER})
-TARGET_LINK_LIBRARIES(tester struct2x)
+TARGET_LINK_LIBRARIES(tester serialize)

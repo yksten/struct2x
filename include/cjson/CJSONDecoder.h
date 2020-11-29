@@ -3,11 +3,11 @@
 
 #include <string>
 #include <map>
-#include "struct2x.h"
+#include "serialize.h"
 
 
 struct cJSON;
-namespace struct2x {
+namespace serialize {
 
     class EXPORTAPI CJSONDecoder {
         cJSON* _root;

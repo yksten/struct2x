@@ -1,11 +1,11 @@
 #ifndef __JSON_DECODER_H__
 #define __JSON_DECODER_H__
-#include "struct2x.h"
+#include "serialize.h"
 #include <string>
 #include <map>
 
 
-namespace struct2x {
+namespace serialize {
 
     struct converter {
         typedef void(*function_type)(void*, const char*, uint32_t, bool*);

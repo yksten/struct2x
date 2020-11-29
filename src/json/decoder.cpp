@@ -2,7 +2,7 @@
 #include <assert.h>
 
 
-namespace struct2x {
+namespace serialize {
 
     Handler::Handler(const std::vector<function_value>& set) :_converter(NULL), _set(&set) {
     }
