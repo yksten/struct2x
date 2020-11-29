@@ -130,20 +130,22 @@ namespace google {
                     switch (field.type()) {
                     case FieldDescriptor::TYPE_FIXED64:
                     case FieldDescriptor::TYPE_SFIXED64:
-                        strResult.append(", struct2x::TYPE_FIXED64");
+                        strResult.append(", serialize::TYPE_FIXED64");
                         break;
                     case FieldDescriptor::TYPE_SINT32:
                     case FieldDescriptor::TYPE_SINT64:
-                        strResult.append(", struct2x::TYPE_SVARINT");
+                        strResult.append(", serialize::TYPE_SVARINT");
                         break;
                     case FieldDescriptor::TYPE_FIXED32:
                     case FieldDescriptor::TYPE_SFIXED32:
-                        strResult.append(", struct2x::TYPE_FIXED32");
+                        strResult.append(", serialize::TYPE_FIXED32");
+                    default:
+                        strResult.append(", serialize::TYPE_VARINT");
                         break;
                     }
 
                     if (field.is_packed())
-                        strResult.append(", struct2x::TYPE_PACK");
+                        strResult.append("| (1 << 16)");
 
                     if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                         if (field.label() == FieldDescriptor::LABEL_OPTIONAL)
@@ -254,7 +256,7 @@ namespace google {
 
                 void codeSerialize::printInclude(google::protobuf::io::Printer& printer)const {
                     printer.Print("\n");
-                    printer.Print("#include \"struct2x.h\"\n");
+                    printer.Print("#include \"serialize.h\"\n");
                     //if (hasInt(printer)) {
                     //    printer.Print("#include <stdint.h>\n");
                     //}
@@ -358,9 +360,9 @@ namespace google {
                                 const std::string& strOrgName = field->name();
                                 std::string fieldName(FieldName(*field));
                                 if (strOrgName != fieldName) {
-                                    printer.Print(" & struct2x::makeItem(\"$orgName$\", $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
+                                    printer.Print(" & serialize::makeItem(\"$orgName$\", $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 } else {
-                                    printer.Print(" & SERIALIZE($number$, $field$$tag$)", "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
+                                    printer.Print(" & SERIALIZATION($number$, $field$$tag$)", "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 }
                             }
                         }
@@ -380,7 +382,7 @@ namespace google {
                             if (const FieldDescriptor* field = messages._vec.at(idx)) {
                                 char sz[20] = { 0 };
                                 sprintf(sz, "%d", field->number());
-                                printer.Print(" & SERIALIZE($number$, item.$field$$tag$)", "number", sz, "field", field->name(), "tag", type2tag(*field, _file->syntax()));
+                                printer.Print(" & SERIALIZATION($number$, item.$field$$tag$)", "number", sz, "field", field->name(), "tag", type2tag(*field, _file->syntax()));
                             }
                         }
                         printer.Print(";\n}\n");

@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator, "Generate C++ header and source.");
 
     google::protobuf::compiler::cpp::StructGenerator struct_generator;
-    cli.RegisterGenerator("--struct_out", "--struct_opt", &struct_generator, "Generate C++ struct header.");
+    cli.RegisterGenerator("--serialize_out", "--serialize_opt", &struct_generator, "Generate C++ struct header.");
 
     return cli.Run(argc, argv);
 }
