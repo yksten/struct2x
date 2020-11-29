@@ -17,6 +17,7 @@ namespace serialize {
 
         const uint8_t* data() const;
         size_t size() const;
+        std::string* buffer();
         void append(const void* data, size_t len);
 
         bool isGetLength() const;
@@ -120,7 +121,6 @@ namespace serialize {
         typedef void(*encodeFunction64)(const std::vector<uint64_t>&, const enclosure_type&, BufferWrapper&);
         static encodeFunction64 convsetSet64[4];
         static encodeFunction64 convsetSetPack64[4];
-        PBEncoder();
     public:
         explicit PBEncoder(std::string& str);
         ~PBEncoder();
@@ -223,15 +223,17 @@ namespace serialize {
         static void encodeValue(const T& v, const enclosure_type& info, BufferWrapper& buf) {
             buf.append(info.sz, info.size);
             size_t nCustomFieldSize = 0;
-            PBEncoder encoder;
-            encoder._buffer = buf;
+            PBEncoder encoder(*buf.buffer());
             do {
                 calculateFieldHelper h(encoder._buffer, nCustomFieldSize);
                 encoder << v;
             } while (0);
-            varInt(nCustomFieldSize, encoder._buffer);
-            encoder << v;
-            buf = encoder._buffer;
+            varInt(nCustomFieldSize, buf);
+            if (buf.isGetLength()) {
+                buf.append(nCustomFieldSize);
+            } else {
+                encoder << v;
+            }
         }
 
         template<typename T>

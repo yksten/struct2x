@@ -14,6 +14,10 @@ namespace serialize {
         return _buffer->size();
     }
 
+    std::string* BufferWrapper::buffer() {
+        return _buffer;
+    }
+
     void BufferWrapper::append(const void* data, size_t len) {
         if (!len) return;
 
@@ -52,9 +56,6 @@ namespace serialize {
     PBEncoder::encodeFunction32 PBEncoder::convsetSetPack32[] = { &PBEncoder::encodeValueVarintPack, &PBEncoder::encodeValueSvarintPack, &PBEncoder::encodeValueFixed32Pack };
     PBEncoder::encodeFunction64 PBEncoder::convsetSet64[] = { &PBEncoder::encodeValueVarint, &PBEncoder::encodeValueSvarint, NULL, &PBEncoder::encodeValueFixed64 };
     PBEncoder::encodeFunction64 PBEncoder::convsetSetPack64[] = { &PBEncoder::encodeValueVarintPack, &PBEncoder::encodeValueSvarintPack, NULL, &PBEncoder::encodeValueFixed64Pack };
-
-    PBEncoder::PBEncoder() :_buffer(NULL) {
-    }
 
     PBEncoder::PBEncoder(std::string& str) :_buffer(&str) {
     }
