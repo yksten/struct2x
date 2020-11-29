@@ -3,15 +3,15 @@
 
 namespace serialize {
 
-    BufferWrapper::BufferWrapper() : _bCalculateFlag(false), _cumtomFieldSize(0) {
+    BufferWrapper::BufferWrapper(std::string* str) : _buffer(str), _bCalculateFlag(false), _cumtomFieldSize(0) {
     }
 
     const uint8_t* BufferWrapper::data() const {
-        return (const uint8_t*)_buffer.c_str();
+        return (const uint8_t*)_buffer->c_str();
     }
 
     size_t BufferWrapper::size() const {
-        return _buffer.size();
+        return _buffer->size();
     }
 
     void BufferWrapper::append(const void* data, size_t len) {
@@ -20,7 +20,7 @@ namespace serialize {
         if (_bCalculateFlag) {
             _cumtomFieldSize += len;
         } else {
-            _buffer.append((const char*)data, len);
+            _buffer->append((const char*)data, len);
         }
     }
 
@@ -53,7 +53,10 @@ namespace serialize {
     PBEncoder::encodeFunction64 PBEncoder::convsetSet64[] = { &PBEncoder::encodeValueVarint, &PBEncoder::encodeValueSvarint, NULL, &PBEncoder::encodeValueFixed64 };
     PBEncoder::encodeFunction64 PBEncoder::convsetSetPack64[] = { &PBEncoder::encodeValueVarintPack, &PBEncoder::encodeValueSvarintPack, NULL, &PBEncoder::encodeValueFixed64Pack };
 
-    PBEncoder::PBEncoder(BufferWrapper& buffer) :_buffer(buffer) {
+    PBEncoder::PBEncoder() :_buffer(NULL) {
+    }
+
+    PBEncoder::PBEncoder(std::string& str) :_buffer(&str) {
     }
 
     PBEncoder::~PBEncoder() {

@@ -89,8 +89,9 @@ namespace serialize {
 
         PBDecoder(const PBDecoder&);
         PBDecoder& operator=(const PBDecoder&);
-    public:
         PBDecoder(const uint8_t* sz, uint32_t size);
+    public:
+        explicit PBDecoder(const std::string& str);
 
         template<typename T>
         proto::Message getMessage(T& value) {

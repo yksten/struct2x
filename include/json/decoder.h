@@ -110,41 +110,41 @@ namespace serialize {
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::convertValue, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeValue, value, pHas)));
             return *this;
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::convertArray, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::decodeArray, value, pHas)));
             return *this;
         }
         template<typename K, typename V>
         JSONDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::convertMap, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::decodeMap, value, pHas)));
             return *this;
         }
     private:
-        static void convertValue(bool& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(int32_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(int64_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(float& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(double& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertValue(std::string& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(bool& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(int32_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(int64_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(float& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(double& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeValue(std::string& value, const char* sz, uint32_t length, bool* pHas);
 
-        static void convertArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas);
+        static void decodeArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas);
 
         template<typename T>
-        static void convertValue(T& value, const char* cValue, uint32_t length, bool* pHas) {
+        static void decodeValue(T& value, const char* cValue, uint32_t length, bool* pHas) {
             if (length > 2) {
                 JSONDecoder decoder(cValue, length);
                 if (!decoder.operator>>(value))
@@ -154,7 +154,7 @@ namespace serialize {
         }
 
         template<typename T>
-        static void convertArray(std::vector<T>& value, const char* cValue, uint32_t length, bool* pHas) {
+        static void decodeArray(std::vector<T>& value, const char* cValue, uint32_t length, bool* pHas) {
             if (length) {
                 value.clear();
                 std::vector<const char*> stack;
@@ -187,18 +187,18 @@ namespace serialize {
         public:
             MapHandler(std::map<K, V>& map) :_key(), _value(), _map(map) {}
             bool Key(const char* sz, unsigned length) {
-                convertValue(_key, sz, length, NULL);
+                decodeValue(_key, sz, length, NULL);
                 return true;
             }
             bool Value(const char* sz, unsigned length) {
-                convertValue(_value, sz, length, NULL);
+                decodeValue(_value, sz, length, NULL);
                 _map.insert(std::pair<K, V>(_key, _value));
                 return true;
             }
         };
 
         template<typename K, typename V>
-        static void convertMap(std::map<K, V>& value, const char* cValue, uint32_t length, bool* pHas) {
+        static void decodeMap(std::map<K, V>& value, const char* cValue, uint32_t length, bool* pHas) {
             if (length > 2) {
                 StringStream str(cValue, length);
                 MapHandler<K, V> handler(value);

@@ -253,7 +253,7 @@ namespace serialize {
     }
     /*------------------------------------------------------------------------------*/
 
-    void JSONDecoder::convertValue(bool& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(bool& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         if (strncmp("true", sz, length) == 0) {
             value = true;
@@ -267,7 +267,7 @@ namespace serialize {
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertValue(int32_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(int32_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         bool bMinus = false;
@@ -282,7 +282,7 @@ namespace serialize {
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         for (uint32_t idx = 0; idx < length; ++idx) {
@@ -292,7 +292,7 @@ namespace serialize {
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertValue(int64_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(int64_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         bool bMinus = false;
@@ -307,7 +307,7 @@ namespace serialize {
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         for (uint32_t idx = 0; idx < length; ++idx) {
@@ -324,7 +324,7 @@ namespace serialize {
         return db;
     }
 
-    void JSONDecoder::convertValue(float& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(float& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         bool bMinus = false;
@@ -350,7 +350,7 @@ namespace serialize {
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertValue(double& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(double& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value = 0;
         for (uint32_t idx = 0, bFlag = false, num = 0; idx < length; ++idx) {
@@ -371,14 +371,14 @@ namespace serialize {
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertValue(std::string& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeValue(std::string& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
         value.clear();
         value.append(sz, length);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -389,7 +389,7 @@ namespace serialize {
             }
             if (c == ',') {
                 bool v = false;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -401,12 +401,12 @@ namespace serialize {
             }
         }
         bool v = false;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -417,7 +417,7 @@ namespace serialize {
             }
             if (c == ',') {
                 int32_t v = 0;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -429,12 +429,12 @@ namespace serialize {
             }
         }
         int32_t v = 0;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -445,7 +445,7 @@ namespace serialize {
             }
             if (c == ',') {
                 uint32_t v = 0;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -457,12 +457,12 @@ namespace serialize {
             }
         }
         uint32_t v = 0;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -473,7 +473,7 @@ namespace serialize {
             }
             if (c == ',') {
                 int64_t v = 0;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -485,12 +485,12 @@ namespace serialize {
             }
         }
         int64_t v = 0;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -501,7 +501,7 @@ namespace serialize {
             }
             if (c == ',') {
                 uint64_t v = 0;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -513,12 +513,12 @@ namespace serialize {
             }
         }
         uint64_t v = 0;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -529,7 +529,7 @@ namespace serialize {
             }
             if (c == ',') {
                 float v = 0.0f;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -541,12 +541,12 @@ namespace serialize {
             }
         }
         float v = 0.0f;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -557,7 +557,7 @@ namespace serialize {
             }
             if (c == ',') {
                 double v = 0.0f;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -569,12 +569,12 @@ namespace serialize {
             }
         }
         double v = 0.0f;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }
 
-    void JSONDecoder::convertArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas) {
+    void JSONDecoder::decodeArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas) {
         if (!length) return;
 
         uint32_t n = 0;
@@ -585,7 +585,7 @@ namespace serialize {
             }
             if (c == ',') {
                 std::string v;
-                convertValue(v, sz + n, idx - n, NULL);
+                decodeValue(v, sz + n, idx - n, NULL);
                 value.push_back(v);
                 bFlag = true;
             }
@@ -597,7 +597,7 @@ namespace serialize {
             }
         }
         std::string v;
-        convertValue(v, sz + n, length - n, NULL);
+        decodeValue(v, sz + n, length - n, NULL);
         value.push_back(v);
         if (pHas) *pHas = true;
     }

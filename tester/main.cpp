@@ -190,7 +190,7 @@ void testProtobuf() {
     items.v.push_back(item);
     items.m[2] = item;
 
-    serialize::BufferWrapper buffer;
+    std::string buffer;
     serialize::PBEncoder encoder(buffer);
     encoder << items;
 
@@ -200,7 +200,7 @@ void testProtobuf() {
     jr.toString(strJson);
     serialize::CJSONDecoder(strJson.c_str()) >> items;
 
-    serialize::PBDecoder decoder(buffer.data(), buffer.size());
+    serialize::PBDecoder decoder(buffer);
     bool b = decoder >> items2;
     assert(b);
 }
@@ -251,11 +251,11 @@ int main() {
     struItem ins;
 	std::string strJson("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
     serialize::JSONDecoder decoder(strJson);
-    decoder >> ins;
+    bool bDecode = decoder >> ins;
 
     std::string str;
     serialize::JSONEncoder encoder(str);
-    encoder << ins;
+    bool bEncode = encoder << ins;
 
     return 0;
 

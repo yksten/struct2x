@@ -33,7 +33,7 @@ namespace serialize {
         void StartArray();
         void EndArray();
         void Separation();
-        bool toString(std::string& str);
+        bool result() const;
     };
 
     class EXPORTAPI JSONEncoder {
@@ -44,18 +44,18 @@ namespace serialize {
 
         template<typename T>
         JSONEncoder& operator&(serializeItem<T> value) {
-            setValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>&value.value, value.bHas);
+            encodeValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>&value.value, value.bHas);
             return *this;
         }
 
         template<typename T>
         JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
-            setValue(sz, *(const typename internal::TypeTraits<T>::Type*)&value, pHas);
+            encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)&value, pHas);
             return *this;
         }
 
         template<typename T>
-        JSONEncoder& operator << (const T& value) {
+        bool operator << (const T& value) {
             const typename internal::TypeTraits<T>::Type& v = value;
             if (internal::TypeTraits<T>::isVector()) {
                 operator << (v);
@@ -66,7 +66,7 @@ namespace serialize {
                     EndObject();
                 }
             }
-            return *this;
+            return _writer.result();
         }
 
         template<typename K, typename V>
@@ -80,14 +80,14 @@ namespace serialize {
         }
     private:
         template<typename T>
-        void setValue(const char* sz, const T& value, bool* pHas) {
+        void encodeValue(const char* sz, const T& value, bool* pHas) {
             StartObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             EndObject();
         }
 
         template<typename T>
-        void setValue(const char* sz, const std::vector<T>& value, bool* pHas) {
+        void encodeValue(const char* sz, const std::vector<T>& value, bool* pHas) {
             StartArray(sz);
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
@@ -98,7 +98,7 @@ namespace serialize {
             EndArray();
         }
         template<typename K, typename V>
-        void setValue(const char* sz, const std::map<K, V>& value, bool* pHas) {
+        void encodeValue(const char* sz, const std::map<K, V>& value, bool* pHas) {
             StartObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
@@ -107,22 +107,22 @@ namespace serialize {
             EndObject();
         }
 
-        void setValue(const char* sz, bool value, bool* pHas);
-        void setValue(const char* sz, uint32_t value, bool* pHas);
-        void setValue(const char* sz, int32_t value, bool* pHas);
-        void setValue(const char* sz, uint64_t value, bool* pHas);
-        void setValue(const char* sz, int64_t value, bool* pHas);
-        void setValue(const char* sz, float value, bool* pHas);
-        void setValue(const char* sz, double value, bool* pHas);
-        void setValue(const char* sz, const std::string& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<bool>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<int32_t>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<int64_t>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<float>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<double>& value, bool* pHas);
-        void setValue(const char* sz, const std::vector<std::string>& value, bool* pHas);
+        void encodeValue(const char* sz, bool value, bool* pHas);
+        void encodeValue(const char* sz, uint32_t value, bool* pHas);
+        void encodeValue(const char* sz, int32_t value, bool* pHas);
+        void encodeValue(const char* sz, uint64_t value, bool* pHas);
+        void encodeValue(const char* sz, int64_t value, bool* pHas);
+        void encodeValue(const char* sz, float value, bool* pHas);
+        void encodeValue(const char* sz, double value, bool* pHas);
+        void encodeValue(const char* sz, const std::string& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<bool>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<int32_t>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<int64_t>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<float>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<double>& value, bool* pHas);
+        void encodeValue(const char* sz, const std::vector<std::string>& value, bool* pHas);
         void StartObject(const char* sz);
         void EndObject();
         void StartArray(const char* sz);

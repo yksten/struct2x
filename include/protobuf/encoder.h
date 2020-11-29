@@ -9,11 +9,11 @@
 namespace serialize {
 
     class EXPORTAPI BufferWrapper {
-        std::string _buffer;
+        std::string* _buffer;
         bool _bCalculateFlag;
         size_t _cumtomFieldSize;
     public:
-        BufferWrapper();
+        explicit BufferWrapper(std::string* str);
 
         const uint8_t* data() const;
         size_t size() const;
@@ -112,7 +112,7 @@ namespace serialize {
             }
         };
 
-        BufferWrapper& _buffer;
+        BufferWrapper _buffer;
         convertMgr* _mgr;
         typedef void(*encodeFunction32)(const std::vector<uint32_t>&, const enclosure_type&, BufferWrapper&);
         static encodeFunction32 convsetSet32[3];
@@ -120,8 +120,9 @@ namespace serialize {
         typedef void(*encodeFunction64)(const std::vector<uint64_t>&, const enclosure_type&, BufferWrapper&);
         static encodeFunction64 convsetSet64[4];
         static encodeFunction64 convsetSetPack64[4];
+        PBEncoder();
     public:
-        explicit PBEncoder(BufferWrapper& buffer);
+        explicit PBEncoder(std::string& str);
         ~PBEncoder();
 
         template<typename T>
@@ -187,7 +188,7 @@ namespace serialize {
         static void svarInt(uint64_t value, BufferWrapper& buf);
         static void fixed32(uint32_t value, BufferWrapper& buf);
         static void fixed64(uint64_t value, BufferWrapper& buf);
-        static PBEncoder::enclosure_type encodeVarint(uint64_t tag, bool* pHas);
+        static enclosure_type encodeVarint(uint64_t tag, bool* pHas);
 
         static void encodeValue(const bool& v, const enclosure_type& info, BufferWrapper& buf);
         static void encodeValue(const int32_t& v, const enclosure_type& info, BufferWrapper& buf);
@@ -222,7 +223,8 @@ namespace serialize {
         static void encodeValue(const T& v, const enclosure_type& info, BufferWrapper& buf) {
             buf.append(info.sz, info.size);
             size_t nCustomFieldSize = 0;
-            PBEncoder encoder(buf);
+            PBEncoder encoder;
+            encoder._buffer = buf;
             do {
                 calculateFieldHelper h(buf, nCustomFieldSize);
                 encoder << v;

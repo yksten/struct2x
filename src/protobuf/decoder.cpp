@@ -142,6 +142,10 @@ namespace serialize {
         : _msg(NULL), _sz(sz), _size(size), _bParseResult(true) {
     }
 
+    PBDecoder::PBDecoder(const std::string& str) 
+        : _msg(NULL), _sz((const uint8_t*)str.c_str()), _size(str.size()), _bParseResult(true) {
+    }
+
     bool PBDecoder::decodeValue(serializeItem<bool>& v) {
         return _msg->bind<uint64_t, bool>(&PBDecoder::convertValue, v);
     }

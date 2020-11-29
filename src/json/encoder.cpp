@@ -930,9 +930,8 @@ namespace serialize {
         _str.append(",");
     }
 
-    bool GenericWriter::toString(std::string& str) {
-        str = _str;
-        return true;
+    bool GenericWriter::result() const {
+        return _stack.empty();
     }
 
     /*------------------------------------------------------------------------------*/
@@ -942,47 +941,47 @@ namespace serialize {
     JSONEncoder::~JSONEncoder() {
     }
 
-    void JSONEncoder::setValue(const char* sz, bool value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, bool value, bool* pHas) {
         _writer.Key(sz);
         _writer.Bool(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, uint32_t value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, uint32_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Uint(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, int32_t value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, int32_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Int(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, uint64_t value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, uint64_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Uint64(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, int64_t value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, int64_t value, bool* pHas) {
         _writer.Key(sz);
         _writer.Int64(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, float value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, float value, bool* pHas) {
         _writer.Key(sz);
         _writer.Double(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, double value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, double value, bool* pHas) {
         _writer.Key(sz);
         _writer.Double(value);
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::string& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::string& value, bool* pHas) {
         _writer.Key(sz);
         _writer.String(value.c_str());
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<bool>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<bool>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -992,7 +991,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1002,7 +1001,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1012,7 +1011,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1022,7 +1021,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1032,7 +1031,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<float>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<float>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1042,7 +1041,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<double>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<double>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
@@ -1052,7 +1051,7 @@ namespace serialize {
         _writer.EndArray();
     }
 
-    void JSONEncoder::setValue(const char* sz, const std::vector<std::string>& value, bool* pHas) {
+    void JSONEncoder::encodeValue(const char* sz, const std::vector<std::string>& value, bool* pHas) {
         _writer.Key(sz);
         _writer.StartArray();
         int32_t count = (int32_t)value.size();
