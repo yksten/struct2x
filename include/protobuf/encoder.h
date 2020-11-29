@@ -226,11 +226,12 @@ namespace serialize {
             PBEncoder encoder;
             encoder._buffer = buf;
             do {
-                calculateFieldHelper h(buf, nCustomFieldSize);
+                calculateFieldHelper h(encoder._buffer, nCustomFieldSize);
                 encoder << v;
             } while (0);
-            varInt(nCustomFieldSize, buf);
+            varInt(nCustomFieldSize, encoder._buffer);
             encoder << v;
+            buf = encoder._buffer;
         }
 
         template<typename T>

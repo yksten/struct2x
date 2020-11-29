@@ -192,7 +192,8 @@ void testProtobuf() {
 
     std::string buffer;
     serialize::PBEncoder encoder(buffer);
-    encoder << items;
+    bool b = encoder << items;
+    assert(b);
 
     serialize::CJSONEncoder jr;
     jr << items;
@@ -201,7 +202,7 @@ void testProtobuf() {
     serialize::CJSONDecoder(strJson.c_str()) >> items;
 
     serialize::PBDecoder decoder(buffer);
-    bool b = decoder >> items2;
+    b = decoder >> items2;
     assert(b);
 }
 
@@ -257,12 +258,12 @@ int main() {
     serialize::JSONEncoder encoder(str);
     bool bEncode = encoder << ins;
 
-    return 0;
+    //return 0;
 
     //testMap();
     //testStructFunc();
     //testVector();
-    //testProtobuf();
+    testProtobuf();
 
     return 0;
 }

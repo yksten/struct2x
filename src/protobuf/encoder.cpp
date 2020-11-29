@@ -155,13 +155,27 @@ namespace serialize {
         _mgr->bindValue(&PBEncoder::encodeValue, value);
     }
 
+    static inline uint8_t VarintSize(uint32_t value) {
+        uint8_t i = 0;;
+        while (value >= 0x80) {
+            ++i; value >>= 7;
+        }
+        return ++i;
+    }
+
     void PBEncoder::varInt(uint64_t value, BufferWrapper& buf) {
         if (buf.isGetLength()) {
-            uint8_t i = 0;;
+            if (const uint32_t topbits = static_cast<uint32_t>(value >> 32)) {
+                // Top bits are zero, so scan in bottom bits
+                buf.append(32 + VarintSize(topbits));
+            } else {
+                buf.append(VarintSize(static_cast<uint32_t>(value)));
+            }
+            /*uint8_t i = 0;;
             while (value >= 0x80) {
                 ++i; value >>= 7;
             }
-            buf.append(++i);
+            buf.append(++i);*/
         } else {
             uint8_t i = 0;
             uint8_t buffer[10];
