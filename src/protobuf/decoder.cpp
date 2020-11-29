@@ -65,13 +65,11 @@ namespace proto {
         }
     }
 
-    bool Message::call(uint32_t field_number, const void* cValue) const {
+    void Message::call(uint32_t field_number, const void* cValue) const {
         std::map<uint32_t, converter>::const_iterator it = _functionSet.find(field_number);
         if (it != _functionSet.end()) {
             it->second(_struct, cValue);
-            return true;
         }
-        return false;
     }
 
     bool Message::ReadVarInt(const uint8_t*& current, size_t& remaining, uint64_t& result) {
@@ -99,13 +97,15 @@ namespace proto {
             switch (wire_type) {
                 case serialize::internal::WT_VARINT: {
                     uint64_t value = 0;
-                    if (!ReadVarInt(current, remaining, value) || !call(field_number, &value))
+                    if (!ReadVarInt(current, remaining, value))
                         return false;
+                    call(field_number, &value);
                 } break;
                 case serialize::internal::WT_64BIT: {
                     uint64_t value = 0;
-                    if (!ReadFromBytes(current, remaining, value) || !call(field_number, &value))
+                    if (!ReadFromBytes(current, remaining, value))
                         return false;
+                    call(field_number, &value);
                 } break;
                 case serialize::internal::WT_LENGTH_DELIMITED: {
                     uint64_t size = 0;
@@ -115,16 +115,16 @@ namespace proto {
                     current += size;
                     remaining -= size;
                     bin_type bin(data, size);
-                    if (!call(field_number, &bin))
-                        return false;
+                    call(field_number, &bin);
                 } break;
                 case serialize::internal::WT_GROUP_START:
                 case serialize::internal::WT_GROUP_END:
                     return false;
                 case serialize::internal::WT_32BIT: {
                     uint32_t value = 0;
-                    if (!ReadFromBytes(current, remaining, value) || !call(field_number, &value))
+                    if (!ReadFromBytes(current, remaining, value))
                         return false;
+                    call(field_number, &value);
                 } break;
                 default: {
                     return false;
