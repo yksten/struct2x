@@ -942,10 +942,6 @@ namespace struct2x {
     JSONEncoder::~JSONEncoder() {
     }
 
-    bool JSONEncoder::toString(std::string& str) {
-        return _writer.toString(str);
-    }
-
     void JSONEncoder::setValue(const char* sz, bool value, bool* pHas) {
         _writer.Key(sz);
         _writer.Bool(value);

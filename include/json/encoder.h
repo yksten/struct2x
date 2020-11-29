@@ -42,8 +42,6 @@ namespace struct2x {
         explicit JSONEncoder(std::string& str);
         ~JSONEncoder();
 
-        bool toString(std::string& str);
-
         template<typename T>
         JSONEncoder& operator&(serializeItem<T> value) {
             setValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>&value.value, value.bHas);

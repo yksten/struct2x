@@ -250,13 +250,12 @@ int main() {
 
     struItem ins;
 	std::string strJson("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
-    struct2x::JSONDecoder decoder(strJson.c_str(), strJson.length());
+    struct2x::JSONDecoder decoder(strJson);
     decoder >> ins;
 
     std::string str;
     struct2x::JSONEncoder encoder(str);
     encoder << ins;
-    //encoder.toString(str);
 
     return 0;
 

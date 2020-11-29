@@ -54,7 +54,7 @@ namespace struct2x {
         const converter* _converter;
         const std::vector<function_value>* _set;
     public:
-        Handler(const std::vector<function_value>& set);
+        explicit Handler(const std::vector<function_value>& set);
         virtual bool Key(const char* sz, unsigned length);
         virtual bool Value(const char* sz, unsigned length);
     };
@@ -82,15 +82,24 @@ namespace struct2x {
 
     class EXPORTAPI JSONDecoder {
         StringStream _str;
-        std::vector<function_value> _set;
+        std::vector<function_value>* _set;
     public:
-        JSONDecoder(const char* sz, uint32_t length) :_str(sz, length) {}
+        JSONDecoder(const char* sz, uint32_t length) :_str(sz, length), _set(NULL) {}
+        JSONDecoder(const std::string& str) :_str(str.c_str(), str.length()), _set(NULL) {}
         ~JSONDecoder() {}
 
         template<typename T>
-        bool operator >> (T& value) {
+        std::vector<function_value> getSet(T& value) {
+            std::vector<function_value> set;
+            _set = &set;
             internal::serializeWrapper(*this, value);
-            Handler handler(_set);
+            return set;
+        }
+
+        template<typename T>
+        bool operator >> (T& value) {
+            static std::vector<function_value> set = getSet(value);
+            Handler handler(set);
             return GenericReader().Parse(_str, handler);
         }
 
@@ -101,18 +110,18 @@ namespace struct2x {
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::convertValue, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::convertValue, value, pHas)));
             return *this;
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind(&JSONDecoder::convertArray, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::convertArray, value, pHas)));
             return *this;
         }
         template<typename K, typename V>
         JSONDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            _set.push_back(function_value(sz, converter::bind(&JSONDecoder::convertMap, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::convertMap, value, pHas)));
             return *this;
         }
     private:
