@@ -199,7 +199,7 @@ namespace serialize {
             return;
         }
 
-        for (;;) {
+        for (;!is.isEnd();) {
             if (is.Peek() != '"') {
                 setError("ObjectMissName");
                 return;
@@ -583,22 +583,20 @@ namespace serialize {
             if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
                 continue;
             }
-            if (c == ',') {
-                std::string v;
-                decodeValue(v, sz + n, idx - n, NULL);
-                value.push_back(v);
-                bFlag = true;
-            }
-            else {
+            if (c == '"') {
                 if (bFlag) {
-                    n = idx;
+                    n = idx + 1;
                     bFlag = false;
+                } else {
+                    std::string v;
+                    decodeValue(v, sz + n, idx - n, NULL);
+                    value.push_back(v);
+                    bFlag = true;
                 }
             }
+            else {
+            }
         }
-        std::string v;
-        decodeValue(v, sz + n, length - n, NULL);
-        value.push_back(v);
         if (pHas) *pHas = true;
     }
 

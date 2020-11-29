@@ -31,9 +31,10 @@ namespace serialize {
     class StringStream {
         typedef const char Ch;
         Ch* _src;
+        Ch* _end;
         uint32_t _length;
     public:
-        StringStream(Ch* src, uint32_t length) : _src(src),_length(length) {}
+        StringStream(Ch* src, uint32_t length) : _src(src), _length(length) {}
         // Read
         Ch Peek() { if (isEnd()) return '\0';  return *_src; }
         Ch Take() { --_length; return *_src++; }
@@ -110,13 +111,13 @@ namespace serialize {
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeValue, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeValue, *(internal::TypeTraits<T>::Type*)&value, pHas)));
             return *this;
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::decodeArray, value, pHas)));
+            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeArray, *(std::vector<internal::TypeTraits<T>::Type>*)&value, pHas)));
             return *this;
         }
         template<typename K, typename V>
@@ -158,21 +159,25 @@ namespace serialize {
             if (length) {
                 value.clear();
                 std::vector<const char*> stack;
-                for (uint32_t idx = 0, bFlag = true; idx < length; ++idx) {
+                for (uint32_t idx = 0, nCount = 0; idx < length; ++idx) {
                     const char c = cValue[idx];
                     if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
                         continue;
                     }
                     if (c == '{') {
                         stack.push_back(cValue + idx);
+                        ++nCount;
                     }
                     else if (c == '}') {
-                        T temp = T();
+                        --nCount;
                         const char* szBin = stack[stack.size() - 1];
-                        JSONDecoder decoder(szBin, (cValue + idx) - szBin);
-                        if (decoder.operator>>(temp))
-                            value.push_back(temp);
                         stack.erase(stack.begin() + stack.size() - 1);
+                        if (!nCount) {
+                            T temp = T();
+                            JSONDecoder decoder(szBin, (cValue + idx) - szBin + 1);
+                            if (decoder.operator>>(temp))
+                                value.push_back(temp);
+                        }
                     }
                 }
                 if (pHas) *pHas = true;
