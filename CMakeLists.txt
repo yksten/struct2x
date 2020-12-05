@@ -45,8 +45,10 @@ ELSE ()
 ENDIF (MSVC)
 
 
-SET(TESTER "./tester/main.cpp" "./tester/testStruct.h")
-SOURCE_GROUP(tester FILES ${TESTER})
-
-ADD_EXECUTABLE(tester ${TESTER})
-TARGET_LINK_LIBRARIES(tester serialize)
+SET(EXEC OFF CACHE BOOL "")
+if (${EXEC} STREQUAL ON)
+    SET(TESTER "./tester/main.cpp" "./tester/testStruct.h")
+    SOURCE_GROUP(tester FILES ${TESTER})
+    ADD_EXECUTABLE(tester ${TESTER})
+    TARGET_LINK_LIBRARIES(tester serialize)
+endif()
