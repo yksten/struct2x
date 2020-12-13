@@ -14,7 +14,7 @@ namespace proto {
 
     //TYPE_VARINT = 0,    // int32,int64,uint32,uint64,bool,enum
     template<typename T, typename P> struct convertVarint {
-        static inline T value(const P& cValue) { return static_cast<T>(cValue); }
+        static inline T value(const P& cValue) { return T(cValue); }
     };
     template<> struct convertVarint<float, uint32_t> {
         static inline float value(const uint32_t& cValue) { union { uint32_t i; float f; }; i = cValue; return f; }
