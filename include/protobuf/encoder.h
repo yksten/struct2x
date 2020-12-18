@@ -1,6 +1,7 @@
 #ifndef __PROTOBUF_ENCODER_H__
 #define __PROTOBUF_ENCODER_H__
 
+#include <assert.h>
 #include <string>
 #include <map>
 #include "serialize.h"
@@ -40,7 +41,8 @@ namespace serialize {
     class EXPORTAPI PBEncoder {
 
         struct enclosure_t {
-            enclosure_t(uint32_t n, bool* b) :size(n), pHas(b) { memset(sz, 0, 10); }
+            enclosure_t(uint32_t t, uint32_t n, bool* b) : type(t), size(n), pHas(b) { memset(sz, 0, 10); }
+            uint32_t type;
             uint8_t sz[10];
             uint32_t size;
             bool* pHas;
@@ -54,8 +56,8 @@ namespace serialize {
                 offset_type _offset;
                 enclosure_t _info;
             public:
-                converter(convert_t func, uint64_t tag, offset_type offset, bool* pHas)
-                    :_func(func), _offset(offset), _info(encodeVarint(tag, pHas)) {
+                converter(convert_t func, uint64_t tag, uint32_t type, offset_type offset, bool* pHas)
+                    :_func(func), _offset(offset), _info(encodeVarint(tag, type, pHas)) {
                 }
                 void operator()(const void* cValue, BufferWrapper& buf) const {
                     (*_func)((const uint8_t*)cValue + _offset, _info, buf);
@@ -67,39 +69,56 @@ namespace serialize {
             bool empty() const { return _functionSet.empty(); }
             void setStruct(const void* pStruct) { _struct = (const uint8_t*)pStruct; }
 
+            void bindValue(void(*f)(const std::string&, const enclosure_t&, BufferWrapper&), const serializeItem<std::string>& value) {
+                uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
+                offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+            }
             template<typename T>
             void bindValue(void(*f)(const T&, const enclosure_t&, BufferWrapper&), const serializeItem<T>& value) {
-                uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
+                uint64_t type = internal::isMessage<T>::WRITE_TYPE;
+                if (value.type & 0xFFFF == TYPE_FIXED32) {
+                    type = internal::WT_32BIT;
+                } else if (value.type & 0xFFFF == TYPE_FIXED64) {
+                    type = internal::WT_64BIT;
+                }
+                uint64_t tag = ((uint64_t)value.num << 3) | type;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, offset, value.bHas));
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
             }
 
             template<typename T>
             void bindCustom(void(*f)(const T&, const enclosure_t&, BufferWrapper&), const serializeItem<T>& value) {
-                uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
+                uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, offset, value.bHas));
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
             }
 
             template<typename T>
             void bindArray(void(*f)(const std::vector<T>&, const enclosure_t&, BufferWrapper&), const serializeItem<std::vector<T> >& value) {
-                uint64_t tag = ((uint64_t)value.num << 3) | internal::isMessage<T>::WRITE_TYPE;
+                uint64_t type = internal::isMessage<T>::WRITE_TYPE;
+                if (value.type & 0xFFFF == TYPE_FIXED32) {
+                    type = internal::WT_32BIT;
+                } else if (value.type & 0xFFFF == TYPE_FIXED64) {
+                    type = internal::WT_64BIT;
+                }
+                uint64_t tag = ((uint64_t)value.num << 3) | type;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, offset, value.bHas));
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
             }
 
             template<typename T>
             void bindPack(void(*f)(const std::vector<T>&, const enclosure_t&, BufferWrapper&), const serializeItem<std::vector<T> >& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, offset, value.bHas));
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
             }
 
             template<typename K, typename V>
             void bindMap(void(*f)(const std::map<K, V>&, const enclosure_t&, BufferWrapper&), const serializeItem<std::map<K, V> >& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, offset, value.bHas));
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
             }
 
             uint32_t getByteSize(const void* pStruct, BufferWrapper& buf) {
@@ -168,7 +187,7 @@ namespace serialize {
 
         template<typename T>
         PBEncoder& operator&(const serializeItem<std::vector<T> >& value) {
-            if (value.type >> 16) {
+            if (value.type & 0xFFFF) {
                 _mgr->bindPack(&PBEncoder::encodeValuePack, *(const serializeItem<std::vector<typename internal::TypeTraits<T>::Type> >*)(&value));
             } else {
                 _mgr->bindArray(&PBEncoder::encodeValue, *(const serializeItem<std::vector<typename internal::TypeTraits<T>::Type> >*)(&value));
@@ -204,10 +223,11 @@ namespace serialize {
         void encodeField(const serializeItem<std::string>& value);
 
         static void varInt(uint64_t value, BufferWrapper& buf);
+        static void svarInt(uint32_t value, BufferWrapper& buf);
         static void svarInt(uint64_t value, BufferWrapper& buf);
         static void fixed32(uint32_t value, BufferWrapper& buf);
         static void fixed64(uint64_t value, BufferWrapper& buf);
-        static enclosure_t encodeVarint(uint64_t tag, bool* pHas);
+        static enclosure_t encodeVarint(uint64_t tag, uint32_t type, bool* pHas);
 
         static void encodeValue(const bool& v, const enclosure_t& info, BufferWrapper& buf);
         static void encodeValue(const int32_t& v, const enclosure_t& info, BufferWrapper& buf);
@@ -218,18 +238,18 @@ namespace serialize {
         static void encodeValue(const double& value, const enclosure_t& info, BufferWrapper& buf);
         static void encodeValue(const std::string& v, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueSvarint(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarint32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarint64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueSvarint(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
         static void encodeValueFixed64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueVarint(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarint(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed32(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueVarint(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarint(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed64(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueVarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed32Array(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueVarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed64Array(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
 
         static void encodeValueVarintPack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
         static void encodeValueSvarintPack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
@@ -276,8 +296,8 @@ namespace serialize {
         static void encodeValue(const std::map<K, V>& value, const enclosure_t& info, BufferWrapper& buf) {
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 buf.appendBytes(info.sz, info.size);
-                static enclosure_t infok = encodeVarint(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE, NULL);
-                static enclosure_t infov = encodeVarint(((uint64_t)2 << 3) | internal::isMessage<V>::WRITE_TYPE, NULL);
+                static enclosure_t infok = encodeVarint(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE, TYPE_VARINT, NULL);
+                static enclosure_t infov = encodeVarint(((uint64_t)2 << 3) | internal::isMessage<V>::WRITE_TYPE, TYPE_VARINT, NULL);
                 uint32_t nByteSize = 0;
                 do {
                     BEGINCALCULATEFIELD(buf);
@@ -286,11 +306,21 @@ namespace serialize {
                     ENDCALCULATEFIELD(nByteSize, buf);
                 } while (0);
                 varInt(nByteSize, buf);
-                if (buf.isGetLength()) {
-                    buf.appendLength(nByteSize);
-                } else {
+
+                uint32_t keyType = info.type >> BITNUM;
+                uint32_t valueType = info.type & 0xFFFF;
+                typedef void(*encodeFunction)(const void*, const enclosure_t&, BufferWrapper&);
+                static encodeFunction convsetSet[] = { NULL, (encodeFunction)&PBEncoder::encodeValueSvarint32
+                    , (encodeFunction)&PBEncoder::encodeValueFixed32, (encodeFunction)&PBEncoder::encodeValueFixed64 };
+                if (keyType == TYPE_VARINT) {
                     encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), infok, buf);
+                } else if (keyType == TYPE_SVARINT || keyType == TYPE_FIXED32 || keyType == TYPE_FIXED64) {
+                    convsetSet[keyType](&it->first, infok, buf);
+                }
+                if (valueType == TYPE_VARINT) {
                     encodeValue(*(const typename internal::TypeTraits<V>::Type*)(&it->second), infov, buf);
+                } else if (valueType == TYPE_SVARINT || valueType == TYPE_FIXED32 || valueType == TYPE_FIXED64) {
+                    convsetSet[valueType](&it->second, infov, buf);
                 }
             }
         }

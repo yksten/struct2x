@@ -27,6 +27,8 @@
 
 namespace serialize {
 
+    const uint32_t BITNUM = 16;
+
     enum {
         TYPE_VARINT = 0,    // int32,int64,uint32,uint64,bool,enum
         TYPE_SVARINT = 1,   // sint32,sin64

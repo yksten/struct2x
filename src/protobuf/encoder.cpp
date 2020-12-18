@@ -7,7 +7,8 @@ namespace serialize {
     }
 
     size_t BufferWrapper::size() const {
-        return (_target - (uint8_t*)&*_buffer->begin());
+        size_t temp = (_target - (uint8_t*)&*_buffer->begin());
+        return temp;
     }
 
     std::string* BufferWrapper::buffer() {
@@ -62,9 +63,9 @@ namespace serialize {
     }
     ////////////////////////////////////////////////////////////////////////////////////////////
 
-    PBEncoder::encodeFunction32 PBEncoder::convsetSet32[] = { &PBEncoder::encodeValueVarint, &PBEncoder::encodeValueSvarint, &PBEncoder::encodeValueFixed32 };
+    PBEncoder::encodeFunction32 PBEncoder::convsetSet32[] = { &PBEncoder::encodeValueVarintArray, &PBEncoder::encodeValueSvarintArray, &PBEncoder::encodeValueFixed32Array };
     PBEncoder::encodeFunction32 PBEncoder::convsetSetPack32[] = { &PBEncoder::encodeValueVarintPack, &PBEncoder::encodeValueSvarintPack, &PBEncoder::encodeValueFixed32Pack };
-    PBEncoder::encodeFunction64 PBEncoder::convsetSet64[] = { &PBEncoder::encodeValueVarint, &PBEncoder::encodeValueSvarint, NULL, &PBEncoder::encodeValueFixed64 };
+    PBEncoder::encodeFunction64 PBEncoder::convsetSet64[] = { &PBEncoder::encodeValueVarintArray, &PBEncoder::encodeValueSvarintArray, NULL, &PBEncoder::encodeValueFixed64Array };
     PBEncoder::encodeFunction64 PBEncoder::convsetSetPack64[] = { &PBEncoder::encodeValueVarintPack, &PBEncoder::encodeValueSvarintPack, NULL, &PBEncoder::encodeValueFixed64Pack };
 
     PBEncoder::PBEncoder(std::string& str) :_buffer(&str), _mgr(NULL) {
@@ -74,7 +75,7 @@ namespace serialize {
     }
 
     PBEncoder& PBEncoder::operator&(const serializeItem<std::vector<int32_t> >& value) {
-        if (value.type >> 16) {
+        if (value.type & 0xFFFF) {
             _mgr->bindPack(convsetSetPack32[value.type & 0xFFFF], *(const serializeItem<std::vector<uint32_t> >*)(&value));
         } else {
             _mgr->bindArray(convsetSet32[value.type & 0xFFFF], *(const serializeItem<std::vector<uint32_t> >*)(&value));
@@ -83,7 +84,7 @@ namespace serialize {
     }
 
     PBEncoder& PBEncoder::operator&(const serializeItem<std::vector<uint32_t> >& value) {
-        if (value.type >> 16) {
+        if (value.type & 0xFFFF) {
             _mgr->bindPack(convsetSetPack32[value.type & 0xFFFF], value);
         } else {
             _mgr->bindArray(convsetSet32[value.type & 0xFFFF], value);
@@ -92,7 +93,7 @@ namespace serialize {
     }
 
     PBEncoder& PBEncoder::operator&(const serializeItem<std::vector<int64_t> >& value) {
-        if (value.type >> 16) {
+        if (value.type & 0xFFFF) {
             _mgr->bindPack(convsetSetPack64[value.type & 0xFFFF], *(const serializeItem<std::vector<uint64_t> >*)(&value));
         } else {
             _mgr->bindArray(convsetSet64[value.type & 0xFFFF], *(const serializeItem<std::vector<uint64_t> >*)(&value));
@@ -101,7 +102,7 @@ namespace serialize {
     }
 
     PBEncoder& PBEncoder::operator&(const serializeItem<std::vector<uint64_t> >& value) {
-        if (value.type >> 16) {
+        if (value.type & 0xFFFF) {
             _mgr->bindPack(convsetSetPack64[value.type & 0xFFFF], value);
         } else {
             _mgr->bindArray(convsetSet64[value.type & 0xFFFF], value);
@@ -118,7 +119,7 @@ namespace serialize {
         if (value.type == TYPE_VARINT) {
             _mgr->bindValue(&PBEncoder::encodeValue, *(const serializeItem<uint32_t>*)(&value));
         } else if (value.type == TYPE_SVARINT) {
-            _mgr->bindValue(&PBEncoder::encodeValueSvarint, *(const serializeItem<uint32_t>*)(&value));
+            _mgr->bindValue(&PBEncoder::encodeValueSvarint32, *(const serializeItem<uint32_t>*)(&value));
         } else if (value.type == TYPE_FIXED32) {
             _mgr->bindValue(&PBEncoder::encodeValueFixed32, *(const serializeItem<uint32_t>*)(&value));
         }
@@ -128,7 +129,7 @@ namespace serialize {
         if (value.type == TYPE_VARINT) {
             _mgr->bindValue(&PBEncoder::encodeValue, value);
         } else if (value.type == TYPE_SVARINT) {
-            _mgr->bindValue(&PBEncoder::encodeValueSvarint, value);
+            _mgr->bindValue(&PBEncoder::encodeValueSvarint32, value);
         } else if (value.type == TYPE_FIXED32) {
             _mgr->bindValue(&PBEncoder::encodeValueFixed32, value);
         }
@@ -138,7 +139,7 @@ namespace serialize {
         if (value.type == TYPE_VARINT) {
             _mgr->bindValue(&PBEncoder::encodeValue, *(const serializeItem<uint64_t>*)(&value));
         } else if (value.type == TYPE_SVARINT) {
-            _mgr->bindValue(&PBEncoder::encodeValueSvarint, *(const serializeItem<uint64_t>*)(&value));
+            _mgr->bindValue(&PBEncoder::encodeValueSvarint64, *(const serializeItem<uint64_t>*)(&value));
         } else if (value.type == TYPE_FIXED32) {
             _mgr->bindValue(&PBEncoder::encodeValueFixed64, *(const serializeItem<uint64_t>*)(&value));
         }
@@ -148,7 +149,7 @@ namespace serialize {
         if (value.type == TYPE_VARINT) {
             _mgr->bindValue(&PBEncoder::encodeValue, value);
         } else if (value.type == TYPE_SVARINT) {
-            _mgr->bindValue(&PBEncoder::encodeValueSvarint, value);
+            _mgr->bindValue(&PBEncoder::encodeValueSvarint64, value);
         } else if (value.type == TYPE_FIXED32) {
             _mgr->bindValue(&PBEncoder::encodeValueFixed64, value);
         }
@@ -176,12 +177,7 @@ namespace serialize {
 
     void PBEncoder::varInt(uint64_t value, BufferWrapper& buf) {
         if (buf.isGetLength()) {
-            if (const uint32_t topbits = static_cast<uint32_t>(value >> 32)) {
-                // Top bits are zero, so scan in bottom bits
-                buf.appendLength(32 + VarintSize(topbits));
-            } else {
-                buf.appendLength(VarintSize(static_cast<uint32_t>(value)));
-            }
+            buf.appendLength(VarintSize(value));
         } else {
             uint8_t*& target = buf.target();
             while (value >= 0x80) {
@@ -192,13 +188,12 @@ namespace serialize {
         }
     }
 
+    void PBEncoder::svarInt(uint32_t value, BufferWrapper& buf) {
+        varInt((value << 1) ^ static_cast<uint32_t>(value >> 31), buf);
+    }
+
     void PBEncoder::svarInt(uint64_t value, BufferWrapper& buf) {
-        uint64_t zigzagged;
-        if (value < 0)
-            zigzagged = ~((uint64_t)value << 1);
-        else
-            zigzagged = (uint64_t)value << 1;
-        varInt(zigzagged, buf);
+        varInt((value << 1) ^ static_cast<uint64_t>(value >> 63), buf);
     }
 
     void PBEncoder::fixed32(uint32_t value, BufferWrapper& buf) {
@@ -229,8 +224,8 @@ namespace serialize {
         }
     }
 
-    PBEncoder::enclosure_t PBEncoder::encodeVarint(uint64_t tag, bool* pHas) {
-        enclosure_t info(0, pHas);
+    PBEncoder::enclosure_t PBEncoder::encodeVarint(uint64_t tag, uint32_t type, bool* pHas) {
+        enclosure_t info(type, 0, pHas);
 
         while (tag >= 0x80) {
             info.sz[info.size++] = static_cast<uint8_t>(tag | 0x80);
@@ -303,7 +298,14 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueSvarint(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarint32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf) {
+        if (!info.pHas || v) {
+            buf.appendBytes(info.sz, info.size);
+            svarInt(v, buf);
+        }
+    }
+
+    void PBEncoder::encodeValueSvarint64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf) {
         if (!info.pHas || v) {
             buf.appendBytes(info.sz, info.size);
             svarInt(v, buf);
@@ -317,13 +319,6 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueSvarint(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
-            buf.appendBytes(info.sz, info.size);
-            svarInt(v, buf);
-        }
-    }
-
     void PBEncoder::encodeValueFixed64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf) {
         if (!info.pHas || v) {
             buf.appendBytes(info.sz, info.size);
@@ -331,7 +326,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueVarint(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -340,16 +335,16 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueSvarint(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValueSvarint(value.at(i), info, buf);
+                encodeValueSvarint32(value.at(i), info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueFixed32(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed32Array(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -358,7 +353,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueVarint(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -366,17 +361,17 @@ namespace serialize {
             }
         }
     }
-
-    void PBEncoder::encodeValueSvarint(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    
+    void PBEncoder::encodeValueSvarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValueSvarint(value.at(i), info, buf);
+                encodeValueSvarint64(value.at(i), info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueFixed64(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed64Array(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {

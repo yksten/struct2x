@@ -28,7 +28,7 @@ namespace google {
                     codeSerialize(const FileDescriptor* file, const Options& options);
                     ~codeSerialize();
 
-                    void print(google::protobuf::io::Printer& printer, const char* szName)const;
+                    void printHeader(google::protobuf::io::Printer& printer, const char* szName)const;
                     static std::string FieldName(const FieldDescriptor& field);
                 private:
                     void prepareMsgs();

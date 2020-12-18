@@ -168,10 +168,14 @@ namespace serialize {
 
         template<typename T, typename P>
         static bool convertValue(T& value, const P& cValue, const uint32_t type, bool* pHas) {
-            if (type == serialize::TYPE_VARINT)
+            if (type == serialize::TYPE_VARINT) {
                 value = proto::convertVarint<T, P>::value(cValue);
-            else if (type == serialize::TYPE_SVARINT) {
+            } else if (type == serialize::TYPE_SVARINT) {
                 value = proto::convertSvarint<T, P>::value(cValue);
+            } else if (type == serialize::TYPE_FIXED32) {
+                value = static_cast<typename T>(cValue);
+            } else if (type == serialize::TYPE_FIXED64) {
+                value = static_cast<typename T>(cValue);
             } else {
                 return false;
             }
@@ -187,10 +191,15 @@ namespace serialize {
 
         template<typename T, typename P>
         static bool convertArray(std::vector<T>& value, const P& cValue, const uint32_t type, bool* pHas) {
-            if (type == serialize::TYPE_VARINT)
+            uint32_t tempType = type & 0xFFFF;
+            if (tempType == serialize::TYPE_VARINT) {
                 value.push_back(proto::convertVarint<T, P>::value(cValue));
-            else if (type == serialize::TYPE_SVARINT) {
+            } else if (tempType == serialize::TYPE_SVARINT) {
                 value.push_back(proto::convertSvarint<T, P>::value(cValue));
+            } else if (tempType == serialize::TYPE_FIXED32) {
+                value.push_back(static_cast<typename T>(cValue));
+            } else if (tempType == serialize::TYPE_FIXED64) {
+                value.push_back(static_cast<typename T>(cValue));
             } else {
                 return false;
             }
@@ -246,9 +255,9 @@ namespace serialize {
             K key = K();
             V v = V();
             if (msg.empty()) {
-                serialize::serializeItem<K> kItem = SERIALIZATION(1, key);
+                serialize::serializeItem<K> kItem = SERIALIZATION(1, key, type >> BITNUM);
                 decoder.decodeValue(*(serializeItem<typename internal::TypeTraits<K>::Type>*)(&kItem));
-                serialize::serializeItem<V> vItem = SERIALIZATION(2, v);
+                serialize::serializeItem<V> vItem = SERIALIZATION(2, v, type & 0xFFFF);
                 decoder.decodeValue(*(serializeItem<typename internal::TypeTraits<V>::Type>*)(&vItem));
             } else {
                 msg.offset(1, (proto::offset_type)((uint8_t*)&key - NULL));

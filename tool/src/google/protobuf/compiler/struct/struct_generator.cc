@@ -30,13 +30,12 @@ bool StructGenerator::Generate(const FileDescriptor* file, const string& paramet
 
     Options file_options;
     string basename = StripProto(file->name());
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(basename + ".pb.h"));
-    io::Printer printer(output.get(), '$', NULL);
-
     FileGenerator file_generator(file, file_options);
-
     compiler::cpp::codeSerialize obj(file, file_options);
-    obj.print(printer, basename.c_str());
+    
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> outputHeader(generator_context->Open(basename + ".pb.h"));
+    io::Printer printerHeader(outputHeader.get(), '$', NULL);
+    obj.printHeader(printerHeader, basename.c_str());
 
     return true;
 }

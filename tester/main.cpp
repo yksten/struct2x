@@ -230,7 +230,46 @@ struct struExampleEnum {
     }
 };
 
-int main() {
+struct intXy {
+    int32_t x;
+    int32_t y;
+    intXy(int32_t a = 0, int32_t b = 0) :x(a), y(b) {}
+
+    template<typename T>
+    void serialize(T& t) {
+        SERIALIZE(t, x, y);
+    }
+};
+
+struct arrayXy {
+    std::vector<intXy> arr;
+    template<typename T>
+    void serialize(T& t) {
+        SERIALIZE(t, arr);
+    }
+};
+
+struct vecObject {
+    std::vector<arrayXy> vec;
+    template<typename T>
+    void serialize(T& t) {
+        SERIALIZE(t, vec);
+    }
+};
+
+int main(int argc, char* argv[]) {
+    //vecObject v;
+    //arrayXy a;
+    //a.arr.push_back(intXy(1, 1));
+    //a.arr.push_back(intXy(2, 2));
+    //v.vec.push_back(a);
+
+    //std::string json;
+    //bool bE = serialize::JSONEncoder(json) << v;
+
+    //bool bD = serialize::JSONDecoder(json) >> v;
+
+    //return 0;
     //struExampleEnum item;
     //item.e = ET2;
     //serialize::CJSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");

@@ -3,6 +3,7 @@
 #include <google/protobuf/compiler/cpp/cpp_message.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/wire_format.h>
 
 namespace google {
     namespace protobuf {
@@ -124,6 +125,17 @@ namespace google {
                     return sz;
                 }
 
+                const char* getFieldType(const FieldDescriptor& field) {
+                    if (field.type() == FieldDescriptor::TYPE_FIXED64 || field.type() == FieldDescriptor::TYPE_SFIXED64) {
+                        return "serialize::TYPE_FIXED64";
+                    } else if (field.type() == FieldDescriptor::TYPE_SINT32 || field.type() == FieldDescriptor::TYPE_SINT64) {
+                        return "serialize::TYPE_SVARINT";
+                    } else if (field.type() == FieldDescriptor::TYPE_FIXED32 || field.type() == FieldDescriptor::TYPE_SFIXED32) {
+                        return "serialize::TYPE_FIXED32";
+                    }
+                    return NULL;
+                }
+
                 const char* type2tag(const FieldDescriptor& field, FileDescriptor::Syntax syntax) {
                     static std::string strResult;
                     strResult.clear();
@@ -140,12 +152,27 @@ namespace google {
                     case FieldDescriptor::TYPE_SFIXED32:
                         strResult.append(", serialize::TYPE_FIXED32");
                     default:
-                        strResult.append(", serialize::TYPE_VARINT");
+                        //strResult.append(", serialize::TYPE_VARINT");
                         break;
                     }
 
-                    if (field.is_packed())
-                        strResult.append("| (1 << 16)");
+                    if (field.is_packed()) {
+                        if (strResult.empty()) strResult.append(", serialize::TYPE_VARINT");
+                        strResult.append("| serialize::TYPE_PACKED");
+                    } else if (field.is_map()) {
+                        const FieldDescriptor* key = field.message_type()->field(0);
+                        if (const char* szKeyType = getFieldType(*key)) {
+                            strResult.append(szKeyType).append(" << serialize::BITNUM");
+                        }
+                        const FieldDescriptor* value = field.message_type()->field(1);
+                        if (const char* szValueType = getFieldType(*key)) {
+                            if (!strResult.empty()) {
+                                strResult.append(" | ");
+                            }
+                            strResult.append(szValueType);
+                        }
+
+                    }
 
                     if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                         if (field.label() == FieldDescriptor::LABEL_OPTIONAL)
@@ -231,7 +258,7 @@ namespace google {
                     return idx;
                 }
 
-                void codeSerialize::print(google::protobuf::io::Printer& printer, const char* szName)const {
+                void codeSerialize::printHeader(google::protobuf::io::Printer& printer, const char* szName)const {
                     std::string strStructName(szName);
                     std::transform(strStructName.begin(), strStructName.end(), strStructName.begin(), ::toupper);
                     //1.program once
