@@ -34,10 +34,10 @@ namespace proto {
             convert_t _func;
             offset_type _offset;
             const uint32_t _type;
-            bool* _pHas;
+            offset_type _has;
         public:
-            converter(convert_t func, offset_type offset, const uint32_t type, bool* pHas) :_func(func), _offset(offset), _type(type), _pHas(pHas) {}
-            bool operator()(uint8_t* pStruct, const void* cValue) const { return (*_func)(pStruct + _offset, cValue, _type, _pHas); }
+            converter(convert_t func, offset_type offset, const uint32_t type, offset_type has) :_func(func), _offset(offset), _type(type), _has(has) {}
+            bool operator()(uint8_t* pStruct, const void* cValue) const { return (*_func)(pStruct + _offset, cValue, _type, (bool*)(_has ? pStruct + _has : NULL)); }
             void offset(offset_type offset) { _offset = offset; }
         };
 
@@ -59,19 +59,22 @@ namespace proto {
         template<typename P, typename T>
         bool bind(bool(*f)(T&, const P&, const uint32_t, bool*), serialize::serializeItem<T>& value) {
             offset_type offset = ((uint8_t*)(&value.value)) - _struct;
-            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, value.bHas))).second;
+            offset_type has = value.bHas ? ((uint8_t*)(value.bHas)) - _struct : 0;
+            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, has))).second;
         }
 
         template<typename P, typename T>
         bool bind(bool(*f)(std::vector<T>&, const P&, const uint32_t, bool*), serialize::serializeItem<std::vector<T> >& value) {
             offset_type offset = ((uint8_t*)(&value.value)) - _struct;
-            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, value.bHas))).second;
+            offset_type has = value.bHas ? ((uint8_t*)(value.bHas)) - _struct : 0;
+            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, has))).second;
         }
 
         template<typename P, typename K, typename V>
         bool bind(bool(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), serialize::serializeItem<std::map<K, V> >& value) {
             offset_type offset = ((uint8_t*)(&value.value)) - _struct;
-            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, value.bHas))).second;
+            offset_type has = value.bHas ? ((uint8_t*)(value.bHas)) - _struct : 0;
+            return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, has))).second;
         }
 
     };
