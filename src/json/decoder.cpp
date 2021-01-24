@@ -4,13 +4,17 @@
 
 namespace serialize {
 
-    Handler::Handler(const std::vector<function_value>& set) :_converter(NULL), _set(&set) {
+    Handler::Handler(void* pStruct, const functionValueMgr& mgr) :_pStruct(pStruct), _converter(NULL), _mgr(&mgr) {
+    }
+
+    size_t Handler::offsetByValue(const void* cValue) const {
+        return (const uint8_t*)cValue - _pStruct;
     }
 
     bool Handler::Key(const char* sz, unsigned length) {
-        uint32_t nSize = _set->size();
+        uint32_t nSize = _mgr->set.size();
         for (uint32_t idx = 0; idx < nSize; ++idx) {
-            const function_value& item = _set->at(idx);
+            const function_value& item = _mgr->set.at(idx);
             if (strncmp(sz, item.first, length) == 0) {
                 _converter = &item.second;
                 break;
@@ -22,7 +26,7 @@ namespace serialize {
 
     bool Handler::Value(const char* sz, unsigned length) {
         if (_converter) {
-            (*_converter)(sz, length);
+            (*_converter)((uint8_t*)_pStruct, sz, length);
             _converter = NULL;
         }
         return true;

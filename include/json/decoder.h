@@ -9,23 +9,23 @@ namespace serialize {
 
     struct converter {
         typedef void(*function_type)(void*, const char*, uint32_t, bool*);
-        converter(function_type func, void* value, bool* pHas) :_func(func), _value(value), _pHas(pHas) {}
-        void operator()(const char* cValue, uint32_t length) const {
-            (*_func)(_value, cValue, length, _pHas);
+        converter(function_type func, size_t value, size_t has) :_func(func), _value(value), _has(has) {}
+        void operator()(uint8_t* pStruct, const char* cValue, uint32_t length) const {
+            (*_func)((pStruct + _value), cValue, length, (bool*)(_has ? pStruct + _has : NULL));
         }
         template<typename T>
-        static converter bind(void(*f)(T&, const char*, uint32_t, bool*), T& value, bool* pHas) {
-            return converter(function_type(f), &value, pHas);
+        static converter bind(void(*f)(T&, const char*, uint32_t, bool*), size_t value, size_t has) {
+            return converter(function_type(f), value, has);
         }
 
         template<typename T>
-        static converter bind(void(*f)(std::vector<T>&, const char*, uint32_t, bool*), std::vector<T>& value, bool* pHas) {
-            return converter(function_type(f), &value, pHas);
+        static converter bindArray(void(*f)(std::vector<T>&, const char*, uint32_t, bool*), size_t value, size_t has) {
+            return converter(function_type(f), value, has);
         }
     private:
         function_type _func;
-        void* _value;
-        bool* _pHas;
+        size_t _value;
+        size_t _has;
     };
 
     class StringStream {
@@ -50,12 +50,21 @@ namespace serialize {
     };
 
     typedef std::pair<const char*, converter> function_value;
+
+    struct functionValueMgr {
+        functionValueMgr() :pStruct(NULL) {}
+        void* pStruct;
+        std::vector<function_value> set;
+    };
+
     class EXPORTAPI Handler :public BaseHandler {
     protected:
+        void* _pStruct;
         const converter* _converter;
-        const std::vector<function_value>* _set;
+        const functionValueMgr* _mgr;
     public:
-        explicit Handler(const std::vector<function_value>& set);
+        Handler(void* pStruct, const functionValueMgr& mgr);
+        size_t offsetByValue(const void* cValue) const;
         virtual bool Key(const char* sz, unsigned length);
         virtual bool Value(const char* sz, unsigned length);
     };
@@ -83,24 +92,26 @@ namespace serialize {
 
     class EXPORTAPI JSONDecoder {
         StringStream _str;
-        std::vector<function_value>* _set;
+        functionValueMgr* _mgr;
     public:
-        JSONDecoder(const char* sz, uint32_t length) :_str(sz, length), _set(NULL) {}
-        JSONDecoder(const std::string& str) :_str(str.c_str(), str.length()), _set(NULL) {}
+        JSONDecoder(const char* sz, uint32_t length) :_str(sz, length), _mgr(NULL) {}
+        JSONDecoder(const std::string& str) :_str(str.c_str(), str.length()), _mgr(NULL) {}
         ~JSONDecoder() {}
 
         template<typename T>
-        std::vector<function_value> getSet(T& value) {
-            std::vector<function_value> set;
-            _set = &set;
+        functionValueMgr getSet(T& value) {
+            functionValueMgr mgr;
+            mgr.pStruct = &value;
+            _mgr = &mgr;
             internal::serializeWrapper(*this, value);
-            return set;
+            return mgr;
         }
 
         template<typename T>
         bool operator >> (T& value) {
-            static std::vector<function_value> set = getSet(value);
-            Handler handler(set);
+            static functionValueMgr mgr = getSet(value);
+            mgr.pStruct = &value;
+            Handler handler(&value, mgr);
             return GenericReader().Parse(_str, handler);
         }
 
@@ -111,18 +122,24 @@ namespace serialize {
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeValue, *(internal::TypeTraits<T>::Type*)&value, pHas)));
+            size_t offset = ((uint8_t*)(&value)) - _mgr->pStruct;
+            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->pStruct : 0;
+            _mgr->set.push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeValue, offset, has)));
             return *this;
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeArray, *(std::vector<internal::TypeTraits<T>::Type>*)&value, pHas)));
+            size_t offset = ((uint8_t*)(&value)) - _mgr->pStruct;
+            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->pStruct : 0;
+            _mgr->set.push_back(function_value(sz, converter::bindArray<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeArray, offset, has)));
             return *this;
         }
         template<typename K, typename V>
         JSONDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            _set->push_back(function_value(sz, converter::bind(&JSONDecoder::decodeMap, value, pHas)));
+            size_t offset = ((uint8_t*)(&value)) - _mgr->pStruct;
+            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->pStruct : 0;
+            _mgr->set.push_back(function_value(sz, converter::bind<std::map<K, V> >(&JSONDecoder::decodeMap, offset, has)));
             return *this;
         }
     private:
