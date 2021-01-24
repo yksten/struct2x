@@ -41,26 +41,26 @@ namespace serialize {
     class EXPORTAPI PBEncoder {
 
         struct enclosure_t {
-            enclosure_t(uint32_t t, uint32_t n, bool* b) : type(t), size(n), pHas(b) { memset(sz, 0, 10); }
+            enclosure_t(uint32_t t, uint32_t n) : type(t), size(n) { memset(sz, 0, 10); }
             uint32_t type;
             uint8_t sz[10];
             uint32_t size;
-            bool* pHas;
         };
 
         class convertMgr {
-            typedef void(*convert_t)(const void*, const enclosure_t&, BufferWrapper&);
+            typedef void(*convert_t)(const void*, const bool*, const enclosure_t&, BufferWrapper&);
             typedef size_t offset_type;
             class converter {
                 convert_t _func;
                 offset_type _offset;
+                offset_type _has;
                 enclosure_t _info;
             public:
-                converter(convert_t func, uint64_t tag, uint32_t type, offset_type offset, bool* pHas)
-                    :_func(func), _offset(offset), _info(encodeVarint(tag, type, pHas)) {
+                converter(convert_t func, uint64_t tag, uint32_t type, offset_type offset, offset_type has)
+                    :_func(func), _offset(offset), _has(has), _info(encodeVarint(tag, type)) {
                 }
-                void operator()(const void* cValue, BufferWrapper& buf) const {
-                    (*_func)((const uint8_t*)cValue + _offset, _info, buf);
+                void operator()(const void* pStruct, BufferWrapper& buf) const {
+                    (*_func)((const uint8_t*)pStruct + _offset, (const bool*)(_has ? (const uint8_t*)pStruct + _has : NULL), _info, buf);
                 }
             };
             const uint8_t* _struct;
@@ -69,13 +69,14 @@ namespace serialize {
             bool empty() const { return _functionSet.empty(); }
             void setStruct(const void* pStruct) { _struct = (const uint8_t*)pStruct; }
 
-            void bindValue(void(*f)(const std::string&, const enclosure_t&, BufferWrapper&), const serializeItem<std::string>& value) {
+            void bindValue(void(*f)(const std::string&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<std::string>& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+                offset_type has = value.bHas ? ((const uint8_t*)(value.bHas)) - _struct : 0;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, has));
             }
             template<typename T>
-            void bindValue(void(*f)(const T&, const enclosure_t&, BufferWrapper&), const serializeItem<T>& value) {
+            void bindValue(void(*f)(const T&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<T>& value) {
                 uint64_t type = internal::isMessage<T>::WRITE_TYPE;
                 if (value.type & 0xFFFF == TYPE_FIXED32) {
                     type = internal::WT_32BIT;
@@ -84,18 +85,20 @@ namespace serialize {
                 }
                 uint64_t tag = ((uint64_t)value.num << 3) | type;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+                offset_type has = value.bHas ? ((const uint8_t*)(value.bHas)) - _struct : 0;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, has));
             }
 
             template<typename T>
-            void bindCustom(void(*f)(const T&, const enclosure_t&, BufferWrapper&), const serializeItem<T>& value) {
+            void bindCustom(void(*f)(const T&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<T>& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+                offset_type has = value.bHas ? ((const uint8_t*)(value.bHas)) - _struct : 0;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, has));
             }
 
             template<typename T>
-            void bindArray(void(*f)(const std::vector<T>&, const enclosure_t&, BufferWrapper&), const serializeItem<std::vector<T> >& value) {
+            void bindArray(void(*f)(const std::vector<T>&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<std::vector<T> >& value) {
                 uint64_t type = internal::isMessage<T>::WRITE_TYPE;
                 if (value.type & 0xFFFF == TYPE_FIXED32) {
                     type = internal::WT_32BIT;
@@ -104,21 +107,24 @@ namespace serialize {
                 }
                 uint64_t tag = ((uint64_t)value.num << 3) | type;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+                offset_type has = value.bHas ? ((const uint8_t*)(value.bHas)) - _struct : 0;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, has));
             }
 
             template<typename T>
-            void bindPack(void(*f)(const std::vector<T>&, const enclosure_t&, BufferWrapper&), const serializeItem<std::vector<T> >& value) {
+            void bindPack(void(*f)(const std::vector<T>&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<std::vector<T> >& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+                offset_type has = value.bHas ? ((const uint8_t*)(value.bHas)) - _struct : 0;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, has));
             }
 
             template<typename K, typename V>
-            void bindMap(void(*f)(const std::map<K, V>&, const enclosure_t&, BufferWrapper&), const serializeItem<std::map<K, V> >& value) {
+            void bindMap(void(*f)(const std::map<K, V>&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<std::map<K, V> >& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
                 offset_type offset = ((const uint8_t*)(&value.value)) - _struct;
-                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, value.bHas));
+                offset_type has = value.bHas ? ((const uint8_t*)(value.bHas)) - _struct : 0;
+                _functionSet.push_back(converter(convert_t(f), tag, value.type, offset, has));
             }
 
             uint32_t getByteSize(const void* pStruct, BufferWrapper& buf) {
@@ -144,10 +150,10 @@ namespace serialize {
 
         BufferWrapper _buffer;
         convertMgr* _mgr;
-        typedef void(*encodeFunction32)(const std::vector<uint32_t>&, const enclosure_t&, BufferWrapper&);
+        typedef void(*encodeFunction32)(const std::vector<uint32_t>&, const bool*, const enclosure_t&, BufferWrapper&);
         static encodeFunction32 convsetSet32[3];
         static encodeFunction32 convsetSetPack32[3];
-        typedef void(*encodeFunction64)(const std::vector<uint64_t>&, const enclosure_t&, BufferWrapper&);
+        typedef void(*encodeFunction64)(const std::vector<uint64_t>&, const bool*, const enclosure_t&, BufferWrapper&);
         static encodeFunction64 convsetSet64[4];
         static encodeFunction64 convsetSetPack64[4];
     public:
@@ -227,39 +233,39 @@ namespace serialize {
         static void svarInt(uint64_t value, BufferWrapper& buf);
         static void fixed32(uint32_t value, BufferWrapper& buf);
         static void fixed64(uint64_t value, BufferWrapper& buf);
-        static enclosure_t encodeVarint(uint64_t tag, uint32_t type, bool* pHas);
+        static enclosure_t encodeVarint(uint64_t tag, uint32_t type);
 
-        static void encodeValue(const bool& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const int32_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const int64_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const float& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const double& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValue(const std::string& v, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const bool& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const int32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const int64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const float& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const double& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValue(const std::string& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueSvarint32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarint64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarint32(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarint64(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueFixed32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed32(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed64(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueVarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed32Array(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueVarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed64Array(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueVarintArray(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarintArray(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed32Array(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueVarintArray(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarintArray(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed64Array(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
 
-        static void encodeValueVarintPack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarintPack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed32Pack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueVarintPack(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueSvarintPack(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
-        static void encodeValueFixed64Pack(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueVarintPack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarintPack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed32Pack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueVarintPack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueSvarintPack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
+        static void encodeValueFixed64Pack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf);
 
         template<typename T>
-        static void encodeValue(const T& v, const enclosure_t& info, BufferWrapper& buf) {
+        static void encodeValue(const T& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
             buf.appendBytes(info.sz, info.size);
             convertMgr& mgr = getMessage(*const_cast<T*>(&v));
             uint32_t nByteSize = mgr.getByteSize((const uint8_t*)&v, buf);
@@ -272,55 +278,55 @@ namespace serialize {
         }
 
         template<typename T>
-        static void encodeValue(const std::vector<T>& value, const enclosure_t& info, BufferWrapper& buf) {
+        static void encodeValue(const std::vector<T>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
             if (!value.empty()) {
                 uint32_t size = (uint32_t)value.size();
                 for (uint32_t i = 0; i < size; ++i) {
-                    encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.at(i)), info, buf);
+                    encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.at(i)), NULL, info, buf);
                 }
             }
         }
 
         template<typename T>
-        static void encodeValuePack(const std::vector<T>& value, const enclosure_t& info, BufferWrapper& buf) {
+        static void encodeValuePack(const std::vector<T>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
             if (!value.empty()) {
                 buf.appendBytes(info.sz, info.size);
                 uint32_t size = (uint32_t)value.size();
                 for (uint32_t i = 0; i < size; ++i) {
-                    encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.at(i)), info, buf);
+                    encodeValue(*(const typename internal::TypeTraits<T>::Type*)(&value.at(i)), NULL, info, buf);
                 }
             }
         }
 
         template<typename K, typename V>
-        static void encodeValue(const std::map<K, V>& value, const enclosure_t& info, BufferWrapper& buf) {
+        static void encodeValue(const std::map<K, V>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 buf.appendBytes(info.sz, info.size);
-                static enclosure_t infok = encodeVarint(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE, TYPE_VARINT, NULL);
-                static enclosure_t infov = encodeVarint(((uint64_t)2 << 3) | internal::isMessage<V>::WRITE_TYPE, TYPE_VARINT, NULL);
+                static enclosure_t infok = encodeVarint(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE, TYPE_VARINT);
+                static enclosure_t infov = encodeVarint(((uint64_t)2 << 3) | internal::isMessage<V>::WRITE_TYPE, TYPE_VARINT);
                 uint32_t nByteSize = 0;
                 do {
                     BEGINCALCULATEFIELD(buf);
-                    encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), infok, buf);
-                    encodeValue(*(const typename internal::TypeTraits<V>::Type*)(&it->second), infov, buf);
+                    encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), NULL, infok, buf);
+                    encodeValue(*(const typename internal::TypeTraits<V>::Type*)(&it->second), NULL, infov, buf);
                     ENDCALCULATEFIELD(nByteSize, buf);
                 } while (0);
                 varInt(nByteSize, buf);
 
                 uint32_t keyType = info.type >> BITNUM;
                 uint32_t valueType = info.type & 0xFFFF;
-                typedef void(*encodeFunction)(const void*, const enclosure_t&, BufferWrapper&);
+                typedef void(*encodeFunction)(const void*, const bool*, const enclosure_t&, BufferWrapper&);
                 static encodeFunction convsetSet[] = { NULL, (encodeFunction)&PBEncoder::encodeValueSvarint32
                     , (encodeFunction)&PBEncoder::encodeValueFixed32, (encodeFunction)&PBEncoder::encodeValueFixed64 };
                 if (keyType == TYPE_VARINT) {
-                    encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), infok, buf);
+                    encodeValue(*(const typename internal::TypeTraits<K>::Type*)(&it->first), NULL, infok, buf);
                 } else if (keyType == TYPE_SVARINT || keyType == TYPE_FIXED32 || keyType == TYPE_FIXED64) {
-                    convsetSet[keyType](&it->first, infok, buf);
+                    convsetSet[keyType](&it->first, NULL, infok, buf);
                 }
                 if (valueType == TYPE_VARINT) {
-                    encodeValue(*(const typename internal::TypeTraits<V>::Type*)(&it->second), infov, buf);
+                    encodeValue(*(const typename internal::TypeTraits<V>::Type*)(&it->second), NULL, infov, buf);
                 } else if (valueType == TYPE_SVARINT || valueType == TYPE_FIXED32 || valueType == TYPE_FIXED64) {
-                    convsetSet[valueType](&it->second, infov, buf);
+                    convsetSet[valueType](&it->second, NULL, infov, buf);
                 }
             }
         }

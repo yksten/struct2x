@@ -224,8 +224,8 @@ namespace serialize {
         }
     }
 
-    PBEncoder::enclosure_t PBEncoder::encodeVarint(uint64_t tag, uint32_t type, bool* pHas) {
-        enclosure_t info(type, 0, pHas);
+    PBEncoder::enclosure_t PBEncoder::encodeVarint(uint64_t tag, uint32_t type) {
+        enclosure_t info(type, 0);
 
         while (tag >= 0x80) {
             info.sz[info.size++] = static_cast<uint8_t>(tag | 0x80);
@@ -236,8 +236,8 @@ namespace serialize {
         return info;
     }
 
-    void PBEncoder::encodeValue(const bool& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValue(const bool& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             if (buf.isGetLength()) {
                 buf.appendLength(info.size + 1);
             } else {
@@ -248,139 +248,139 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValue(const int32_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValue(const int32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValue(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValue(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(int32_t(v), buf);
         }
     }
 
-    void PBEncoder::encodeValue(const int64_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValue(const int64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValue(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValue(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValue(const float& value, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || value) {
+    void PBEncoder::encodeValue(const float& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || value) {
             buf.appendBytes(info.sz, info.size);
             fixed32(*reinterpret_cast<const uint32_t*>(&value), buf);
         }
     }
 
-    void PBEncoder::encodeValue(const double& value, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || value) {
+    void PBEncoder::encodeValue(const double& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || value) {
             buf.appendBytes(info.sz, info.size);
             fixed64(*reinterpret_cast<const uint64_t*>(&value), buf);
         }
     }
 
-    void PBEncoder::encodeValue(const std::string& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || !v.empty()) {
+    void PBEncoder::encodeValue(const std::string& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || !v.empty()) {
             buf.appendBytes(info.sz, info.size);
             varInt(v.length(), buf);
             buf.appendBytes(v.c_str(), v.length());
         }
     }
 
-    void PBEncoder::encodeValueSvarint32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValueSvarint32(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             svarInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueSvarint64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValueSvarint64(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             svarInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueFixed32(const uint32_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValueFixed32(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             fixed32(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueFixed64(const uint64_t& v, const enclosure_t& info, BufferWrapper& buf) {
-        if (!info.pHas || v) {
+    void PBEncoder::encodeValueFixed64(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+        if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             fixed64(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueVarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintArray(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValue(value.at(i), info, buf);
+                encodeValue(value.at(i), NULL, info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueSvarintArray(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintArray(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValueSvarint32(value.at(i), info, buf);
+                encodeValueSvarint32(value.at(i), NULL, info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueFixed32Array(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed32Array(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValueFixed32(value.at(i), info, buf);
+                encodeValueFixed32(value.at(i), NULL, info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueVarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintArray(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValue(value.at(i), info, buf);
+                encodeValue(value.at(i), NULL, info, buf);
             }
         }
     }
     
-    void PBEncoder::encodeValueSvarintArray(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintArray(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValueSvarint64(value.at(i), info, buf);
+                encodeValueSvarint64(value.at(i), NULL, info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueFixed64Array(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed64Array(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
-                encodeValueFixed64(value.at(i), info, buf);
+                encodeValueFixed64(value.at(i), NULL, info, buf);
             }
         }
     }
 
-    void PBEncoder::encodeValueVarintPack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintPack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -390,7 +390,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueSvarintPack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintPack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -400,7 +400,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueFixed32Pack(const std::vector<uint32_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed32Pack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -410,7 +410,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueVarintPack(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintPack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -420,7 +420,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueSvarintPack(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintPack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -430,7 +430,7 @@ namespace serialize {
         }
     }
 
-    void PBEncoder::encodeValueFixed64Pack(const std::vector<uint64_t>& value, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed64Pack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
