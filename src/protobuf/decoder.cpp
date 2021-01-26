@@ -29,24 +29,14 @@ namespace proto {
         return bConsume;
     }
 
-    bool ReadWireTypeAndFieldNumber(const uint8_t*& current, size_t& remaining, uint8_t& wire_type, uint32_t& field_number) {
-        uint8_t wire_type_and_field_number = 0;
-        if (!ReadFromBytes(current, remaining, wire_type_and_field_number))
-            return false;
-        wire_type = wire_type_and_field_number & 0x07;
-        field_number = wire_type_and_field_number >> 3;
-        if (field_number >= 16) {
-            field_number = field_number & 0xf;
-            bool keep_going = false;
-            do {
-                uint8_t next_number = 0;
-                if (!ReadFromBytes(current, remaining, next_number))
-                    return false;
-                keep_going = (next_number >= 128);
-                field_number = (field_number << 7) | (next_number & 0x7f);
-            } while (keep_going);
+    bool ReadWirteTypeAndFieldNumber(const uint8_t*& current, size_t& remaining, uint8_t& wirte_type, uint32_t& field_number) {
+        uint64_t wirte_type_and_field_number = 0;
+        if (Message::ReadVarInt(current, remaining, wirte_type_and_field_number)) {
+            wirte_type = wirte_type_and_field_number & 0x0f;
+            field_number = wirte_type_and_field_number >> 3;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /*=====================================message====================================*/
@@ -90,11 +80,11 @@ namespace proto {
         const uint8_t* current = sz;
         size_t remaining = size;
         while (remaining > 0) {
-            uint8_t wire_type = 0;
+            uint8_t wirte_type = 0;
             uint32_t field_number = 0;
-            if (!ReadWireTypeAndFieldNumber(current, remaining, wire_type, field_number))
+            if (!ReadWirteTypeAndFieldNumber(current, remaining, wirte_type, field_number))
                 return false;
-            switch (wire_type) {
+            switch (wirte_type) {
                 case serialize::internal::WT_VARINT: {
                     uint64_t value = 0;
                     if (!ReadVarInt(current, remaining, value))
