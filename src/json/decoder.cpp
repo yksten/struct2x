@@ -15,7 +15,7 @@ namespace serialize {
         uint32_t nSize = _mgr->set.size();
         for (uint32_t idx = 0; idx < nSize; ++idx) {
             const function_value& item = _mgr->set.at(idx);
-            if (strncmp(sz, item.first, length) == 0) {
+            if (strlen(item.first) == length && strncmp(sz, item.first, length) == 0) {
                 _converter = &item.second;
                 break;
             }

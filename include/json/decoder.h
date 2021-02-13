@@ -53,6 +53,7 @@ namespace serialize {
 
     struct functionValueMgr {
         functionValueMgr() :pStruct(NULL) {}
+        functionValueMgr(const functionValueMgr& that) :pStruct(NULL), set(that.set) {}
         void* pStruct;
         std::vector<function_value> set;
     };
@@ -110,7 +111,6 @@ namespace serialize {
         template<typename T>
         bool operator >> (T& value) {
             static functionValueMgr mgr = getSet(value);
-            mgr.pStruct = &value;
             Handler handler(&value, mgr);
             return GenericReader().Parse(_str, handler);
         }
