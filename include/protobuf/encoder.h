@@ -66,8 +66,9 @@ namespace serialize {
             const uint8_t* _struct;
             std::vector<converter> _functionSet;
         public:
+            explicit convertMgr(const void* pStruct = NULL) :_struct((const uint8_t*)pStruct) {}
+            convertMgr(const convertMgr& that) :_struct(NULL), _functionSet(that._functionSet) {}
             bool empty() const { return _functionSet.empty(); }
-            void setStruct(const void* pStruct) { _struct = (const uint8_t*)pStruct; }
 
             void bindValue(void(*f)(const std::string&, const bool*, const enclosure_t&, BufferWrapper&), const serializeItem<std::string>& value) {
                 uint64_t tag = ((uint64_t)value.num << 3) | internal::WT_LENGTH_DELIMITED;
@@ -161,12 +162,11 @@ namespace serialize {
         ~PBEncoder();
 
         template<typename T>
-        static PBEncoder::convertMgr& getMessage(T& value) {
-            static convertMgr mgr;
+        static PBEncoder::convertMgr getMessage(T& value) {
+            convertMgr mgr(&value);
             if (mgr.empty()) {
-                static PBEncoder encoder(*(std::string*)(NULL));
+                PBEncoder encoder(*(std::string*)(NULL));
                 encoder._mgr = &mgr;
-                mgr.setStruct(&value);
                 internal::serializeWrapper(encoder, value);
             }
             return mgr;
@@ -174,7 +174,7 @@ namespace serialize {
 
         template<typename T>
         bool operator<<(const T& value) {
-            convertMgr& mgr = getMessage(*const_cast<T*>(&value));
+            static convertMgr mgr = getMessage(*const_cast<T*>(&value));
             uint32_t nByteSize = mgr.getByteSize((const uint8_t*)&value, _buffer);
             _buffer.reserve(nByteSize);
             mgr.doConvert((const uint8_t*)&value, _buffer);

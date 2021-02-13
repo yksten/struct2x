@@ -32,7 +32,7 @@ namespace proto {
     bool ReadWirteTypeAndFieldNumber(const uint8_t*& current, size_t& remaining, uint8_t& wirte_type, uint32_t& field_number) {
         uint64_t wirte_type_and_field_number = 0;
         if (Message::ReadVarInt(current, remaining, wirte_type_and_field_number)) {
-            wirte_type = wirte_type_and_field_number & 0x0f;
+            wirte_type = wirte_type_and_field_number & 0x07;
             field_number = wirte_type_and_field_number >> 3;
             return true;
         }
@@ -41,11 +41,10 @@ namespace proto {
 
     /*=====================================message====================================*/
 
-    Message::Message() :_struct(NULL) {
+    Message::Message(const void* pStruct) :_struct((const uint8_t*)pStruct) {
     }
 
-    void Message::setStruct(void* pStruct) {
-        _struct = (uint8_t*)pStruct;
+    Message::Message(const Message& that) : _struct(NULL), _functionSet(that._functionSet) {
     }
 
     void Message::offset(uint32_t field_number, offset_type n) {
@@ -55,10 +54,10 @@ namespace proto {
         }
     }
 
-    void Message::call(uint32_t field_number, const void* cValue) const {
+    void Message::call(uint32_t field_number, void* pStruct, const void* cValue) const {
         std::map<uint32_t, converter>::const_iterator it = _functionSet.find(field_number);
         if (it != _functionSet.end()) {
-            it->second(_struct, cValue);
+            it->second((uint8_t*)pStruct, cValue);
         }
     }
 
@@ -76,7 +75,7 @@ namespace proto {
         return true;
     }
 
-    bool Message::ParseFromBytes(const uint8_t* sz, uint32_t size) {
+    bool Message::ParseFromBytes(const uint8_t* sz, uint32_t size, void* pStruct) {
         const uint8_t* current = sz;
         size_t remaining = size;
         while (remaining > 0) {
@@ -89,13 +88,13 @@ namespace proto {
                     uint64_t value = 0;
                     if (!ReadVarInt(current, remaining, value))
                         return false;
-                    call(field_number, &value);
+                    call(field_number, pStruct, &value);
                 } break;
                 case serialize::internal::WT_64BIT: {
                     uint64_t value = 0;
                     if (!ReadFromBytes(current, remaining, value))
                         return false;
-                    call(field_number, &value);
+                    call(field_number, pStruct, &value);
                 } break;
                 case serialize::internal::WT_LENGTH_DELIMITED: {
                     uint64_t size = 0;
@@ -105,7 +104,7 @@ namespace proto {
                     current += size;
                     remaining -= size;
                     bin_type bin(data, size);
-                    call(field_number, &bin);
+                    call(field_number, pStruct, &bin);
                 } break;
                 case serialize::internal::WT_GROUP_START:
                 case serialize::internal::WT_GROUP_END:
@@ -114,7 +113,7 @@ namespace proto {
                     uint32_t value = 0;
                     if (!ReadFromBytes(current, remaining, value))
                         return false;
-                    call(field_number, &value);
+                    call(field_number, pStruct, &value);
                 } break;
                 default: {
                     return false;
