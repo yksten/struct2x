@@ -4,48 +4,58 @@
 
 namespace serialize {
 
+    void rapidJsonConverterMgr::setStruct(void* value, void* owner) {
+        if (value && owner) {
+            _owner = (convertHandler*)owner;
+            _owner->_stackStruct.push_back(_owner->_struct);
+            _owner->_struct = (uint8_t*)value;
+        }
+    }
+
+    /*------------------------------------------------------------------------------*/
+
     bool convertHandler::Null() {
         return true;
     }
 
     bool convertHandler::Bool(bool b) {
         if (_converter) {
-            (*_converter)(_mgr->getStruct(), &b);
+            (*_converter)(_struct, &b);
         }
         return true;
     }
 
     bool convertHandler::Int(int i) {
         if (_converter) {
-            (*_converter)(_mgr->getStruct(), &i);
+            (*_converter)(_struct, &i);
         }
         return true;
     }
 
     bool convertHandler::Uint(unsigned u) {
         if (_converter) {
-            (*_converter)(_mgr->getStruct(), &u);
+            (*_converter)(_struct, &u);
         }
         return true;
     }
 
     bool convertHandler::Int64(int64_t i) {
         if (_converter) {
-            (*_converter)(_mgr->getStruct(), &i);
+            (*_converter)(_struct, &i);
         }
         return true;
     }
 
     bool convertHandler::Uint64(uint64_t u) {
         if (_converter) {
-            (*_converter)(_mgr->getStruct(), &u);
+            (*_converter)(_struct, &u);
         }
         return true;
     }
 
     bool convertHandler::Double(double d) {
         if (_converter) {
-            (*_converter)(_mgr->getStruct(), &d);
+            (*_converter)(_struct, &d);
         }
         return true;
     }
@@ -57,18 +67,20 @@ namespace serialize {
     bool convertHandler::String(const char* str, unsigned length, bool copy) {
         if (_converter) {
             std::string strValue(str, length);
-            (*_converter)(_mgr->getStruct(), &strValue);
+            (*_converter)(_struct, &strValue);
         }
         return true;
     }
 
     bool convertHandler::Key(const char* str, unsigned length, bool copy) {
         if (_mgr->isMap()) {
-            const rapidJsonConverter* temp = _converter;
+            const rapidJsonConverter* tempConverter = _converter;
+            uint8_t* tempStruct = _struct;
             _converter->setKey(str);
-            rapidJsonConverterMgr* mgr = (rapidJsonConverterMgr*)_converter->getConvert(_stack.back()->getStruct());
+
+            rapidJsonConverterMgr* mgr = (rapidJsonConverterMgr*)_converter->getConvert(_struct, this);
             _converter = &mgr->find(str)->second;
-            _converter->setLast(temp);
+            _converter->setLast(tempConverter, resetStruct(&_struct, tempStruct));
         } else {
             rapidJsonConverterMgr::const_iterator it = _mgr->find(str);
             if (it != _mgr->end()) {
@@ -84,19 +96,22 @@ namespace serialize {
         if (_converter) {
             _stackFunction.push_back(_converter);
 
-            _stack.push_back(_mgr);
-            _mgr = (rapidJsonConverterMgr*)_converter->getConvert(_mgr->getStruct());
+            _stackMgr.push_back(_mgr);
+            _mgr = (rapidJsonConverterMgr*)_converter->getConvert(_struct, this);
         }
         return true;
     }
 
     bool convertHandler::EndObject(unsigned memberCount) {
-        if (!_stack.empty()) {
-            _mgr = _stack.back();
-            _stack.erase(_stack.begin() + _stack.size() - 1);
+        if (!_stackMgr.empty()) {
+            _mgr = _stackMgr.back();
+            _stackMgr.erase(_stackMgr.begin() + _stackMgr.size() - 1);
 
             _converter = _stackFunction.back();
             _stackFunction.erase(_stackFunction.begin() + _stackFunction.size() - 1);
+
+            _struct = _stackStruct.back();
+            _stackStruct.erase(_stackStruct.begin() + _stackStruct.size() - 1);
         }
         return true;
     }
@@ -107,7 +122,7 @@ namespace serialize {
 
     bool convertHandler::EndArray(unsigned elementCount) {
         if (!elementCount) {
-            _converter->clear(_mgr->getStruct());
+            _converter->clear(_struct);
         }
         return true;
     }
