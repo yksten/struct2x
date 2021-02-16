@@ -1,4 +1,4 @@
-#include "cjson/CJSONEncoder.h"
+#include "cjson/encoder.h"
 #include "thirdParty/cjson/cJSON.h"
 
 namespace serialize {

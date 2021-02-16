@@ -1,4 +1,4 @@
-#include "cjson/CJSONDecoder.h"
+#include "cjson/decoder.h"
 #include "thirdParty/cjson/cJSON.h"
 #include <assert.h>
 

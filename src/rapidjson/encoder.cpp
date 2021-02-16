@@ -30,55 +30,47 @@ namespace serialize {
         return true;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, bool value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, bool value, bool* pHas) {
         _writer->Key(sz);
         _writer->Bool(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, uint32_t value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, uint32_t value, bool* pHas) {
         _writer->Key(sz);
         _writer->Uint(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, int32_t value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, int32_t value, bool* pHas) {
         _writer->Key(sz);
         _writer->Int(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, uint64_t value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, uint64_t value, bool* pHas) {
         _writer->Key(sz);
         _writer->Uint64(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, int64_t value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, int64_t value, bool* pHas) {
         _writer->Key(sz);
         _writer->Int64(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, float value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, float value, bool* pHas) {
         _writer->Key(sz);
         _writer->Double(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, double value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, double value, bool* pHas) {
         _writer->Key(sz);
         _writer->Double(value);
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::string& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::string& value, bool* pHas) {
         _writer->Key(sz);
         _writer->String(value.c_str());
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<bool>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<bool>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -86,10 +78,9 @@ namespace serialize {
             _writer->Bool(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -97,10 +88,9 @@ namespace serialize {
             _writer->Uint(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<int32_t>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -108,10 +98,9 @@ namespace serialize {
             _writer->Int(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -119,10 +108,9 @@ namespace serialize {
             _writer->Uint64(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<int64_t>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -130,10 +118,9 @@ namespace serialize {
             _writer->Int64(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<float>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<float>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -141,10 +128,9 @@ namespace serialize {
             _writer->Double(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<double>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<double>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -152,10 +138,9 @@ namespace serialize {
             _writer->Double(value.at(i));
         }
         _writer->EndArray();
-        return *this;
     }
 
-    rapidjsonEncoder& rapidjsonEncoder::convert(const char* sz, const std::vector<std::string>& value, bool* pHas) {
+    void rapidjsonEncoder::encodeValue(const char* sz, const std::vector<std::string>& value, bool* pHas) {
         _writer->Key(sz);
         _writer->StartArray();
         int32_t count = (int32_t)value.size();
@@ -163,7 +148,6 @@ namespace serialize {
             _writer->String(value.at(i).c_str());
         }
         _writer->EndArray();
-        return *this;
     }
 
     void rapidjsonEncoder::StartObject(const char* sz) {

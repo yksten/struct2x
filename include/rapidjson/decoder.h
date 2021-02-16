@@ -145,6 +145,24 @@ namespace serialize {
         ~rapidjsonDecoder() {}
 
         template<typename T>
+        bool operator>>(T& value) {
+            _mgr = obtain(value, NULL, NULL);
+            convertHandler handler(_mgr, &value);
+            return !rapidjson::Reader().Parse<rapidjson::kParseInsituFlag>(_str, handler).IsError();
+        }
+
+        template<typename T>
+        rapidjsonDecoder& operator&(serializeItem<T> value) {
+            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+        }
+
+        template<typename T>
+        rapidjsonDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
+            decodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
+            return *this;
+        }
+    private:
+        template<typename T>
         static rapidJsonConverterMgr* obtain(T& value, const char*, void* owner) {
             static rapidJsonConverterMgr mgr = getSet(value);
             mgr.setStruct(&value, owner);
@@ -171,23 +189,10 @@ namespace serialize {
         }
 
         template<typename T>
-        bool operator>>(T& value) {
-            _mgr = obtain(value, NULL, NULL);
-            convertHandler handler(_mgr, &value);
-            return !rapidjson::Reader().Parse<rapidjson::kParseInsituFlag>(_str, handler).IsError();
-        }
-
-        template<typename T>
-        rapidjsonDecoder& operator&(serializeItem<T> value) {
-            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
-        }
-
-        template<typename T>
-        rapidjsonDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
+        void decodeValue(const char* sz, T& value, bool* pHas = NULL) {
             size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
             size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
             _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<T>(&rapidjsonDecoder::convertValue, offset, has, &rapidjsonDecoder::obtain)));
-            return *this;
         }
 
         template<typename T>
@@ -198,38 +203,36 @@ namespace serialize {
         }
 
         template<typename T>
-        rapidjsonDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
+        void decodeValue(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
             size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
             size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
             _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<T>(&rapidjsonDecoder::convertArray, offset, has, &rapidjsonDecoder::obtainArray, &rapidjsonDecoder::clearArray)));
-            return *this;
         }
 
         template<typename K, typename V>
-        rapidjsonDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
+        void decodeValue(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
             size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
             size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
             _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindMap<K, V>(&rapidjsonDecoder::convertValue, offset, has, &rapidjsonDecoder::obtain)));
-            return *this;
         }
 
-        rapidjsonDecoder& convert(const char* sz, bool& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, uint32_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, int32_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, uint64_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, int64_t& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, float& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, double& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::string& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, bool& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, uint32_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, int32_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, uint64_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, int64_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, float& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, double& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::string& value, bool* pHas = NULL);
 
-        rapidjsonDecoder& convert(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<float>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<double>& value, bool* pHas = NULL);
-        rapidjsonDecoder& convert(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<float>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<double>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
 
         template<typename P>
         static void convertValue(P& value, const P& cValue, bool* pHas) {

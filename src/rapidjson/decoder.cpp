@@ -129,116 +129,100 @@ namespace serialize {
 
     /*------------------------------------------------------------------------------*/
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, bool& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, bool& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<bool>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, uint32_t& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, uint32_t& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<uint32_t>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, int32_t& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, int32_t& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<int32_t>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, uint64_t& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, uint64_t& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<uint64_t>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, int64_t& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, int64_t& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<int64_t>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, float& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, float& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<float>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, double& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, double& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<double>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::string& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::string& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bind<std::string>(&serialize::rapidjsonDecoder::convertValue, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<bool>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<bool>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<bool>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<uint32_t>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<uint32_t>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<uint32_t>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<int32_t>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<int32_t>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<int32_t>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<uint64_t>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<uint64_t>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<uint64_t>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<int64_t>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<int64_t>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<int64_t>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<float>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<float>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<float>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<double>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<double>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<double>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
-    rapidjsonDecoder& rapidjsonDecoder::convert(const char* sz, std::vector<std::string>& value, bool* pHas) {
+    void rapidjsonDecoder::decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas) {
         size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
         size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
         _mgr->insert(std::pair<std::string, rapidJsonConverter>(sz, rapidJsonConverterMgr::bindArray<std::string>(&serialize::rapidjsonDecoder::convertArray, offset, has)));
-        return *this;
     }
 
 }

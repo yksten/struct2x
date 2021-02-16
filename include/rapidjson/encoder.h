@@ -20,7 +20,8 @@ namespace serialize {
 
         template<typename T>
         rapidjsonEncoder& operator&(serializeItem<T> value) {
-            return convert(value.name, value.value);
+            encodeValue(value.name, *const_cast<T*>(&value.value), value.bHas);
+            return *this;
         }
 
         template<typename T>
@@ -40,14 +41,19 @@ namespace serialize {
 
         template<typename T>
         rapidjsonEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
+            encodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value));
+            return *this;
+        }
+    private:
+        template<typename T>
+        void encodeValue(const char* sz, const T& value, bool* pHas = NULL) {
             StartObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             EndObject();
-            return *this;
         }
 
         template<typename T>
-        rapidjsonEncoder& convert(const char* sz, const std::vector<T>& value, bool* pHas = NULL) {
+        void encodeValue(const char* sz, const std::vector<T>& value, bool* pHas = NULL) {
             StartArray(sz);
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
@@ -55,45 +61,43 @@ namespace serialize {
                 this->operator<<(item);
             }
             EndArray();
-            return *this;
         }
         template<typename K, typename V>
-        rapidjsonEncoder& convert(const char* sz, const std::map<K, V>& value, bool* pHas = NULL) {
+        void encodeValue(const char* sz, const std::map<K, V>& value, bool* pHas = NULL) {
             StartObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
-                convert(internal::STOT::type<K>::tostr(it->first), item);
+                encodeValue(internal::STOT::type<K>::tostr(it->first), item);
             }
             EndObject();
-            return *this;
         }
 
         template<typename K, typename V>
         rapidjsonEncoder& operator <<(const std::map<K, V>& value) {
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
-                convert(internal::STOT::type<K>::tostr(it->first), item);
+                encodeValue(internal::STOT::type<K>::tostr(it->first), item);
             }
             return *this;
         }
 
-        rapidjsonEncoder& convert(const char* sz, bool value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, uint32_t value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, int32_t value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, uint64_t value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, int64_t value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, float value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, double value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::string& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<bool>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<uint32_t>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<int32_t>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<uint64_t>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<int64_t>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<float>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<double>& value, bool* pHas = NULL);
-        rapidjsonEncoder& convert(const char* sz, const std::vector<std::string>& value, bool* pHas = NULL);
-    private:
+        void encodeValue(const char* sz, bool value, bool* pHas = NULL);
+        void encodeValue(const char* sz, uint32_t value, bool* pHas = NULL);
+        void encodeValue(const char* sz, int32_t value, bool* pHas = NULL);
+        void encodeValue(const char* sz, uint64_t value, bool* pHas = NULL);
+        void encodeValue(const char* sz, int64_t value, bool* pHas = NULL);
+        void encodeValue(const char* sz, float value, bool* pHas = NULL);
+        void encodeValue(const char* sz, double value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::string& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<bool>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<int32_t>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<int64_t>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<float>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<double>& value, bool* pHas = NULL);
+        void encodeValue(const char* sz, const std::vector<std::string>& value, bool* pHas = NULL);
+
         void StartObject(const char* sz);
         void EndObject();
         void StartArray(const char* sz);

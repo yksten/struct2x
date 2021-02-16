@@ -32,9 +32,9 @@ SET(INCLUDE "./include/serialize.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
 # cjson
-SET(INCLUDECJSON "./include/cjson/CJSONEncoder.h" "./include/cjson/CJSONDecoder.h")
+SET(INCLUDECJSON "./include/cjson/encoder.h" "./include/cjson/decoder.h")
 SOURCE_GROUP("include\\cjson" FILES ${INCLUDECJSON})
-SET(SRCCJSON "./src/cjson/CJSONEncoder.cpp" "./src/cjson/CJSONDecoder.cpp")
+SET(SRCCJSON "./src/cjson/encoder.cpp" "./src/cjson/decoder.cpp")
 SOURCE_GROUP("src\\cjson" FILES ${SRCCJSON})
 
 # rapidjson
