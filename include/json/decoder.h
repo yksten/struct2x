@@ -1,234 +1,156 @@
 #ifndef __JSON_DECODER_H__
 #define __JSON_DECODER_H__
+
 #include "serialize.h"
 #include <string>
 #include <map>
 
+#include "thirdParty/json/GenericReader.h"
+
 
 namespace serialize {
 
-    struct converter {
-        typedef void(*function_type)(void*, const char*, uint32_t, bool*);
-        converter(function_type func, size_t value, size_t has) :_func(func), _value(value), _has(has) {}
-        void operator()(uint8_t* pStruct, const char* cValue, uint32_t length) const {
-            (*_func)((pStruct + _value), cValue, length, (bool*)(_has ? pStruct + _has : NULL));
-        }
-        template<typename T>
-        static converter bind(void(*f)(T&, const char*, uint32_t, bool*), size_t value, size_t has) {
-            return converter(function_type(f), value, has);
-        }
-
-        template<typename T>
-        static converter bindArray(void(*f)(std::vector<T>&, const char*, uint32_t, bool*), size_t value, size_t has) {
-            return converter(function_type(f), value, has);
-        }
-    private:
-        function_type _func;
-        size_t _value;
-        size_t _has;
-    };
-
-    class StringStream {
-        typedef const char Ch;
-        Ch* _src;
-        Ch* _end;
-        uint32_t _length;
-    public:
-        StringStream(Ch* src, uint32_t length) : _src(src), _length(length) {}
-        // Read
-        Ch Peek() { if (isEnd()) return '\0';  return *_src; }
-        Ch Take() { --_length; return *_src++; }
-        Ch* Strart() const { return _src; }
-        bool isEnd() const { return (_length == 0); }
-    };
-
-    class EXPORTAPI BaseHandler {
-    public:
-        virtual ~BaseHandler() {}
-        virtual bool Key(const char* sz, unsigned length) = 0;
-        virtual bool Value(const char* sz, unsigned length) = 0;
-    };
-
-    typedef std::pair<const char*, converter> function_value;
-
-    struct functionValueMgr {
-        functionValueMgr() :pStruct(NULL) {}
-        functionValueMgr(const functionValueMgr& that) :pStruct(NULL), set(that.set) {}
-        void* pStruct;
-        std::vector<function_value> set;
-    };
-
-    class EXPORTAPI Handler :public BaseHandler {
-    protected:
-        void* _pStruct;
-        const converter* _converter;
-        const functionValueMgr* _mgr;
-    public:
-        Handler(void* pStruct, const functionValueMgr& mgr);
-        size_t offsetByValue(const void* cValue) const;
-        virtual bool Key(const char* sz, unsigned length);
-        virtual bool Value(const char* sz, unsigned length);
-    };
-
-    class EXPORTAPI GenericReader {
-        bool _result;
-        std::string _strError;
-    public:
-        GenericReader();
-        bool Parse(StringStream& is, BaseHandler& handler);
-        const char* getError()const;
-    private:
-        void setError(const char* sz);
-        void ParseValue(StringStream& is, BaseHandler& handler, bool bSkipObj);
-        void ParseKey(StringStream& is, BaseHandler& handler);
-        void ParseNull(StringStream& is, BaseHandler& handler);
-        void ParseTrue(StringStream& is, BaseHandler& handler);
-        void ParseFalse(StringStream& is, BaseHandler& handler);
-        void ParseString(StringStream& is, BaseHandler& handler);
-        void ParseNumber(StringStream& is, BaseHandler& handler);
-        void ParseArray(StringStream& is, BaseHandler& handler);
-        void ParseObject(StringStream& is, BaseHandler& handler);
-        void ParseObjectAsStr(StringStream& is, BaseHandler& handler);
-    };
-
     class EXPORTAPI JSONDecoder {
-        StringStream _str;
-        functionValueMgr* _mgr;
-    public:
-        JSONDecoder(const char* sz, uint32_t length) :_str(sz, length), _mgr(NULL) {}
-        JSONDecoder(const std::string& str) :_str(str.c_str(), str.length()), _mgr(NULL) {}
-        ~JSONDecoder() {}
+        custom::jsonConverterMgr* _mgr;
+        custom::StringStream _str;
 
         template<typename T>
-        functionValueMgr getSet(T& value) {
-            functionValueMgr mgr;
-            mgr.pStruct = &value;
-            _mgr = &mgr;
-            internal::serializeWrapper(*this, value);
+        static custom::jsonConverterMgr getSet(T& value) {
+            custom::jsonConverterMgr mgr(&value);
+            JSONDecoder decoder(NULL, 0);
+            decoder._mgr = &mgr;
+            internal::serializeWrapper(decoder, value);
             return mgr;
         }
+    public:
+        JSONDecoder(const char* sz, uint32_t length);
 
         template<typename T>
-        bool operator >> (T& value) {
-            static functionValueMgr mgr = getSet(value);
-            Handler handler(&value, mgr);
-            return GenericReader().Parse(_str, handler);
+        bool operator>>(T& value) {
+            _mgr = obtain(value, NULL, 0, NULL);
+            custom::Handler handler(_mgr, &value);
+            return custom::CustomGenericReader().Parse(_str, handler);
         }
 
         template<typename T>
         JSONDecoder& operator&(serializeItem<T> value) {
-            return convert(value.name, value.value);
+            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
         }
 
         template<typename T>
         JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            size_t offset = ((uint8_t*)(&value)) - _mgr->pStruct;
-            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->pStruct : 0;
-            _mgr->set.push_back(function_value(sz, converter::bind<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeValue, offset, has)));
-            return *this;
-        }
-
-        template<typename T>
-        JSONDecoder& convert(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            size_t offset = ((uint8_t*)(&value)) - _mgr->pStruct;
-            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->pStruct : 0;
-            _mgr->set.push_back(function_value(sz, converter::bindArray<internal::TypeTraits<T>::Type>(&JSONDecoder::decodeArray, offset, has)));
-            return *this;
-        }
-        template<typename K, typename V>
-        JSONDecoder& convert(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            size_t offset = ((uint8_t*)(&value)) - _mgr->pStruct;
-            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->pStruct : 0;
-            _mgr->set.push_back(function_value(sz, converter::bind<std::map<K, V> >(&JSONDecoder::decodeMap, offset, has)));
+            decodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
             return *this;
         }
     private:
-        static void decodeValue(bool& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(int32_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(uint32_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(int64_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(uint64_t& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(float& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(double& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeValue(std::string& value, const char* sz, uint32_t length, bool* pHas);
-
-        static void decodeArray(std::vector<bool>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<int32_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<uint32_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<int64_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<uint64_t>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<float>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<double>& value, const char* sz, uint32_t length, bool* pHas);
-        static void decodeArray(std::vector<std::string>& value, const char* sz, uint32_t length, bool* pHas);
-
         template<typename T>
-        static void decodeValue(T& value, const char* cValue, uint32_t length, bool* pHas) {
-            if (length > 2) {
-                JSONDecoder decoder(cValue, length);
-                if (!decoder.operator>>(value))
-                    return;
-                if (pHas) *pHas = true;
-            }
+        static custom::jsonConverterMgr* obtain(T& value, const char*, uint32_t length, void* owner) {
+            static custom::jsonConverterMgr mgr = getSet(value);
+            mgr.setStruct(&value, owner);
+            return &mgr;
         }
 
         template<typename T>
-        static void decodeArray(std::vector<T>& value, const char* cValue, uint32_t length, bool* pHas) {
-            if (length) {
+        static custom::jsonConverterMgr* obtainArray(std::vector<T>& value, const char*, uint32_t length, void* owner) {
+            value.push_back(T());
+            custom::jsonConverterMgr* mgr = obtain(value.back(), NULL, length, owner);
+            return mgr;
+        }
+
+        template<typename K, typename V>
+        static custom::jsonConverterMgr* obtain(std::map<K, V>& value, const char* sz, uint32_t length, void* owner) {
+            static custom::jsonConverterMgr mgr(NULL, true);
+            if (sz && length) {
+                std::string strKey(sz, length);
+                mgr.clear();
+                K key = internal::STOT::type<typename internal::TypeTraits<K>::Type>::strto(strKey.c_str());
+                mgr.setStruct(&value[key], owner);
+                mgr.insert(std::pair<std::string, custom::jsonConverter>(strKey, custom::jsonConverterMgr::bindMap<K, V>(&JSONDecoder::convertValue, 0, 0)));
+            }
+            return &mgr;
+        }
+
+        template<typename T>
+        void decodeValue(const char* sz, T& value, bool* pHas = NULL) {
+            size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
+            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
+            _mgr->insert(std::pair<std::string, custom::jsonConverter>(sz, custom::jsonConverterMgr::bind<T>(&JSONDecoder::convertValue, offset, has, &JSONDecoder::obtain)));
+        }
+
+        template<typename T>
+        static void clearArray(std::vector<T>& value) {
+            if (!value.empty()) {
                 value.clear();
-                std::vector<const char*> stack;
-                for (uint32_t idx = 0, nCount = 0; idx < length; ++idx) {
-                    const char c = cValue[idx];
-                    if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
-                        continue;
-                    }
-                    if (c == '{') {
-                        stack.push_back(cValue + idx);
-                        ++nCount;
-                    }
-                    else if (c == '}') {
-                        --nCount;
-                        const char* szBin = stack[stack.size() - 1];
-                        stack.erase(stack.begin() + stack.size() - 1);
-                        if (!nCount) {
-                            T temp = T();
-                            JSONDecoder decoder(szBin, (cValue + idx) - szBin + 1);
-                            if (decoder.operator>>(temp))
-                                value.push_back(temp);
-                        }
-                    }
-                }
-                if (pHas) *pHas = true;
             }
         }
 
-        template<typename K, typename V>
-        class MapHandler : public BaseHandler {
-            K _key;
-            V _value;
-            std::map<K, V>& _map;
-        public:
-            MapHandler(std::map<K, V>& map) :_key(), _value(), _map(map) {}
-            bool Key(const char* sz, unsigned length) {
-                decodeValue(_key, sz, length, NULL);
-                return true;
-            }
-            bool Value(const char* sz, unsigned length) {
-                decodeValue(_value, sz, length, NULL);
-                _map.insert(std::pair<K, V>(_key, _value));
-                return true;
-            }
-        };
-
-        template<typename K, typename V>
-        static void decodeMap(std::map<K, V>& value, const char* cValue, uint32_t length, bool* pHas) {
-            if (length > 2) {
-                StringStream str(cValue, length);
-                MapHandler<K, V> handler(value);
-                GenericReader().Parse(str, handler);
-
-                if (pHas) *pHas = true;
-            }
+        template<typename T>
+        void decodeValue(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
+            size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
+            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
+            _mgr->insert(std::pair<std::string, custom::jsonConverter>(sz, custom::jsonConverterMgr::bindArray<T>(&JSONDecoder::convertArray, offset, has, &JSONDecoder::obtainArray, &JSONDecoder::clearArray)));
         }
+
+        template<typename K, typename V>
+        void decodeValue(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
+            size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
+            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
+            _mgr->insert(std::pair<std::string, custom::jsonConverter>(sz, custom::jsonConverterMgr::bindMap<K, V>(&JSONDecoder::convertValue, offset, has, &JSONDecoder::obtain)));
+        }
+
+        void decodeValue(const char* sz, bool& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, uint32_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, int32_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, uint64_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, int64_t& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, float& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, double& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::string& value, bool* pHas = NULL);
+
+        void decodeValue(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<float>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<double>& value, bool* pHas = NULL);
+        void decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
+
+        static void convertValue(bool& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(int32_t& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(uint32_t& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(int64_t& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(uint64_t& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(float& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(double& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertValue(std::string& value, const char* cValue, uint32_t length, bool* pHas);
+        template<typename P>
+        static void convertValue(P& value, const char* cValue, uint32_t length, bool* pHas) {
+            //value = cValue;
+            //custom::Handler::convert(value, cValue, length);
+            if (pHas) *pHas = true;
+        }
+
+
+        static void convertArray(std::vector<bool>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<int32_t>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<uint32_t>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<int64_t>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<uint64_t>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<float>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<double>& value, const char* cValue, uint32_t length, bool* pHas);
+        static void convertArray(std::vector<std::string>& value, const char* cValue, uint32_t length, bool* pHas);
+        template<typename P>
+        static void convertArray(std::vector<P>& value, const char* cValue, uint32_t length, bool* pHas) {
+            value.push_back(P());
+            if (pHas) *pHas = true;
+        }
+
+        //template<typename K, typename V>
+        //static void convertMap(std::map<K, V>& value, const V& cValue, bool* pHas) {
+        //    //value.push_back(cValue);
+        //    if (pHas) *pHas = true;
+        //}
     };
 
 }

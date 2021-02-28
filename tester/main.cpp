@@ -10,8 +10,7 @@
 
 #include "json/encoder.h"
 #include "json/decoder.h"
-#include "rapidjson/encoder.h"
-#include "rapidjson/decoder.h"
+
 
 struct testStru {
     testStru() :i(0), db(0.0) {}
@@ -148,8 +147,6 @@ void testStructFunc() {
     //std::string str;
     //jr.toString(str);
 
-    serialize::rapidjsonEncoder encoder;
-    encoder << item;
     std::string str;
     serialize::JSONEncoder encoder2(str);
     encoder2 << item;
@@ -274,13 +271,12 @@ struct vecObject {
 };
 
 int main(int argc, char* argv[]) {
-    struInfo info;
-    info.no = 11;
-    //std::string strJson2("{\"m\":{\"1\":9, \"2\":29}}");
-    std::string strJson2("{\"v\":[true, false],\"vts\":[{\"i\":1, \"db\":3.14},{\"i\":2, \"db\":5.14}],\"no\":99, \"ts\":{\"i\":1, \"db\":3.14},\"m\":{\"1\":9, \"2\":29}}");
-    serialize::rapidjsonDecoder decoder2(strJson2.c_str());
-    decoder2 >> info;
-    return 0;
+    //std::string strJsonCustom("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99.0,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
+    //custom::StringStream ss(strJsonCustom.c_str(), strJsonCustom.length());
+    //custom::Handler h(NULL, NULL);
+    //bool bb = custom::CustomGenericReader().Parse(ss, h);
+    //return 0;
+
     //vecObject v;
     //arrayXy a;
     //a.arr.push_back(intXy(1, 1));
@@ -313,7 +309,7 @@ int main(int argc, char* argv[]) {
 
     struItem ins;
 	std::string strJson("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
-    serialize::JSONDecoder decoder(strJson);
+    serialize::JSONDecoder decoder(strJson.c_str(), strJson.length());
     bool bDecode = decoder >> ins;
 
     std::string str;
