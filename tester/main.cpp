@@ -1,8 +1,8 @@
 #include <iostream>
 #include <assert.h>
 
-#include "cjson/CJSONEncoder.h"
-#include "cjson/CJSONDecoder.h"
+#include "cjson/encoder.h"
+#include "cjson/decoder.h"
 
 #include "protobuf/encoder.h"
 #include "protobuf/decoder.h"
