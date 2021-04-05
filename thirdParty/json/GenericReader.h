@@ -61,12 +61,12 @@ namespace custom {
         typedef std::map<std::string, jsonConverter>::const_iterator const_iterator;
         explicit jsonConverterMgr(const void* pStruct, bool isMap = false);
         jsonConverterMgr(const jsonConverterMgr& that);
-        inline const uint8_t* getStruct() const;
-        inline bool isMap() const;
-        inline void clear();
-        inline void insert(const std::pair<std::string, jsonConverter>& item);
-        inline const_iterator end() const;
-        inline const_iterator find(const char* sz, uint32_t length) const;
+        const uint8_t* getStruct() const;
+        bool isMap() const;
+        void clear();
+        void insert(const std::pair<std::string, jsonConverter>& item);
+        const_iterator end() const;
+        const_iterator find(const char* sz, uint32_t length) const;
         void setStruct(void* value, void* owner);
 
         template<typename P>

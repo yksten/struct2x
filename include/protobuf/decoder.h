@@ -171,9 +171,9 @@ namespace serialize {
             } else if (type == serialize::TYPE_SVARINT) {
                 value = proto::convertSvarint<T, P>::value(cValue);
             } else if (type == serialize::TYPE_FIXED32) {
-                value = static_cast<typename T>(cValue);
+                value = static_cast<T>(cValue);
             } else if (type == serialize::TYPE_FIXED64) {
-                value = static_cast<typename T>(cValue);
+                value = static_cast<T>(cValue);
             } else {
                 return false;
             }
@@ -195,9 +195,9 @@ namespace serialize {
             } else if (tempType == serialize::TYPE_SVARINT) {
                 value.push_back(proto::convertSvarint<T, P>::value(cValue));
             } else if (tempType == serialize::TYPE_FIXED32) {
-                value.push_back(static_cast<typename T>(cValue));
+                value.push_back(static_cast<T>(cValue));
             } else if (tempType == serialize::TYPE_FIXED64) {
-                value.push_back(static_cast<typename T>(cValue));
+                value.push_back(static_cast<T>(cValue));
             } else {
                 return false;
             }
@@ -258,8 +258,8 @@ namespace serialize {
                 serialize::serializeItem<V> vItem = SERIALIZATION(2, v, type & 0xFFFF);
                 decoder.decodeValue(*(serializeItem<typename internal::TypeTraits<V>::Type>*)(&vItem));
             } else {
-                msg.offset(1, (proto::offset_type)((uint8_t*)&key - NULL));
-                msg.offset(2, (proto::offset_type)((uint8_t*)&v - NULL));
+                msg.offset(1, (proto::offset_type)((uint8_t*)&key));
+                msg.offset(2, (proto::offset_type)((uint8_t*)&v));
             }
             if (!msg.ParseFromBytes(decoder._sz, decoder._size, NULL))
                 return false;
