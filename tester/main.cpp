@@ -78,6 +78,7 @@ struct struItem {
     void serialize(T& t)
     {
         SERIALIZE(t, id, str, info, v, v2, m, m2);
+//        SERIALIZE(t, id, str);
     }
 };
 
@@ -308,13 +309,14 @@ int main(int argc, char* argv[]) {
     //mpd >> item2;
 
     struItem ins;
-	std::string strJson("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
-    serialize::JSONDecoder decoder(strJson.c_str(), strJson.length());
+	std::string strJson("{\"id\":-11,\"str\":\"{\\\"struct2json\\\":\\\"ASDF\\\"}\",\"info\":{\"no\":99,\"ts\":{\"i\":0,\"db\":0},\"vts\":[],\"v\":[],\"m\":{}},\"v\":[],\"v2\":[],\"m\":{\"11\":111},\"m2\":{}}");
+    serialize::JSONDecoder decoder(strJson.c_str(), strJson.size());
     bool bDecode = decoder >> ins;
 
     std::string str;
-    serialize::JSONEncoder encoder(str);
-    bool bEncode = encoder << ins;
+    bool bEncode1 = serialize::CJSONEncoder().operator<<(ins).toString(str);
+    str.clear();
+    bool bEncode = serialize::JSONEncoder(str).operator<<(ins);
 
     return 0;
 
