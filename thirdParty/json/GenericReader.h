@@ -90,6 +90,7 @@ namespace custom {
         typedef const char Ch;
         StringStream(Ch* src, uint32_t length);
         Ch Peek() const;
+        Ch Second2Last() const;
         Ch Take();
         Ch* Strart() const;
         bool isEnd() const;

@@ -99,6 +99,10 @@ namespace custom {
         return *_src;
     }
 
+    StringStream::Ch StringStream::Second2Last() const {
+        return *(_src-1);
+    }
+
     StringStream::Ch StringStream::Take() {
         --_length;
         return *_src++;
@@ -405,7 +409,7 @@ namespace custom {
         const char* szStart = is.Strart();
 
         for (; is.Peek() != '\0'; is.Take()) {
-            if (is.Peek() == '\"') {
+            if (is.Peek() == '\"' && is.Second2Last() != '\\') {
                 handler.Value(szStart, is.Strart() - szStart);
                 is.Take();  // Skip '\"'
                 return;
