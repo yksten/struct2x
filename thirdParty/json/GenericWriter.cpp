@@ -1,4 +1,5 @@
 #include "GenericWriter.h"
+#include <stdio.h>
 #include <assert.h>
 
 #ifndef FASTJSON_UINT64_C2
@@ -847,7 +848,7 @@ namespace custom {
     void GenericWriter::Key(const char* szKey) {
         value_type& vt = _stack.top();
         if (vt.second) {
-            _str.append(",");
+            _str.append(1, ',');
         }
         _str.append(1, '"').append(szKey).append(1, '\"');
         vt.second++;
@@ -863,7 +864,30 @@ namespace custom {
         } else if (vt.first == kValueType) {
             _str.append(1, ',');
         }
-        _str.append("\"").append(szValue).append(1, '\"');
+        _str.append(1, '\"');
+        for (const char* ptr = szValue; *ptr; ++ptr) {
+            if ((unsigned char)*ptr>31 && *ptr!='\"' && *ptr!='\\') {
+                _str.append(1, *ptr);
+            } else {
+                _str.append(1, '\\');
+                switch (*ptr) {
+                    case '\\':    _str.append(1, '\\');    break;
+                    case '\"':    _str.append(1, '\"');    break;
+                    case '\b':    _str.append(1, 'b');    break;
+                    case '\f':    _str.append(1, 'f');    break;
+                    case '\n':    _str.append(1, 'n');    break;
+                    case '\r':    _str.append(1, 'r');    break;
+                    case '\t':    _str.append(1, 't');    break;
+                    default: {
+                        size_t nSize = _str.size();
+                        _str.resize(nSize + 5, '\0');
+                        snprintf(&_str.at(nSize), 5, "u%04x", *ptr);
+                        break;
+                    }
+                }
+            }
+        }
+        _str.append(1, '\"');
         vt.first = kValueType;
     }
 
@@ -872,11 +896,11 @@ namespace custom {
             _str.append(1, ':');
         }
         _stack.push(value_type(kNullType, 0));
-        _str.append("{");
+        _str.append(1, '{');
     }
 
     void GenericWriter::EndObject() {
-        _str.append("}");
+        _str.append(1, '}');
         _stack.pop();
     }
 
@@ -886,12 +910,12 @@ namespace custom {
     }
 
     void GenericWriter::EndArray() {
-        _str.append("]");
+        _str.append(1, ']');
         _stack.pop();
     }
 
     void GenericWriter::Separation() {
-        _str.append(",");
+        _str.append(1, ',');
     }
 
     bool GenericWriter::result() const {

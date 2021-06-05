@@ -121,7 +121,7 @@ namespace custom {
 
     bool Handler::Key(const char* sz, uint32_t length) {
         assert(_mgr);
-        if (_mgr->isMap()) {
+        if (_mgr->isMap() && _converter) {
             const jsonConverter* tempConverter = _converter;
             uint8_t* tempStruct = _struct;
             _converter->setKey(sz, length);
@@ -181,7 +181,7 @@ namespace custom {
     }
 
     bool Handler::EndArray(uint32_t elementCount) {
-        if (!elementCount) {
+        if (!elementCount && _converter) {
             _converter->clear(_struct);
         }
         return true;
