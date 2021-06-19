@@ -179,7 +179,7 @@ namespace serialize {
             //uint64_t
             template<> struct type<uint64_t> {
                 static inline uint64_t strto(const char* str) { return (uint64_t)atoll(str); }
-                static inline const char* tostr(uint64_t v) { sprintf(szTransbuf, "%lld", (long long)v); return szTransbuf; }
+                static inline const char* tostr(uint64_t v) { sprintf(szTransbuf, "%llu", (long long)v); return szTransbuf; }
             };
             //float
             template<> struct type<float> {

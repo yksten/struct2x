@@ -272,6 +272,14 @@ struct vecObject {
 };
 
 int main(int argc, char* argv[]) {
+//    std::vector<int> vec;
+//    vec.push_back(1);
+//    vec.push_back(2);
+//    vec.push_back(3);
+//    std::string strJsonVec;
+//    bool b = serialize::JSONEncoder(strJsonVec) << vec;
+//    
+//    return 0;
     //std::string strJsonCustom("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99.0,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
     //custom::StringStream ss(strJsonCustom.c_str(), strJsonCustom.length());
     //custom::Handler h(NULL, NULL);
@@ -314,7 +322,7 @@ int main(int argc, char* argv[]) {
     bool bDecode = decoder >> ins;
 
     std::string str;
-    bool bEncode1 = serialize::CJSONEncoder().operator<<(ins).toString(str);
+//    bool bEncode1 = serialize::CJSONEncoder().operator<<(ins).toString(str);
     str.clear();
     bool bEncode = serialize::JSONEncoder(str).operator<<(ins);
 
@@ -323,7 +331,7 @@ int main(int argc, char* argv[]) {
     //testMap();
     //testStructFunc();
     //testVector();
-    testProtobuf();
+//    testProtobuf();
 
     return 0;
 }

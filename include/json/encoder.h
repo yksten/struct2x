@@ -29,26 +29,36 @@ namespace serialize {
         template<typename T>
         bool operator << (const T& value) {
             const typename internal::TypeTraits<T>::Type& v = value;
-            if (internal::TypeTraits<T>::isVector()) {
-                operator << (v);
-            } else {
-                if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
-                    StartObject(NULL);
-                    internal::serializeWrapper(*this, *pValue);
-                    EndObject();
-                }
+            if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
+                StartObject(NULL);
+                internal::serializeWrapper(*this, *pValue);
+                EndObject();
             }
+            return _writer.result();
+        }
+        
+        template<typename T>
+        bool operator <<(const std::vector<T>& value) {
+            StartArray(NULL);
+            int32_t size = (int32_t)value.size();
+            for (int32_t i = 0; i < size; ++i) {
+                const typename internal::TypeTraits<T>::Type& item = value.at(i);
+                encodeValue(NULL, item, NULL);
+            }
+            EndArray();
             return _writer.result();
         }
 
         template<typename K, typename V>
-        JSONEncoder& operator <<(const std::map<K, V>& value) {
+        bool operator <<(const std::map<K, V>& value) {
+            StartObject(NULL);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 typename internal::TypeTraits<K>::Type* pKey = const_cast<typename internal::TypeTraits<K>::Type*>(&(it->first));
                 typename internal::TypeTraits<V>::Type* pValue = const_cast<typename internal::TypeTraits<V>::Type*>(&(it->second));
                 convert(internal::STOT::type<typename internal::TypeTraits<K>::Type>::tostr(*pKey), *pValue);
             }
-            return *this;
+            EndObject();
+            return _writer.result();
         }
     private:
         template<typename T>

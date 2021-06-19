@@ -2,8 +2,6 @@
 #define __GENERIC_WRITER_H__
 
 #include <stdint.h>
-
-#include <stack>
 #include <string>
 
 #ifdef _MSC_VER
@@ -18,14 +16,33 @@
 
 namespace custom {
 
+    class sqstack {
+    public:
+        struct value_type {
+            value_type(int32_t f, uint32_t s) :first(f), second(s) {}
+            int32_t first;
+            uint32_t second;
+        };
+        explicit sqstack(uint32_t capacity);
+        bool empty() const;
+        value_type& top();
+        const value_type& top() const;
+        void pop();
+        void push (const value_type& val);
+        
+    private:
+        uint32_t _top;
+        value_type* _base;
+        uint32_t _stacksize;
+    };
+
     class EXPORTAPI GenericWriter {
         enum Type {
             kNullType = 0,      //!< null
             kkeyType = 1,       //!< key
             kValueType = 2,     //!< value
         };
-        typedef std::pair<Type, uint32_t> value_type;
-        std::stack<value_type> _stack;
+        sqstack _stack;
         std::string& _str;
     public:
         explicit GenericWriter(std::string& str);
