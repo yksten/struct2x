@@ -9,33 +9,33 @@
 
 namespace custom {
 
-    sqstack::sqstack(uint32_t capacity) :_top(0),_base(NULL),_stacksize(0) {
+    Stack::Stack(uint32_t capacity) :_top(0),_base(NULL),_stacksize(0) {
         _base = (value_type*)malloc(capacity * sizeof(value_type));
         _stacksize = capacity;
     }
 
-    bool sqstack::empty() const {
+    bool Stack::empty() const {
         if(_top == 0) {
             return true;
         }
         return false;
     }
 
-    sqstack::value_type& sqstack::top() {
+    Stack::value_type& Stack::top() {
         return _base[_top-1];
     }
 
-    const sqstack::value_type& sqstack::top() const {
+    const Stack::value_type& Stack::top() const {
         return _base[_top-1];
     }
 
-    void sqstack::pop() {
+    void Stack::pop() {
         if (_top) {
             --_top;
         }
     }
 
-    void sqstack::push(const value_type& val) {
+    void Stack::push(const value_type& val) {
         if(_top == _stacksize) {
             _base = (value_type*)realloc(_base,(_stacksize+1)*sizeof(value_type));
             if(!_base) return 0;
@@ -50,7 +50,7 @@ namespace custom {
     }
 
     void GenericWriter::Null() {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -63,7 +63,7 @@ namespace custom {
     }
 
     void GenericWriter::Bool(bool b) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -80,7 +80,7 @@ namespace custom {
     }
 
     void GenericWriter::Int(int32_t i) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -95,7 +95,7 @@ namespace custom {
     }
 
     void GenericWriter::Uint(uint32_t u) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -110,7 +110,7 @@ namespace custom {
     }
 
     void GenericWriter::Int64(int64_t i64) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -125,7 +125,7 @@ namespace custom {
     }
 
     void GenericWriter::Uint64(uint64_t u64) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -140,7 +140,7 @@ namespace custom {
     }
 
     void GenericWriter::Double(double d) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -157,7 +157,7 @@ namespace custom {
         if (!szKey) {
             return;
         }
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.second) {
             _str.append(1, ',');
         }
@@ -167,7 +167,7 @@ namespace custom {
     }
 
     void GenericWriter::String(const char* szValue) {
-        sqstack::value_type& vt = _stack.top();
+        Stack::value_type& vt = _stack.top();
         if (vt.first == kNullType) {
             ;
         } else if (vt.first == kkeyType) {
@@ -206,7 +206,7 @@ namespace custom {
         if (!_stack.empty() && _stack.top().first == kkeyType) {
             _str.append(1, ':');
         }
-        _stack.push(sqstack::value_type(kNullType, 0));
+        _stack.push(Stack::value_type(kNullType, 0));
         _str.append(1, '{');
     }
 
@@ -220,7 +220,7 @@ namespace custom {
             _str.append(1, ':');
         }
         _str.append(1, '[');
-        _stack.push(sqstack::value_type(kNullType, 0));
+        _stack.push(Stack::value_type(kNullType, 0));
     }
 
     void GenericWriter::EndArray() {

@@ -16,14 +16,14 @@
 
 namespace custom {
 
-    class sqstack {
+    class EXPORTAPI Stack {
     public:
         struct value_type {
             value_type(int32_t f, uint32_t s) :first(f), second(s) {}
             int32_t first;
             uint32_t second;
         };
-        explicit sqstack(uint32_t capacity);
+        explicit Stack(uint32_t capacity);
         bool empty() const;
         value_type& top();
         const value_type& top() const;
@@ -42,7 +42,7 @@ namespace custom {
             kkeyType = 1,       //!< key
             kValueType = 2,     //!< value
         };
-        sqstack _stack;
+        Stack _stack;
         std::string& _str;
     public:
         explicit GenericWriter(std::string& str);
