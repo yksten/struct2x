@@ -15,25 +15,22 @@ namespace serialize {
         ~JSONEncoder();
 
         template<typename T>
-        JSONEncoder& operator&(serializeItem<T> value) {
+        FORCEINLINE JSONEncoder& operator&(serializeItem<T> value) {
             encodeValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>(&value.value), value.bHas);
             return *this;
         }
 
         template<typename T>
-        JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
+        FORCEINLINE JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
             encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)&value, pHas);
             return *this;
         }
 
         template<typename T>
-        bool operator << (const T& value) {
-            const typename internal::TypeTraits<T>::Type& v = value;
-            if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
-                StartObject(NULL);
-                internal::serializeWrapper(*this, *pValue);
-                EndObject();
-            }
+        FORCEINLINE bool operator << (const T& value) {
+            StartObject(NULL);
+            internal::serializeWrapper(*this, *const_cast<T*>(&value));
+            EndObject();
             return _writer.result();
         }
         
@@ -62,7 +59,7 @@ namespace serialize {
         }
     private:
         template<typename T>
-        void encodeValue(const char* sz, const T& value, bool* pHas) {
+        FORCEINLINE void encodeValue(const char* sz, const T& value, bool* pHas) {
             StartObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             EndObject();

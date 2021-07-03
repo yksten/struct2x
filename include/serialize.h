@@ -12,6 +12,14 @@
 #define EXPORTAPI
 #endif
 
+#ifdef _MSC_VER_ // for MSVC
+#define FORCEINLINE __forceinline
+#elif defined __GNUC__ // for gcc on Linux/Apple OS X
+#define FORCEINLINE __inline__ __attribute__((always_inline))
+#else
+#define FORCEINLINE
+#endif
+
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -125,12 +133,12 @@ namespace serialize {
         template<> struct isMessage<double> { enum { WRITE_TYPE = WT_64BIT }; };
 
         template<class T, class C>
-        inline void serialize(T& t, C& c) {
+        FORCEINLINE void serialize(T& t, C& c) {
             c.serialize(t);
         }
 
         template<class T, class C>
-        inline void serializeWrapper(T& t, C& c) {
+        FORCEINLINE void serializeWrapper(T& t, C& c) {
             serialize(t, c);
         }
 
@@ -392,10 +400,10 @@ namespace serialize {
                         _10,_9,_8,_7,_6,_5,_4,_3,_2,_1))(c, __VA_ARGS__))
 
 
-#define VISITSTRUCT(structType, ...)        \
-template<typename T>                        \
-void serialize(T& t, structType& data) {    \
-    NISERIALIZE(t, data, __VA_ARGS__);  \
+#define VISITSTRUCT(structType, ...)                    \
+template<typename T>                                    \
+FORCEINLINEvoid serialize(T& t, structType& data) {     \
+    NISERIALIZE(t, data, __VA_ARGS__);                  \
 }
 
 
