@@ -11,18 +11,17 @@ namespace serialize {
     class EXPORTAPI JSONEncoder {
         custom::GenericWriter _writer;
     public:
-        explicit JSONEncoder(std::string& str);
-        ~JSONEncoder();
+        explicit JSONEncoder(std::string& str) : _writer(str) {}
 
         template<typename T>
         FORCEINLINE JSONEncoder& operator&(serializeItem<T> value) {
-            encodeValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>(&value.value), value.bHas);
+            encodeValue(value.name, *static_cast<typename internal::TypeTraits<T>::Type*>(&value.value));
             return *this;
         }
 
         template<typename T>
         FORCEINLINE JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
-            encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)&value, pHas);
+            encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)&value);
             return *this;
         }
 
@@ -35,19 +34,19 @@ namespace serialize {
         }
         
         template<typename T>
-        bool operator <<(const std::vector<T>& value) {
+        FORCEINLINE bool operator <<(const std::vector<T>& value) {
             StartArray(NULL);
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
                 const typename internal::TypeTraits<T>::Type& item = value.at(i);
-                encodeValue(NULL, item, NULL);
+                encodeValue(NULL, item);
             }
             EndArray();
             return _writer.result();
         }
 
         template<typename K, typename V>
-        bool operator <<(const std::map<K, V>& value) {
+        FORCEINLINE bool operator <<(const std::map<K, V>& value) {
             StartObject(NULL);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 typename internal::TypeTraits<K>::Type* pKey = const_cast<typename internal::TypeTraits<K>::Type*>(&(it->first));
@@ -59,25 +58,24 @@ namespace serialize {
         }
     private:
         template<typename T>
-        FORCEINLINE void encodeValue(const char* sz, const T& value, bool* pHas) {
+        FORCEINLINE void encodeValue(const char* sz, const T& value) {
             StartObject(sz);
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             EndObject();
         }
 
         template<typename T>
-        void encodeValue(const char* sz, const std::vector<T>& value, bool* pHas) {
+        FORCEINLINE void encodeValue(const char* sz, const std::vector<T>& value) {
             StartArray(sz);
             int32_t size = (int32_t)value.size();
             for (int32_t i = 0; i < size; ++i) {
                 const typename internal::TypeTraits<T>::Type& item = value.at(i);
-                if (i) _writer.Separation();
-                this->operator<<(item);
+                encodeValue(NULL, item);
             }
             EndArray();
         }
         template<typename K, typename V>
-        void encodeValue(const char* sz, const std::map<K, V>& value, bool* pHas) {
+        FORCEINLINE void encodeValue(const char* sz, const std::map<K, V>& value) {
             StartObject(sz);
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 const V& item = it->second;
@@ -85,27 +83,38 @@ namespace serialize {
             }
             EndObject();
         }
+        
+        FORCEINLINE void encodeValue(const char* sz, bool value) {
+            _writer.Key(sz).Bool(value);
+        }
+        FORCEINLINE void encodeValue(const char* sz, uint64_t value) {
+            _writer.Key(sz).Uint64(value);
+        }
+        FORCEINLINE void encodeValue(const char* sz, int64_t value) {
+            _writer.Key(sz).Int64(value);
+        }
+        FORCEINLINE void encodeValue(const char* sz, double value) {
+            _writer.Key(sz).Double(value);
+        }
+        FORCEINLINE void encodeValue(const char* sz, const std::string& value) {
+            _writer.Key(sz).String(value.c_str());
+        }
+        
+        FORCEINLINE void StartObject(const char* sz) {
+            _writer.Key(sz).StartObject();
+        }
 
-        void encodeValue(const char* sz, bool value, bool* pHas);
-        void encodeValue(const char* sz, uint32_t value, bool* pHas);
-        void encodeValue(const char* sz, int32_t value, bool* pHas);
-        void encodeValue(const char* sz, uint64_t value, bool* pHas);
-        void encodeValue(const char* sz, int64_t value, bool* pHas);
-        void encodeValue(const char* sz, float value, bool* pHas);
-        void encodeValue(const char* sz, double value, bool* pHas);
-        void encodeValue(const char* sz, const std::string& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<bool>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<uint32_t>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<int32_t>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<uint64_t>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<int64_t>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<float>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<double>& value, bool* pHas);
-        void encodeValue(const char* sz, const std::vector<std::string>& value, bool* pHas);
-        void StartObject(const char* sz);
-        void EndObject();
-        void StartArray(const char* sz);
-        void EndArray();
+        FORCEINLINE void EndObject() {
+            _writer.EndObject();
+        }
+
+        FORCEINLINE void StartArray(const char* sz) {
+            _writer.Key(sz).StartArray();
+        }
+
+        FORCEINLINE void EndArray() {
+            _writer.EndArray();
+        }
     };
 
 }

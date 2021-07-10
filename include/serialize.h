@@ -25,13 +25,13 @@
 #include <vector>
 
 
-#define SERIALIZATION_2(num, value)         serialize::makeItem(#value, num, value)
-#define SERIALIZATION_3(num, value, typeOrHas)   serialize::makeItem(#value, num, value, typeOrHas)
-#define SERIALIZATION_4(num, value, type, has)   serialize::makeItem(#value, num, value, type, has)
+#define SERIALIZATION_2(num, value)                 serialize::makeItem(#value, num, value)
+#define SERIALIZATION_3(num, value, typeOrHas)      serialize::makeItem(#value, num, value, typeOrHas)
+#define SERIALIZATION_4(num, value, type, has)      serialize::makeItem(#value, num, value, type, has)
 
-#define EXPAND(args) args
-#define MAKE_TAG_COUNT(TAG, _4, _3,_2,_1,N,...) TAG##N
-#define SERIALIZATION(...) EXPAND(MAKE_TAG_COUNT(SERIALIZATION, __VA_ARGS__, _4, _3,_2,_1) (__VA_ARGS__))
+#define EXPAND(args)                                args
+#define MAKE_TAG_COUNT(TAG, _4, _3,_2,_1,N,...)     TAG##N
+#define SERIALIZATION(...)                          EXPAND(MAKE_TAG_COUNT(SERIALIZATION, __VA_ARGS__, _4, _3,_2,_1) (__VA_ARGS__))
 
 namespace serialize {
 
@@ -142,23 +142,12 @@ namespace serialize {
             serialize(t, c);
         }
 
-        template<typename T, bool isEnum = is_enum<T>::value>
-        struct TypeTraits {
-            typedef T Type;
-            static bool isVector() { return false; }
-        };
-
-        template<typename T, bool isEnum>
-        struct TypeTraits<std::vector<T>, isEnum> {
-            typedef std::vector<T> Type;
-            static bool isVector() { return true; }
-        };
-
-        template<typename T>
-        struct TypeTraits<T, true> {
-            typedef int32_t Type;
-            static bool isVector() { return false; }
-        };
+        template<typename T, bool isEnum = is_enum<T>::value> struct TypeTraits { typedef T Type; static bool isVector() { return false; } };
+        template<typename T, bool isEnum> struct TypeTraits<std::vector<T>, isEnum> { typedef std::vector<T> Type; static bool isVector() { return true; } };
+        template<typename T> struct TypeTraits<T, true> { typedef int32_t Type; static bool isVector() { return false; } };
+        template<> struct TypeTraits<float, false> { typedef double Type; static bool isVector() { return false; } };
+        template<> struct TypeTraits<int32_t, false> { typedef int64_t Type; static bool isVector() { return false; } };
+        template<> struct TypeTraits<uint32_t, false> { typedef uint64_t Type; static bool isVector() { return false; } };
 
         namespace STOT {
             template<typename T> struct type {};

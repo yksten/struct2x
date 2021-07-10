@@ -1,76 +1,38 @@
 #include "GenericWriter.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
-#ifndef FASTJSON_UINT64_C2
-#define FASTJSON_UINT64_C2(high32, low32) ((static_cast<uint64_t>(high32) << 32) | static_cast<uint64_t>(low32))
-#endif
+#define APPENDSTRING(str, szValue)                                                         \
+str.append(1, '\"');                                                                       \
+for (const char *ptr = szValue; *ptr; ++ptr) {                                             \
+    if ((unsigned char)*ptr > 31 && *ptr != '\"' && *ptr != '\\') {                        \
+        str.append(1, *ptr);                                                               \
+    } else {                                                                               \
+        str.append(1, '\\');                                                               \
+        switch (*ptr) {                                                                    \
+            case '\\':      str.append(1, '\\');     break;                                \
+            case '\"':      str.append(1, '\"');     break;                                \
+            case '\b':      str.append(1, 'b');      break;                                \
+            case '\f':      str.append(1, 'f');      break;                                \
+            case '\n':      str.append(1, 'n');      break;                                \
+            case '\r':      str.append(1, 'r');      break;                                \
+            case '\t':      str.append(1, 't');      break;                                \
+            default: {                                                                     \
+                size_t nSize = str.size();                                                 \
+                str.resize(nSize + 5, '\0');                                               \
+                sprintf(&str.at(nSize), "u%04x", *ptr);                                    \
+                break;                                                                     \
+            }                                                                              \
+        }                                                                                  \
+    }                                                                                      \
+} str.append(1, '\"');
 
 namespace custom {
 
-    Stack::Stack(uint32_t capacity) :_top(0),_base(NULL),_stacksize(0) {
-        _base = (value_type*)malloc(capacity * sizeof(value_type));
-        _stacksize = capacity;
-    }
-
-    bool Stack::empty() const {
-        if(_top == 0) {
-            return true;
-        }
-        return false;
-    }
-
-    Stack::value_type& Stack::top() {
-        return _base[_top-1];
-    }
-
-    const Stack::value_type& Stack::top() const {
-        return _base[_top-1];
-    }
-
-    void Stack::pop() {
-        if (_top) {
-            --_top;
-        }
-    }
-
-    void Stack::push(const value_type& val) {
-        if(_top == _stacksize) {
-            _base = (value_type*)realloc(_base,(_stacksize+1)*sizeof(value_type));
-            if(!_base) return 0;
-            _stacksize++;
-        }
-        _base[_top++] = val;
-    }
-
-/*----------------------------------------------------------------------------------------------------*/
-
-    GenericWriter::GenericWriter(std::string& str) :_str(str),_stack(32) {
-    }
-
-    void GenericWriter::Null() {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        _str.append("null");
-        vt.first = kValueType;
-    }
-
     void GenericWriter::Bool(bool b) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
+        Stack::value_type &vt = _stack.top();
+        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
         if (b) {
             _str.append("true");
         } else {
@@ -79,161 +41,48 @@ namespace custom {
         vt.first = kValueType;
     }
 
-    void GenericWriter::Int(int32_t i) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        char buffer[24] = { 0 };
-        snprintf(buffer, 24, "%d", i);
-        _str.append(buffer);
-        vt.first = kValueType;
-    }
-
-    void GenericWriter::Uint(uint32_t u) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        char buffer[24] = { 0 };
-        snprintf(buffer, 24, "%u", u);
-        _str.append(buffer);
-        vt.first = kValueType;
-    }
-
     void GenericWriter::Int64(int64_t i64) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        char buffer[32] = { 0 };
+        Stack::value_type &vt = _stack.top();
+        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        char buffer[32] = {0};
         snprintf(buffer, 32, "%lld", i64);
         _str.append(buffer);
         vt.first = kValueType;
     }
 
     void GenericWriter::Uint64(uint64_t u64) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        char buffer[32] = { 0 };
+        Stack::value_type &vt = _stack.top();
+        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        char buffer[32] = {0};
         snprintf(buffer, 32, "%llu", u64);
         _str.append(buffer);
         vt.first = kValueType;
     }
 
     void GenericWriter::Double(double d) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        char buffer[32] = { 0 };
-        snprintf(buffer, 32, "%lf", d);
+        Stack::value_type &vt = _stack.top();
+        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        char buffer[64] = {0};
+        snprintf(buffer, 64, "%0.8f", d);
         _str.append(buffer);
     }
 
-    void GenericWriter::Key(const char* szKey) {
-        if (!szKey) {
-            return;
+    GenericWriter &GenericWriter::Key(const char *szKey) {
+        if (szKey) {
+            Stack::value_type &vt = _stack.top();
+            if (vt.second) { _str.append(1, ','); }
+            APPENDSTRING(_str, szKey);
+            vt.second++;
+            vt.first = kkeyType;
         }
-        Stack::value_type& vt = _stack.top();
-        if (vt.second) {
-            _str.append(1, ',');
-        }
-        _str.append(1, '"').append(szKey).append(1, '\"');
-        vt.second++;
-        vt.first = kkeyType;
+        return *this;
     }
 
-    void GenericWriter::String(const char* szValue) {
-        Stack::value_type& vt = _stack.top();
-        if (vt.first == kNullType) {
-            ;
-        } else if (vt.first == kkeyType) {
-            _str.append(1, ':');
-        } else if (vt.first == kValueType) {
-            _str.append(1, ',');
-        }
-        _str.append(1, '\"');
-        for (const char* ptr = szValue; *ptr; ++ptr) {
-            if ((unsigned char)*ptr>31 && *ptr!='\"' && *ptr!='\\') {
-                _str.append(1, *ptr);
-            } else {
-                _str.append(1, '\\');
-                switch (*ptr) {
-                    case '\\':    _str.append(1, '\\');    break;
-                    case '\"':    _str.append(1, '\"');    break;
-                    case '\b':    _str.append(1, 'b');    break;
-                    case '\f':    _str.append(1, 'f');    break;
-                    case '\n':    _str.append(1, 'n');    break;
-                    case '\r':    _str.append(1, 'r');    break;
-                    case '\t':    _str.append(1, 't');    break;
-                    default: {
-                        size_t nSize = _str.size();
-                        _str.resize(nSize + 5, '\0');
-                        snprintf(&_str.at(nSize), 5, "u%04x", *ptr);
-                        break;
-                    }
-                }
-            }
-        }
-        _str.append(1, '\"');
+    void GenericWriter::String(const char *szValue) {
+        Stack::value_type &vt = _stack.top();
+        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        APPENDSTRING(_str, szValue);
         vt.first = kValueType;
     }
 
-    void GenericWriter::StartObject() {
-        if (!_stack.empty() && _stack.top().first == kkeyType) {
-            _str.append(1, ':');
-        }
-        _stack.push(Stack::value_type(kNullType, 0));
-        _str.append(1, '{');
-    }
-
-    void GenericWriter::EndObject() {
-        _str.append(1, '}');
-        _stack.pop();
-    }
-
-    void GenericWriter::StartArray() {
-        if (!_stack.empty()) {
-            _str.append(1, ':');
-        }
-        _str.append(1, '[');
-        _stack.push(Stack::value_type(kNullType, 0));
-    }
-
-    void GenericWriter::EndArray() {
-        _str.append(1, ']');
-        _stack.pop();
-    }
-
-    void GenericWriter::Separation() {
-        _str.append(1, ',');
-    }
-
-    bool GenericWriter::result() const {
-        return _stack.empty();
-    }
-
-}
+} // namespace custom

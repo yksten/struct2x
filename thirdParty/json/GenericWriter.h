@@ -23,12 +23,40 @@ namespace custom {
             int32_t first;
             uint32_t second;
         };
-        explicit Stack(uint32_t capacity);
-        bool empty() const;
-        value_type& top();
-        const value_type& top() const;
-        void pop();
-        void push (const value_type& val);
+        explicit Stack(uint32_t capacity) :_top(0),_base(NULL),_stacksize(0) {
+            _base = (value_type*)malloc(capacity * sizeof(value_type));
+            _stacksize = capacity;
+        }
+
+        bool empty() const {
+            if(_top == 0) {
+                return true;
+            }
+            return false;
+        }
+
+        value_type& top() {
+            return _base[_top-1];
+        }
+
+        const value_type& top() const {
+            return _base[_top-1];
+        }
+
+        void pop() {
+            if (_top) {
+                --_top;
+            }
+        }
+
+        void push(const value_type& val) {
+            if(_top == _stacksize) {
+                _base = (value_type*)realloc(_base,(_stacksize+1)*sizeof(value_type));
+                if(!_base) return 0;
+                _stacksize++;
+            }
+            _base[_top++] = val;
+        }
         
     private:
         uint32_t _top;
@@ -45,22 +73,46 @@ namespace custom {
         Stack _stack;
         std::string& _str;
     public:
-        explicit GenericWriter(std::string& str);
-        void Null();
+        explicit GenericWriter(std::string& str) :_str(str),_stack(32) {}
         void Bool(bool b);
-        void Int(int32_t i);
-        void Uint(uint32_t u);
         void Int64(int64_t i64);
         void Uint64(uint64_t u64);
         void Double(double d);
-        void Key(const char* szKey);
+        GenericWriter& Key(const char* szKey);
         void String(const char* szValue);
-        void StartObject();
-        void EndObject();
-        void StartArray();
-        void EndArray();
-        void Separation();
-        bool result() const;
+        void StartObject() {
+            if (!_stack.empty() && _stack.top().first == kkeyType) {
+                _str.append(1, ':');
+            }
+            _stack.push(Stack::value_type(kNullType, 0));
+            _str.append(1, '{');
+        }
+
+        void EndObject() {
+            _str.append(1, '}');
+            _stack.pop();
+        }
+
+        void StartArray() {
+            if (!_stack.empty()) {
+                _str.append(1, ':');
+            }
+            _str.append(1, '[');
+            _stack.push(Stack::value_type(kNullType, 0));
+        }
+
+        void EndArray() {
+            _str.append(1, ']');
+            _stack.pop();
+        }
+
+        void Separation() {
+            _str.append(1, ',');
+        }
+
+        bool result() const {
+            return _stack.empty();
+        }
     };
 
 }
