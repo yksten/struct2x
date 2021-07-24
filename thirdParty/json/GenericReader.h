@@ -1,149 +1,137 @@
 #ifndef __GENERIC_READER_H__
 #define __GENERIC_READER_H__
 
+#include <stdio.h>
 #include <stdint.h>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 
-#include <string>
-#include <vector>
-#include <map>
 
 #ifdef _MSC_VER
-#ifdef EXPORTAPI 
+#ifdef EXPORTAPI
 #define EXPORTAPI _declspec(dllimport)
-#else 
+#else
 #define EXPORTAPI _declspec(dllexport)
 #endif
 #else
 #define EXPORTAPI
 #endif
 
+
+
 namespace custom {
 
-    class EXPORTAPI resetStruct {
-        uint8_t** _pStruct;
-        uint8_t* _pTarget;
-    public:
-        resetStruct(uint8_t** pStruct, uint8_t* pTarget);
-        void reset();
-    };
+    enum { VALUE_NULL = 0, VALUE_BOOL, VALUE_NUMBER, VALUE_STRING, VALUE_ARRAY, VALUE_OBJECT };
 
-    class EXPORTAPI jsonConverter {
-    public:
-        typedef void(*convert_t)(void*, const char*, uint32_t, bool*);
-        typedef void*(*obtainConvert_t)(void*, const char*, uint32_t, void*);
-        typedef void(*clear_t)(void*);
+    typedef struct GenericValue {
+        int32_t type;
+        
+        const char* key;
+        uint32_t keySize;
+        
+        const char* value;
+        uint32_t valueSize;
+        
+        struct GenericValue* prev;
+        struct GenericValue* next;
+        struct GenericValue* child;
+    } GenericValue;
 
-        jsonConverter(convert_t func, size_t value, size_t has, obtainConvert_t obtain, clear_t _clearArray);
-        void operator()(uint8_t* pStruct, const char* cValue, uint32_t length) const;
-        void* getConvert(uint8_t* pStruct, void* owner) const;
-        void clear(uint8_t* pStruct) const;
-        void setKey(const char* szKey, uint32_t length) const;
-        void setLast(const jsonConverter* last, const resetStruct& lastStruct) const;
-    private:
-        mutable const char* _szKey;
-        mutable uint32_t _keyLength;
-        convert_t _func;
-        size_t _value;
-        size_t _has;
-        obtainConvert_t _obtain;
-        clear_t _clearArray;
-        mutable jsonConverter* _last;
-        mutable resetStruct _lastStruct;
-    };
-
-    class Handler;
-    class EXPORTAPI jsonConverterMgr {
-        Handler* _owner;
-        const uint8_t* _pStruct;
-        bool _isMap;
-        std::map<std::string, jsonConverter> _map;
-    public:
-        typedef std::map<std::string, jsonConverter>::const_iterator const_iterator;
-        explicit jsonConverterMgr(const void* pStruct, bool isMap = false);
-        jsonConverterMgr(const jsonConverterMgr& that);
-        const uint8_t* getStruct() const;
-        bool isMap() const;
-        void clear();
-        void insert(const std::pair<std::string, jsonConverter>& item);
-        const_iterator end() const;
-        const_iterator find(const char* sz, uint32_t length) const;
-        void setStruct(void* value, void* owner);
-
-        template<typename P>
-        static inline jsonConverter bind(void(*f)(P&, const char*, uint32_t, bool*), size_t value, size_t has, jsonConverterMgr*(*obtain)(P&, const char*, uint32_t, void*) = NULL, void(*clearArray)(P&) = NULL) {
-            return jsonConverter(jsonConverter::convert_t(f), value, has, jsonConverter::obtainConvert_t(obtain), jsonConverter::clear_t(clearArray));
+    inline const GenericValue* GetObjectItem(const GenericValue* parent, const char* name) {
+        if (!name) {
+            return parent;
         }
-
-        template<typename P>
-        static inline jsonConverter bindArray(void(*f)(std::vector<P>&, const char*, uint32_t, bool*), size_t value, size_t has, jsonConverterMgr*(*obtain)(std::vector<P>&, const char*, uint32_t, void*) = NULL, void(*clearArray)(std::vector<P>&) = NULL) {
-            return jsonConverter(jsonConverter::convert_t(f), value, has, jsonConverter::obtainConvert_t(obtain), jsonConverter::clear_t(clearArray));
+        
+        if (parent) {
+            for (GenericValue* child = parent->child; child; child = child->next) {
+                if (child->key && strncmp(name, child->key, child->keySize) == 0) {
+                    return child;
+                }
+            }
         }
+        return NULL;
+    }
 
-        template<typename K, typename V>
-        static inline jsonConverter bindMap(void(*f)(V&, const char*, uint32_t, bool*), size_t value, size_t has, jsonConverterMgr*(*obtain)(std::map<K, V>&, const char*, uint32_t, void*) = NULL, void(*clearArray)(V&) = NULL) {
-            return jsonConverter(jsonConverter::convert_t(f), value, has, jsonConverter::obtainConvert_t(obtain), jsonConverter::clear_t(clearArray));
+    inline const uint32_t GetArraySize(const GenericValue* parent) {
+        uint32_t size = 0;
+        if (parent && parent->type == VALUE_ARRAY) {
+            for (const GenericValue* child = parent->child; child; child = child->next) {
+                ++size;
+            }
         }
-    };
+        return size;
+    }
 
-    class EXPORTAPI StringStream {
-    public:
-        typedef const char Ch;
-        StringStream(Ch* src, uint32_t length);
-        Ch Peek() const;
-        Ch Second2Last() const;
-        Ch Take();
-        Ch* Strart() const;
-        bool isEnd() const;
-    private:
-        Ch* _src;
-        Ch* _end;
-        uint32_t _length;
-    };
+    inline const uint32_t GetObjectSize(const GenericValue* parent) {
+        uint32_t size = 0;
+        if (parent && parent->type == VALUE_OBJECT) {
+            for (const GenericValue* child = parent->child; child; child = child->next) {
+                ++size;
+            }
+        }
+        return size;
+    }
 
-    class EXPORTAPI Handler {
-        friend class jsonConverterMgr;
-        const jsonConverter* _converter;
-        std::vector<const jsonConverter*> _stackFunction;
-        jsonConverterMgr* _mgr;
-        std::vector<jsonConverterMgr*> _stackMgr;
-        uint8_t* _struct;
-        std::vector<uint8_t*> _stackStruct;
-    public:
-        Handler(jsonConverterMgr* mgr, void* pStruct);
-        bool Key(const char* sz, uint32_t length);
-        bool Value(const char* sz, uint32_t length);
-        bool StartObject();
-        bool EndObject(uint32_t memberCount);
-        bool StartArray();
-        bool EndArray(uint32_t elementCount);
-
-        static void convert(bool& value, const char* sz, uint32_t length);
-        static void convert(int32_t& value, const char* sz, uint32_t length);
-        static void convert(uint32_t& value, const char* sz, uint32_t length);
-        static void convert(int64_t& value, const char* sz, uint32_t length);
-        static void convert(uint64_t& value, const char* sz, uint32_t length);
-        static void convert(float& value, const char* sz, uint32_t length);
-        static void convert(double& value, const char* sz, uint32_t length);
-    };
+    class MemoryPoolAllocator;
 
     class EXPORTAPI CustomGenericReader {
-        bool _result;
-        std::string _strError;
+        class StringStream {
+            const char* _src;
+            uint32_t _length;
+        public:
+            StringStream(const char* src, uint32_t length) : _src(src), _length(length) {}
+            const char Peek() const { if (isEnd()) return '\0'; return *_src; }
+            const char Second2Last() const { return *(_src - 1); }
+            const char Take() { --_length; return *_src++; }
+            const char* Strart() const { return _src; }
+            bool isEnd() const { return (_length == 0); }
+        };
+        
+        enum { DEFAULTCACPCITY = 32 };
+        MemoryPoolAllocator* _alloc;
+        GenericValue* _cur;
+        char _strError[64];
     public:
         CustomGenericReader();
-        bool Parse(StringStream& is, Handler& handler);
-        const char* getError()const;
+        ~CustomGenericReader();
+        const GenericValue* Parse(const char* src, uint32_t length);
+        const char* getError() const { return _strError; }
+        
+        static int64_t convertInt(const char* value, uint32_t length);
+        static uint64_t convertUint(const char* value, uint32_t length);
+        static double convertDouble(const char* value, uint32_t length);
     private:
-        void setError(const char* sz);
-        void ParseValue(StringStream& is, Handler& handler);
-        void ParseKey(StringStream& is, Handler& handler);
-        void ParseNull(StringStream& is, Handler& handler);
-        void ParseTrue(StringStream& is, Handler& handler);
-        void ParseFalse(StringStream& is, Handler& handler);
-        void ParseString(StringStream& is, Handler& handler);
-        void ParseNumber(StringStream& is, Handler& handler);
-        void ParseArray(StringStream& is, Handler& handler);
-        void ParseObject(StringStream& is, Handler& handler);
+        void setError(const char* sz) { memcpy(_strError, sz, 64); }
+        void ParseValue(StringStream& is);
+        void ParseKey(StringStream& is);
+        void ParseNull(StringStream& is);
+        void ParseTrue(StringStream& is);
+        void ParseFalse(StringStream& is);
+        void ParseString(StringStream& is);
+        void ParseNumber(StringStream& is);
+        void ParseArray(StringStream& is);
+        void ParseObject(StringStream& is);
+
+        static bool Consume(StringStream& is, const char expect) {
+            if (is.Peek() == expect) {
+                is.Take();
+                return true;
+            } else
+                return false;
+        }
+
+        static void SkipWhitespace(StringStream& is) {
+            for (;;) {
+                const char c = is.Peek();
+                if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                    is.Take();
+                } else {
+                    break;
+                }
+            }
+        }
+        
     };
 
 }

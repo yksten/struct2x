@@ -11,146 +11,154 @@
 namespace serialize {
 
     class EXPORTAPI JSONDecoder {
-        custom::jsonConverterMgr* _mgr;
-        custom::StringStream _str;
-
-        template<typename T>
-        static custom::jsonConverterMgr getSet(T& value) {
-            custom::jsonConverterMgr mgr(&value);
-            JSONDecoder decoder(NULL, 0);
-            decoder._mgr = &mgr;
-            internal::serializeWrapper(decoder, value);
-            return mgr;
-        }
+        custom::CustomGenericReader _reader;
+        const custom::GenericValue* _cur;
     public:
-        JSONDecoder(const char* sz, uint32_t length);
-
-        template<typename T>
-        bool operator>>(T& value) {
-            _mgr = obtain(value, NULL, 0, NULL);
-            custom::Handler handler(_mgr, &value);
-            return custom::CustomGenericReader().Parse(_str, handler);
+        FORCEINLINE JSONDecoder(const char* str, uint32_t length) : _cur(_reader.Parse(str, length)) {
+            assert(_cur);
         }
 
         template<typename T>
-        JSONDecoder& operator&(serializeItem<T> value) {
-            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+        FORCEINLINE bool operator>>(T& value) {
+            const custom::GenericValue* parent = _cur;
+            internal::serializeWrapper(*this, *const_cast<T*>(&value));
+            return (parent == _cur);
         }
 
         template<typename T>
-        JSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            decodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
+        FORCEINLINE JSONDecoder& operator&(serializeItem<T> value) {
+            return convert(value.name, *(typename internal::TypeTraits<T, true>::Type*)(&value.value), value.bHas);
+        }
+
+        template<typename T>
+        FORCEINLINE JSONDecoder& convert(const char* name, T& value, bool* pHas = NULL) {
+            decodeValue(name, *(typename internal::TypeTraits<T, true>::Type*)(&value), pHas);
             return *this;
         }
     private:
         template<typename T>
-        static custom::jsonConverterMgr* obtain(T& value, const char*, uint32_t length, void* owner) {
-            static custom::jsonConverterMgr mgr = getSet(value);
-            mgr.setStruct(&value, owner);
-            return &mgr;
+        FORCEINLINE void decodeValue(const char* name, T& value, bool* pHas) {
+            const custom::GenericValue* parent = _cur;
+            _cur = custom::GetObjectItem(_cur, name);
+            if (_cur) {
+                internal::serializeWrapper(*this, value);
+                if (pHas) *pHas = true;
+            }
+            _cur = parent;
         }
 
         template<typename T>
-        static custom::jsonConverterMgr* obtainArray(std::vector<T>& value, const char*, uint32_t length, void* owner) {
-            value.push_back(T());
-            custom::jsonConverterMgr* mgr = obtain(value.back(), NULL, length, owner);
-            return mgr;
+        FORCEINLINE void decodeValue(const char* name, std::vector<T>& value, bool* pHas) {
+            const custom::GenericValue* parent = _cur;
+            _cur = custom::GetObjectItem(_cur, name);
+            if (_cur) {
+                int32_t size = custom::GetArraySize(_cur);
+                if (size&& !value.empty()) {
+                    value.resize(size);
+                }
+                const custom::GenericValue* parent = _cur;
+                _cur = parent->child;
+                for (uint32_t idx = 0; _cur && (idx < size); (_cur = _cur->next) && ++idx) {
+                    decodeValue(NULL, *(typename internal::TypeTraits<T, true>::Type*)(&value.at(idx)), NULL);
+                }
+                _cur = parent;
+                if (pHas) *pHas = true;
+            }
+            _cur = parent;
         }
 
         template<typename K, typename V>
-        static custom::jsonConverterMgr* obtain(std::map<K, V>& value, const char* sz, uint32_t length, void* owner) {
-            static custom::jsonConverterMgr mgr(NULL, true);
-            if (sz && length) {
-                std::string strKey(sz, length);
-                mgr.clear();
-                K key = internal::STOT::type<typename internal::TypeTraits<K>::Type>::strto(strKey.c_str());
-                mgr.setStruct(&value[key], owner);
-                mgr.insert(std::pair<std::string, custom::jsonConverter>(strKey, custom::jsonConverterMgr::bindMap<K, V>(&JSONDecoder::convertValue, 0, 0)));
-            }
-            return &mgr;
-        }
-
-        template<typename T>
-        void decodeValue(const char* sz, T& value, bool* pHas = NULL) {
-            size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
-            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
-            _mgr->insert(std::pair<std::string, custom::jsonConverter>(sz, custom::jsonConverterMgr::bind<T>(&JSONDecoder::convertValue, offset, has, &JSONDecoder::obtain)));
-        }
-
-        template<typename T>
-        static void clearArray(std::vector<T>& value) {
-            if (!value.empty()) {
+        FORCEINLINE void decodeValue(const char* name, std::map<K, V>& value, bool* pHas) {
+            const custom::GenericValue* parent = _cur;
+            _cur = custom::GetObjectItem(_cur, name);
+            if (_cur) {
                 value.clear();
+
+                const custom::GenericValue* parent = _cur;
+                for (const custom::GenericValue* child = parent->child; child; child = child->next) {
+                    std::string key(child->key, child->keySize);
+                    V item = V();
+                    decodeValue(key.c_str(), item, NULL);
+                    value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
+                }
+                _cur = parent;
+                if (pHas) *pHas = true;
+            }
+            _cur = parent;
+        }
+        
+        FORCEINLINE void decodeValue(const char* name, bool& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_BOOL) {
+                if (item->valueSize == 4) {
+                    value = true;
+                } else if (item->valueSize == 5) {
+                    value = false;
+                } else {
+                    assert(false);
+                }
             }
         }
 
-        template<typename T>
-        void decodeValue(const char* sz, std::vector<T>& value, bool* pHas = NULL) {
-            size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
-            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
-            _mgr->insert(std::pair<std::string, custom::jsonConverter>(sz, custom::jsonConverterMgr::bindArray<T>(&JSONDecoder::convertArray, offset, has, &JSONDecoder::obtainArray, &JSONDecoder::clearArray)));
+        FORCEINLINE void decodeValue(const char* name, uint32_t& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_NUMBER) {
+                value = (uint32_t)custom::CustomGenericReader::convertUint(item->value, item->valueSize);
+            }
         }
 
-        template<typename K, typename V>
-        void decodeValue(const char* sz, std::map<K, V>& value, bool* pHas = NULL) {
-            size_t offset = ((uint8_t*)(&value)) - _mgr->getStruct();
-            size_t has = pHas ? ((uint8_t*)(pHas)) - _mgr->getStruct() : 0;
-            _mgr->insert(std::pair<std::string, custom::jsonConverter>(sz, custom::jsonConverterMgr::bindMap<K, V>(&JSONDecoder::convertValue, offset, has, &JSONDecoder::obtain)));
+        FORCEINLINE void decodeValue(const char* name, int32_t& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_NUMBER) {
+                value = (int32_t)custom::CustomGenericReader::convertInt(item->value, item->valueSize);
+            }
         }
 
-        void decodeValue(const char* sz, bool& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, uint32_t& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, int32_t& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, uint64_t& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, int64_t& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, float& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, double& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::string& value, bool* pHas = NULL);
-
-        void decodeValue(const char* sz, std::vector<bool>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<uint32_t>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<int32_t>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<uint64_t>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<int64_t>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<float>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<double>& value, bool* pHas = NULL);
-        void decodeValue(const char* sz, std::vector<std::string>& value, bool* pHas = NULL);
-
-        static void convertValue(bool& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(int32_t& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(uint32_t& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(int64_t& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(uint64_t& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(float& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(double& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertValue(std::string& value, const char* cValue, uint32_t length, bool* pHas);
-        template<typename P>
-        static void convertValue(P& value, const char* cValue, uint32_t length, bool* pHas) {
-            //value = cValue;
-            //custom::Handler::convert(value, cValue, length);
-            if (pHas) *pHas = true;
+        FORCEINLINE void decodeValue(const char* name, uint64_t& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_NUMBER) {
+                value = custom::CustomGenericReader::convertUint(item->value, item->valueSize);
+            }
         }
 
-
-        static void convertArray(std::vector<bool>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<int32_t>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<uint32_t>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<int64_t>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<uint64_t>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<float>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<double>& value, const char* cValue, uint32_t length, bool* pHas);
-        static void convertArray(std::vector<std::string>& value, const char* cValue, uint32_t length, bool* pHas);
-        template<typename P>
-        static void convertArray(std::vector<P>& value, const char* cValue, uint32_t length, bool* pHas) {
-            value.push_back(P());
-            if (pHas) *pHas = true;
+        FORCEINLINE void decodeValue(const char* name, int64_t& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_NUMBER) {
+                value = custom::CustomGenericReader::convertInt(item->value, item->valueSize);
+            }
         }
 
-        //template<typename K, typename V>
-        //static void convertMap(std::map<K, V>& value, const V& cValue, bool* pHas) {
-        //    //value.push_back(cValue);
-        //    if (pHas) *pHas = true;
-        //}
+        FORCEINLINE void decodeValue(const char* name, float& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_NUMBER) {
+                value = (float)custom::CustomGenericReader::convertDouble(item->value, item->valueSize);
+            }
+        }
+
+        FORCEINLINE void decodeValue(const char* name, double& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_NUMBER) {
+                value = custom::CustomGenericReader::convertDouble(item->value, item->valueSize);
+            }
+        }
+
+        FORCEINLINE void decodeValue(const char* name, std::string& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_STRING && item->value && item->valueSize) {
+                value.clear();
+                value.append(item->value, item->valueSize);
+            }
+        }
+
+        FORCEINLINE void decodeValue(const char* name, std::vector<bool>& value, bool* pHas) {
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
+            if (item && item->type == custom::VALUE_ARRAY) {
+                for (const custom::GenericValue* child = item->child; child && child->type == custom::VALUE_BOOL; child = child->next) {
+                    value.push_back((child->valueSize == 4));
+                }
+            }
+        }
+        
     };
 
 }

@@ -142,12 +142,13 @@ namespace serialize {
             serialize(t, c);
         }
 
-        template<typename T, bool isEnum = is_enum<T>::value> struct TypeTraits { typedef T Type; static bool isVector() { return false; } };
-        template<typename T, bool isEnum> struct TypeTraits<std::vector<T>, isEnum> { typedef std::vector<T> Type; static bool isVector() { return true; } };
-        template<typename T> struct TypeTraits<T, true> { typedef int32_t Type; static bool isVector() { return false; } };
-        template<> struct TypeTraits<float, false> { typedef double Type; static bool isVector() { return false; } };
-        template<> struct TypeTraits<int32_t, false> { typedef int64_t Type; static bool isVector() { return false; } };
-        template<> struct TypeTraits<uint32_t, false> { typedef uint64_t Type; static bool isVector() { return false; } };
+        template<typename T, bool isDeserialize = false, bool isEnum = is_enum<T>::value> struct TypeTraits { typedef T Type; };
+        template<typename T, bool isDeserialize, bool isEnum> struct TypeTraits<std::vector<T>, isDeserialize, isEnum> { typedef std::vector<T> Type; };
+        template<typename T> struct TypeTraits<T, false, true> { typedef int32_t Type; };
+        template<typename T> struct TypeTraits<T, true, true> { typedef int32_t Type; };
+        template<> struct TypeTraits<float, false, false> { typedef double Type; };
+        template<> struct TypeTraits<int32_t, false, false> { typedef int64_t Type; };
+        template<> struct TypeTraits<uint32_t, false, false> { typedef uint64_t Type; };
 
         namespace STOT {
             template<typename T> struct type {};
@@ -178,33 +179,8 @@ namespace serialize {
                 static inline uint64_t strto(const char* str) { return (uint64_t)atoll(str); }
                 static inline const char* tostr(uint64_t v) { sprintf(szTransbuf, "%llu", (long long)v); return szTransbuf; }
             };
-            //float
-            template<> struct type<float> {
-                static inline float strto(const char* str) { return (float)atof(str); }
-                static inline const char* tostr(float v) { sprintf(szTransbuf, "%f", v); return szTransbuf; }
-            };
-            //double
-            template<> struct type<double> {
-                static inline double strto(const char* str) { return atof(str); }
-                static inline const char* tostr(double v) { sprintf(szTransbuf, "%lf", v); return szTransbuf; }
-            };
-            //char*
-            template<> struct type<char*> {
-                static inline char* strto(char* str) { return str; }
-                static inline char* tostr(char* v) { return v; }
-            };
-            //const char*
-            template<> struct type<const char*> {
-                static inline const char* strto(const char* str) { return str; }
-                static inline const char* tostr(const char* v) { return v; }
-            };
             //std::string
             template<> struct type<std::string> {
-                static inline const std::string& strto(const std::string& str) { return str; }
-                static inline const char* tostr(const std::string& v) { return v.c_str(); }
-            };
-            //const std::string
-            template<> struct type<const std::string> {
                 static inline const std::string& strto(const std::string& str) { return str; }
                 static inline const char* tostr(const std::string& v) { return v.c_str(); }
             };
