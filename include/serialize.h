@@ -142,13 +142,13 @@ namespace serialize {
             serialize(t, c);
         }
 
-        template<typename T, bool isDeserialize = false, bool isEnum = is_enum<T>::value> struct TypeTraits { typedef T Type; };
-        template<typename T, bool isDeserialize, bool isEnum> struct TypeTraits<std::vector<T>, isDeserialize, isEnum> { typedef std::vector<T> Type; };
-        template<typename T> struct TypeTraits<T, false, true> { typedef int32_t Type; };
-        template<typename T> struct TypeTraits<T, true, true> { typedef int32_t Type; };
-        template<> struct TypeTraits<float, false, false> { typedef double Type; };
-        template<> struct TypeTraits<int32_t, false, false> { typedef int64_t Type; };
-        template<> struct TypeTraits<uint32_t, false, false> { typedef uint64_t Type; };
+        template<typename T, bool isDeserialize = false, bool isEnum = is_enum<T>::value> struct TypeTraits { typedef T Type; static bool isVector() { return false; } };
+        template<typename T, bool isDeserialize, bool isEnum> struct TypeTraits<std::vector<T>, isDeserialize, isEnum> { typedef std::vector<T> Type; static bool isVector() { return true; } };
+        template<typename T> struct TypeTraits<T, false, true> { typedef int32_t Type; static bool isVector() { return false; } };
+        template<typename T> struct TypeTraits<T, true, true> { typedef int32_t Type; static bool isVector() { return false; } };
+        template<> struct TypeTraits<float, false, false> { typedef double Type; static bool isVector() { return false; } };
+        template<> struct TypeTraits<int32_t, false, false> { typedef int64_t Type; static bool isVector() { return false; } };
+        template<> struct TypeTraits<uint32_t, false, false> { typedef uint64_t Type; static bool isVector() { return false; } };
 
         namespace STOT {
             template<typename T> struct type {};

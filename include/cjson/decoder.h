@@ -29,13 +29,13 @@ namespace serialize {
 
         template<typename T>
         CJSONDecoder& operator&(serializeItem<T> value) {
-            decodeValue(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
+            decodeValue(value.name, *(typename internal::TypeTraits<T, true>::Type*)(&value.value), value.bHas);
             return *this;
         }
 
         template<typename T>
         CJSONDecoder& convert(const char* sz, T& value, bool* pHas = NULL) {
-            decodeValue(sz, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
+            decodeValue(sz, *(typename internal::TypeTraits<T, true>::Type*)(&value), pHas);
             return *this;
         }
 
@@ -49,7 +49,7 @@ namespace serialize {
                     std::string key = getChildName(i);
                     V item = V();
                     decodeValue(key.c_str(), item, NULL);
-                    value.insert(std::pair<K, V>(static_cast<K>(internal::STOT::type<typename internal::TypeTraits<K>::Type>::strto(key.c_str())), item));
+                    value.insert(std::pair<K, V>(static_cast<K>(internal::STOT::type<typename internal::TypeTraits<K, true>::Type>::strto(key.c_str())), item));
                 }
             }
             return (_cur) ? true : false;
@@ -76,7 +76,7 @@ namespace serialize {
                 for (int32_t i = 0; i < size; ++i) {
                     cJSON* lastItem = cur();
                     getArrayItem(i);
-                    typename internal::TypeTraits<T>::Type item;
+                    typename internal::TypeTraits<T, true>::Type item;
                     this->operator>>(item);
                     value.push_back(item);
                     cur(lastItem);

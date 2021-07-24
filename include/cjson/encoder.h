@@ -27,12 +27,8 @@ namespace serialize {
         template<typename T>
         CJSONEncoder& operator << (const T& value) {
             const typename internal::TypeTraits<T>::Type& v = value;
-            if (internal::TypeTraits<T>::isVector()) {
-                operator << (v);
-            } else {
-                if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
-                    internal::serializeWrapper(*this, *pValue);
-                }
+            if (typename internal::TypeTraits<T>::Type* pValue = const_cast<typename internal::TypeTraits<T>::Type*>(&v)) {
+                internal::serializeWrapper(*this, *pValue);
             }
             return *this;
         }
