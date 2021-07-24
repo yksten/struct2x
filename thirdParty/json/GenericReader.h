@@ -45,7 +45,7 @@ namespace custom {
         
         if (parent) {
             for (GenericValue* child = parent->child; child; child = child->next) {
-                if (child->key && strncmp(name, child->key, child->keySize) == 0) {
+                if (child->key && (strlen(name) == child->keySize) && strncmp(name, child->key, child->keySize) == 0) {
                     return child;
                 }
             }

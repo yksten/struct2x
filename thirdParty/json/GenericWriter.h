@@ -73,7 +73,7 @@ namespace custom {
         Stack _stack;
         std::string& _str;
     public:
-        explicit GenericWriter(std::string& str) :_str(str),_stack(32) {}
+        explicit GenericWriter(std::string& str) : _stack(32), _str(str) {}
         void Bool(bool b);
         void Int64(int64_t i64);
         void Uint64(uint64_t u64);
@@ -81,8 +81,10 @@ namespace custom {
         GenericWriter& Key(const char* szKey);
         void String(const char* szValue);
         void StartObject() {
-            if (!_stack.empty() && _stack.top().first == kkeyType) {
-                _str.append(1, ':');
+            if (!_stack.empty()) {
+                if (_stack.top().first == kkeyType) {
+                    _str.append(1, ':');
+                }
             }
             _stack.push(Stack::value_type(kNullType, 0));
             _str.append(1, '{');
@@ -94,7 +96,7 @@ namespace custom {
         }
 
         void StartArray() {
-            if (!_stack.empty()) {
+            if (!_stack.empty() && _stack.top().first == kkeyType) {
                 _str.append(1, ':');
             }
             _str.append(1, '[');
@@ -107,7 +109,9 @@ namespace custom {
         }
 
         void Separation() {
-            _str.append(1, ',');
+            if (!_stack.empty() && _stack.top().first == kNullType) {
+                _str.append(1, ',');
+            }
         }
 
         bool result() const {

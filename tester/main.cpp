@@ -1,9 +1,6 @@
 #include <iostream>
 #include <assert.h>
 
-#include "cjson/encoder.h"
-#include "cjson/decoder.h"
-
 #include "protobuf/encoder.h"
 #include "protobuf/decoder.h"
 #include "testStruct.h"
@@ -78,7 +75,7 @@ struct struItem {
     void serialize(T& t)
     {
         SERIALIZE(t, id, str, info, v, v2, m, m2);
-//        SERIALIZE(t, id, str);
+//        SERIALIZE(t, v);
     }
 };
 
@@ -115,12 +112,11 @@ void testMap() {
     map["VARIABLE_TIMER"] = 4;
     map["VARIABLE_COUNTER"] = 5;
 
-    serialize::CJSONEncoder jrmap;
-    jrmap << map;
     std::string str2;
-    jrmap.toString(str2);
+    serialize::JSONEncoder jrmap(str2);
+    jrmap << map;
 
-    serialize::CJSONDecoder jwmap(str2.c_str());
+    serialize::JSONDecoder jwmap(str2.c_str(), str2.size());
     jwmap >> map2;
 
     assert(map == map2);
@@ -149,11 +145,10 @@ void testStructFunc() {
     //jr.toString(str);
 
     std::string str;
-    serialize::JSONEncoder encoder2(str);
-    encoder2 << item;
+    bool ret = serialize::JSONEncoder(str) << item;
     //encoder.toString(str);
 
-    serialize::CJSONDecoder jw(str.c_str());
+    serialize::JSONDecoder jw(str.c_str(), str.size());
     struItem item2;
     jw >> item2;
     bool b = (item == item2);
@@ -173,13 +168,10 @@ void testVector() {
     std::vector<int> v; v.push_back(1); v.push_back(2); v.push_back(3);
     s1.vec.push_back(v);
 
-    serialize::CJSONEncoder jr;
-    jr << s1;
-
     std::string str;
-    jr.toString(str);
+    bool ret = serialize::JSONEncoder(str) << s1;
 
-    serialize::CJSONDecoder jw(str.c_str());
+    serialize::JSONDecoder jw(str.c_str(), str.size());
     jw >> s2;
     bool b = (s1.vec == s2.vec);
     assert(b);
@@ -209,11 +201,9 @@ void testProtobuf() {
     bool b = encoder << items;
     assert(b);
 
-    serialize::CJSONEncoder jr;
-    jr << items;
     std::string strJson;
-    jr.toString(strJson);
-    serialize::CJSONDecoder(strJson.c_str()) >> items;
+    bool r = serialize::JSONEncoder(strJson) << items;
+    serialize::JSONDecoder(strJson.c_str(), strJson.size()) >> items;
 
     serialize::PBDecoder decoder(buffer);
     b = decoder >> items2;
@@ -317,7 +307,7 @@ int main(int argc, char* argv[]) {
     //mpd >> item2;
 
     struItem ins;
-	std::string strJson("{\"id\":-11,\"str\":\"{\\\"struct2json\\\":\\\"ASDF\\\"}\",\"info\":{\"no\":99,\"ts\":{\"i\":0,\"db\":0},\"vts\":[],\"v\":[],\"m\":{}},\"v\":[],\"v2\":[],\"m\":{\"11\":111},\"m2\":{}}");
+	std::string strJson("{\"id\":-11,\"str\":\"{\\\"struct2json\\\":\\\"ASDF\\\"}\",\"info\":{\"no\":99,\"ts\":{\"i\":0,\"db\":0},\"vts\":[],\"v\":[false, true],\"m\":{}},\"v\":[],\"v2\":[],\"m\":{\"11\":111},\"m2\":{}}");
     serialize::JSONDecoder decoder(strJson.c_str(), strJson.size());
     bool bDecode = decoder >> ins;
 
@@ -326,12 +316,12 @@ int main(int argc, char* argv[]) {
     str.clear();
     bool bEncode = serialize::JSONEncoder(str).operator<<(ins);
 
-    return 0;
+//    return 0;
 
-    //testMap();
-    //testStructFunc();
-    //testVector();
-//    testProtobuf();
+    testMap();
+    testStructFunc();
+    testVector();
+    testProtobuf();
 
     return 0;
 }

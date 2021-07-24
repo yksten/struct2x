@@ -24,15 +24,33 @@ namespace serialize {
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             return (parent == _cur);
         }
+        
+        template<typename K, typename V>
+        FORCEINLINE bool operator>>(std::map<K, V>& value) {
+            const custom::GenericValue* parent = _cur;
+            if (_cur) {
+                value.clear();
+
+                const custom::GenericValue* parent = _cur;
+                for (const custom::GenericValue* child = parent->child; child; child = child->next) {
+                    std::string key(child->key, child->keySize);
+                    V item = V();
+                    decodeValue(key.c_str(), item, NULL);
+                    value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
+                }
+                _cur = parent;
+            }
+            return (parent == _cur);
+        }
 
         template<typename T>
         FORCEINLINE JSONDecoder& operator&(serializeItem<T> value) {
-            return convert(value.name, *(typename internal::TypeTraits<T, true>::Type*)(&value.value), value.bHas);
+            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
         }
 
         template<typename T>
         FORCEINLINE JSONDecoder& convert(const char* name, T& value, bool* pHas = NULL) {
-            decodeValue(name, *(typename internal::TypeTraits<T, true>::Type*)(&value), pHas);
+            decodeValue(name, *(typename internal::TypeTraits<T>::Type*)(&value), pHas);
             return *this;
         }
     private:
@@ -53,13 +71,13 @@ namespace serialize {
             _cur = custom::GetObjectItem(_cur, name);
             if (_cur) {
                 int32_t size = custom::GetArraySize(_cur);
-                if (size&& !value.empty()) {
+                if (size) {
                     value.resize(size);
                 }
                 const custom::GenericValue* parent = _cur;
                 _cur = parent->child;
                 for (uint32_t idx = 0; _cur && (idx < size); (_cur = _cur->next) && ++idx) {
-                    decodeValue(NULL, *(typename internal::TypeTraits<T, true>::Type*)(&value.at(idx)), NULL);
+                    decodeValue(NULL, *(typename internal::TypeTraits<T>::Type*)(&value.at(idx)), NULL);
                 }
                 _cur = parent;
                 if (pHas) *pHas = true;
