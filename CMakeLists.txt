@@ -34,8 +34,6 @@ SOURCE_GROUP("src\\cjson" FILES ${SRCCJSON})
 # json
 SET(INCLUDEJSON "./include/json/encoder.h" "./include/json/decoder.h")
 SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
-SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
-SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
 # protobuf
 SET(INCLUDEPROTOBUF "./include/protobuf/encoder.h" "./include/protobuf/decoder.h")
@@ -50,7 +48,7 @@ IF (MSVC)
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDECJSON} ${SRCCJSON} 
-    ${INCLUDEJSON} ${SRCJSON} 
+    ${INCLUDEJSON} 
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ELSE ()
@@ -59,7 +57,7 @@ ELSE ()
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDECJSON} ${SRCCJSON} 
-    ${INCLUDEJSON} ${SRCJSON} 
+    ${INCLUDEJSON} 
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ENDIF (MSVC)
