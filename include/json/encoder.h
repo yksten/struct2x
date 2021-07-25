@@ -3,7 +3,7 @@
 #include "serialize.h"
 #include <vector>
 #include <map>
-#include "thirdParty/json/GenericWriter.h"
+#include "json/GenericWriter.h"
 
 
 namespace serialize {

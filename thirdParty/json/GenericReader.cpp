@@ -1,4 +1,4 @@
-#include "GenericReader.h"
+#include "json/GenericReader.h"
 #include <assert.h>
 
 
@@ -123,7 +123,7 @@ namespace custom {
     }
 
     int64_t CustomGenericReader::convertInt(const char* value, uint32_t length) {
-        if (!length) return;
+        if (!length) return 0;
         
         int64_t result = 0;
         bool bMinus = false;
@@ -139,7 +139,7 @@ namespace custom {
     }
 
     uint64_t CustomGenericReader::convertUint(const char* value, uint32_t length) {
-        if (!length) return;
+        if (!length) return 0;
         
         uint64_t result = 0;
         for (uint32_t idx = 0; idx < length; ++idx) {
@@ -157,7 +157,7 @@ namespace custom {
     }
 
     double CustomGenericReader::convertDouble(const char* value, uint32_t length) {
-        if (!length) return;
+        if (!length) return 0.0f;
         
         double result = 0.0;
         for (uint32_t idx = 0, bFlag = false, num = 0; idx < length; ++idx) {

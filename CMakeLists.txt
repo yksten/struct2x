@@ -14,7 +14,7 @@ INCLUDE_DIRECTORIES(./ ./include/)
 AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 
 # json
-SET(JSON "./thirdParty/json/GenericReader.h" "./thirdParty/json/GenericReader.cpp" "./thirdParty/json/GenericWriter.h" "./thirdParty/json/GenericWriter.cpp")
+SET(JSON "./include/json/GenericReader.h" "./thirdParty/json/GenericReader.cpp" "./include/json/GenericWriter.h" "./thirdParty/json/GenericWriter.cpp")
 SOURCE_GROUP("thirdParty\\json" FILES ${JSON})
 
 # serialize

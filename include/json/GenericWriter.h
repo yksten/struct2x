@@ -52,7 +52,7 @@ namespace custom {
         void push(const value_type& val) {
             if(_top == _stacksize) {
                 _base = (value_type*)realloc(_base,(_stacksize+1)*sizeof(value_type));
-                if(!_base) return 0;
+                if(!_base) return;
                 _stacksize++;
             }
             _base[_top++] = val;

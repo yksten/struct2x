@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-#include "thirdParty/json/GenericReader.h"
+#include "json/GenericReader.h"
 
 
 namespace serialize {
