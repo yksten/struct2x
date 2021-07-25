@@ -8,7 +8,7 @@
 
 namespace serialize {
 
-    class EXPORTAPI JSONEncoder {
+    class JSONEncoder {
         custom::GenericWriter _writer;
     public:
         explicit JSONEncoder(std::string& str) : _writer(str) {}

@@ -10,7 +10,7 @@
 
 namespace serialize {
 
-    class EXPORTAPI JSONDecoder {
+    class JSONDecoder {
         custom::CustomGenericReader _reader;
         const custom::GenericValue* _cur;
     public:
