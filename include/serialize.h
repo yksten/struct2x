@@ -13,7 +13,7 @@
 #endif
 
 #ifdef _MSC_VER_ // for MSVC
-#define FORCEINLINE
+#define FORCEINLINE __forceinline
 #elif defined __GNUC__ // for gcc on Linux/Apple OS X
 #define FORCEINLINE __inline__ __attribute__((always_inline))
 #else
