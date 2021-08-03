@@ -1,10 +1,11 @@
 #ifndef __TEST_TEST1__H_
 #define __TEST_TEST1__H_
 
-#include<stdint.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <map>
+#include <struct2x/struct2x.h>
 
 namespace testStruct {
 

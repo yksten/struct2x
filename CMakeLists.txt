@@ -18,7 +18,7 @@ SET(JSON "./include/struct2x/json/GenericReader.h" "./thirdParty/json/GenericRea
 SOURCE_GROUP("thirdParty\\json" FILES ${JSON})
 
 # struct2x
-SET(INCLUDE "./include/struct2x/serialize.h")
+SET(INCLUDE "./include/struct2x/traits.h" "./include/struct2x/struct2x.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
 # json

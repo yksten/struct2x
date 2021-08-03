@@ -1,7 +1,7 @@
 #include <struct2x/protobuf/encoder.h>
 #include <assert.h>
 
-namespace serialize {
+namespace struct2x {
 
     BufferWrapper::BufferWrapper(std::string* str) : _buffer(str), _target(NULL), _bCalculateFlag(false), _cumtomFieldSize(0) {
     }

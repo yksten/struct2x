@@ -4,7 +4,8 @@
 #include <assert.h>
 #include <string>
 #include <map>
-#include <struct2x/serialize.h>
+#include <struct2x/struct2x.h>
+#include <struct2x/traits.h>
 
 #define BEGINCALCULATEFIELD(buf) \
     std::pair<bool, size_t> customField(buf.getCustomField());
@@ -12,7 +13,7 @@
 #define ENDCALCULATEFIELD(nByteSize, buf) \
     nByteSize = buf.getCustomField().second; buf.setCustomField(customField);
 
-namespace serialize {
+namespace struct2x {
 
     class EXPORTAPI BufferWrapper {
         std::string* _buffer;

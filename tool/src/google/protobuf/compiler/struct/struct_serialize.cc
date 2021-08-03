@@ -127,11 +127,11 @@ namespace google {
 
                 const char* getFieldType(const FieldDescriptor& field) {
                     if (field.type() == FieldDescriptor::TYPE_FIXED64 || field.type() == FieldDescriptor::TYPE_SFIXED64) {
-                        return "serialize::TYPE_FIXED64";
+                        return "struct2x::TYPE_FIXED64";
                     } else if (field.type() == FieldDescriptor::TYPE_SINT32 || field.type() == FieldDescriptor::TYPE_SINT64) {
-                        return "serialize::TYPE_SVARINT";
+                        return "struct2x::TYPE_SVARINT";
                     } else if (field.type() == FieldDescriptor::TYPE_FIXED32 || field.type() == FieldDescriptor::TYPE_SFIXED32) {
-                        return "serialize::TYPE_FIXED32";
+                        return "struct2x::TYPE_FIXED32";
                     }
                     return NULL;
                 }
@@ -142,27 +142,27 @@ namespace google {
                     switch (field.type()) {
                     case FieldDescriptor::TYPE_FIXED64:
                     case FieldDescriptor::TYPE_SFIXED64:
-                        strResult.append(", serialize::TYPE_FIXED64");
+                        strResult.append(", struct2x::TYPE_FIXED64");
                         break;
                     case FieldDescriptor::TYPE_SINT32:
                     case FieldDescriptor::TYPE_SINT64:
-                        strResult.append(", serialize::TYPE_SVARINT");
+                        strResult.append(", struct2x::TYPE_SVARINT");
                         break;
                     case FieldDescriptor::TYPE_FIXED32:
                     case FieldDescriptor::TYPE_SFIXED32:
-                        strResult.append(", serialize::TYPE_FIXED32");
+                        strResult.append(", struct2x::TYPE_FIXED32");
                     default:
-                        //strResult.append(", serialize::TYPE_VARINT");
+                        //strResult.append(", struct2x::TYPE_VARINT");
                         break;
                     }
 
                     if (field.is_packed()) {
-                        if (strResult.empty()) strResult.append(", serialize::TYPE_VARINT");
-                        strResult.append("| serialize::TYPE_PACKED");
+                        if (strResult.empty()) strResult.append(", struct2x::TYPE_VARINT");
+                        strResult.append("| struct2x::TYPE_PACKED");
                     } else if (field.is_map()) {
                         const FieldDescriptor* key = field.message_type()->field(0);
                         if (const char* szKeyType = getFieldType(*key)) {
-                            strResult.append(szKeyType).append(" << serialize::BITNUM");
+                            strResult.append(szKeyType).append(" << struct2x::BITNUM");
                         }
                         const FieldDescriptor* value = field.message_type()->field(1);
                         if (const char* szValueType = getFieldType(*key)) {
@@ -176,7 +176,7 @@ namespace google {
 
                     if (syntax == FileDescriptor::SYNTAX_PROTO2) {
                         if (field.label() == FieldDescriptor::LABEL_OPTIONAL)
-                            strResult.append(", &has_").append(codeSerialize::FieldName(field));
+                            strResult.append(", &has_").append(codestruct2x::FieldName(field));
                     }
 
                     return strResult.c_str();
@@ -201,14 +201,14 @@ namespace google {
                     }
                 };
 
-                codeSerialize::codeSerialize(const FileDescriptor* file, const Options& options) :scc_analyzer_(options), _file(file) {
+                codestruct2x::codeSerialize(const FileDescriptor* file, const Options& options) :scc_analyzer_(options), _file(file) {
                     prepareMsgs();
                 }
 
-                codeSerialize::~codeSerialize() {
+                codestruct2x::~codeSerialize() {
                 }
 
-                void codeSerialize::prepareMsgs() {
+                void codestruct2x::prepareMsgs() {
                     std::vector<const Descriptor*> msgs = FlattenMessagesInFile(_file);
                     for (int i = 0; i < msgs.size(); ++i) {
                         const Descriptor* descriptor = msgs[i];
@@ -228,7 +228,7 @@ namespace google {
                     sortMsgs(_message_generators);
                 }
 
-                bool codeSerialize::sortMsgs(std::vector<FieldDescriptorArr>& msgs) {
+                bool codestruct2x::sortMsgs(std::vector<FieldDescriptorArr>& msgs) {
                     std::vector<FieldDescriptorArr> result;
                     uint32_t nSize = msgs.size();
                     for (uint32_t idx = 0; idx < nSize; ++idx) {
@@ -243,7 +243,7 @@ namespace google {
                     return true;
                 }
 
-                uint32_t codeSerialize::getInsertIdx(const std::vector<FieldDescriptorArr>& msgs, const FieldDescriptorArr& item) {
+                uint32_t codestruct2x::getInsertIdx(const std::vector<FieldDescriptorArr>& msgs, const FieldDescriptorArr& item) {
                     uint32_t idx = 0;
                     for (; idx < msgs.size(); ++idx) {
                         const FieldDescriptorArr& curItem = msgs.at(idx);
@@ -258,7 +258,7 @@ namespace google {
                     return idx;
                 }
 
-                void codeSerialize::printHeader(google::protobuf::io::Printer& printer, const char* szName)const {
+                void codestruct2x::printHeader(google::protobuf::io::Printer& printer, const char* szName)const {
                     std::string strStructName(szName);
                     std::transform(strStructName.begin(), strStructName.end(), strStructName.begin(), ::toupper);
                     //1.program once
@@ -281,7 +281,7 @@ namespace google {
                     printer.Print("\n#endif\n");
                 }
 
-                void codeSerialize::printInclude(google::protobuf::io::Printer& printer)const {
+                void codestruct2x::printInclude(google::protobuf::io::Printer& printer)const {
                     printer.Print("\n");
                     printer.Print("#include \"serialize.h\"\n");
                     //if (hasInt(printer)) {
@@ -317,7 +317,7 @@ namespace google {
                     printer.Print("\n");
                 }
 
-                void codeSerialize::printEnum(google::protobuf::io::Printer& printer)const {
+                void codestruct2x::printEnum(google::protobuf::io::Printer& printer)const {
                     for (int i = 0; i < _file->enum_type_count(); ++i) {
                         const EnumDescriptor* item = _file->enum_type(i);
                         printer.Print("\n");
@@ -332,7 +332,7 @@ namespace google {
                     }
                 }
 
-                void codeSerialize::printStruct(google::protobuf::io::Printer& printer, FileDescriptor::Syntax syntax)const {
+                void codestruct2x::printStruct(google::protobuf::io::Printer& printer, FileDescriptor::Syntax syntax)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -387,7 +387,7 @@ namespace google {
                                 const std::string& strOrgName = field->name();
                                 std::string fieldName(FieldName(*field));
                                 if (strOrgName != fieldName) {
-                                    printer.Print(" & serialize::makeItem(\"$orgName$\", $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
+                                    printer.Print(" & struct2x::makeItem(\"$orgName$\", $number$, $field$$tag$)", "orgName", strOrgName, "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 } else {
                                     printer.Print(" & SERIALIZATION($number$, $field$$tag$)", "number", sz, "field", fieldName, "tag", type2tag(*field, syntax));
                                 }
@@ -398,7 +398,7 @@ namespace google {
                     }
                 }
 
-                void codeSerialize::printSerialize(google::protobuf::io::Printer& printer)const {
+                void codestruct2x::printSerialize(google::protobuf::io::Printer& printer)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -416,7 +416,7 @@ namespace google {
                     }
                 }
 
-                bool codeSerialize::hasInt(google::protobuf::io::Printer& printer)const {
+                bool codestruct2x::hasInt(google::protobuf::io::Printer& printer)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -443,7 +443,7 @@ namespace google {
                     return false;
                 }
 
-                bool codeSerialize::hasString(google::protobuf::io::Printer& printer)const {
+                bool codestruct2x::hasString(google::protobuf::io::Printer& printer)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -459,7 +459,7 @@ namespace google {
                     return false;
                 }
 
-                bool codeSerialize::hasVector(google::protobuf::io::Printer& printer)const {
+                bool codestruct2x::hasVector(google::protobuf::io::Printer& printer)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -474,7 +474,7 @@ namespace google {
                     }
                     return false;
                 }
-                bool codeSerialize::hasMap(google::protobuf::io::Printer& printer)const {
+                bool codestruct2x::hasMap(google::protobuf::io::Printer& printer)const {
                     uint32_t size = _message_generators.size();
                     for (uint32_t i = 0; i < size; ++i) {
                         const FieldDescriptorArr& messages = _message_generators.at(i);
@@ -490,7 +490,7 @@ namespace google {
                     return false;
                 }
 
-                std::string codeSerialize::FieldName(const FieldDescriptor& field) {
+                std::string codestruct2x::FieldName(const FieldDescriptor& field) {
                     string result = field.name();
                     LowerString(&result);
                     if (kKeywords.count(result) > 0) {

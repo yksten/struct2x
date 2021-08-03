@@ -1,5 +1,6 @@
 #include <iostream>
 #include <assert.h>
+#include <struct2x/struct2x.h>
 
 #include <struct2x/protobuf/encoder.h>
 #include <struct2x/protobuf/decoder.h>
@@ -113,10 +114,10 @@ void testMap() {
     map["VARIABLE_COUNTER"] = 5;
 
     std::string str2;
-    serialize::JSONEncoder jrmap(str2);
+    struct2x::JSONEncoder jrmap(str2);
     jrmap << map;
 
-    serialize::JSONDecoder jwmap(str2.c_str(), str2.size());
+    struct2x::JSONDecoder jwmap(str2.c_str(), str2.size());
     jwmap >> map2;
 
     assert(map == map2);
@@ -139,16 +140,16 @@ void testStructFunc() {
     info.no = 992;
     item.m2["2"] = info;
 
-    //serialize::CJSONEncoder jr;
+    //struct2x::CJSONEncoder jr;
     //jr << item;
     //std::string str;
     //jr.toString(str);
 
     std::string str;
-    bool ret = serialize::JSONEncoder(str) << item;
+    bool ret = struct2x::JSONEncoder(str) << item;
     //encoder.toString(str);
 
-    serialize::JSONDecoder jw(str.c_str(), str.size());
+    struct2x::JSONDecoder jw(str.c_str(), str.size());
     struItem item2;
     jw >> item2;
     bool b = (item == item2);
@@ -169,9 +170,9 @@ void testVector() {
     s1.vec.push_back(v);
 
     std::string str;
-    bool ret = serialize::JSONEncoder(str) << s1;
+    bool ret = struct2x::JSONEncoder(str) << s1;
 
-    serialize::JSONDecoder jw(str.c_str(), str.size());
+    struct2x::JSONDecoder jw(str.c_str(), str.size());
     jw >> s2;
     bool b = (s1.vec == s2.vec);
     assert(b);
@@ -197,15 +198,15 @@ void testProtobuf() {
     items.m[2] = item;
 
     std::string buffer;
-    serialize::PBEncoder encoder(buffer);
+    struct2x::PBEncoder encoder(buffer);
     bool b = encoder << items;
     assert(b);
 
     std::string strJson;
-    bool r = serialize::JSONEncoder(strJson) << items;
-    serialize::JSONDecoder(strJson.c_str(), strJson.size()) >> items;
+    bool r = struct2x::JSONEncoder(strJson) << items;
+    struct2x::JSONDecoder(strJson.c_str(), strJson.size()) >> items;
 
-    serialize::PBDecoder decoder(buffer);
+    struct2x::PBDecoder decoder(buffer);
     b = decoder >> items2;
     assert(b);
 }
@@ -267,7 +268,7 @@ int main(int argc, char* argv[]) {
 //    vec.push_back(2);
 //    vec.push_back(3);
 //    std::string strJsonVec;
-//    bool b = serialize::JSONEncoder(strJsonVec) << vec;
+//    bool b = struct2x::JSONEncoder(strJsonVec) << vec;
 //    
 //    return 0;
     //std::string strJsonCustom("{\"id\":-11,\"str\":\"struct2json\",\"info\":{\"no\":99.0,\"v\":[false,true],\"m\":{}},\"v\":[false,false],\"v2\":[],\"m\":{},\"m2\":{}}");
@@ -283,38 +284,38 @@ int main(int argc, char* argv[]) {
     //v.vec.push_back(a);
 
     //std::string json;
-    //bool bE = serialize::JSONEncoder(json) << v;
+    //bool bE = struct2x::JSONEncoder(json) << v;
 
-    //bool bD = serialize::JSONDecoder(json) >> v;
+    //bool bD = struct2x::JSONDecoder(json) >> v;
 
     //return 0;
     //struExampleEnum item;
     //item.e = ET2;
-    //serialize::CJSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
+    //struct2x::CJSONDecoder jw("{\"id\":10,\"str\":\"qa\",\"f\":11.0,\"db\":12.0,\"e\":2}");
     //jw >> item;
 
     //item.v.push_back(15); item.v.push_back(35);
     //std::string mpBuf;
-    //serialize::MPEncoder mpe(mpBuf);
+    //struct2x::MPEncoder mpe(mpBuf);
     //mpe << item;
 
     //for (size_t i = 0; i < mpBuf.size(); ++i)
     //    printf("%02x ", 0xff & mpBuf[i]);
     //printf("\n");
 
-    //serialize::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
+    //struct2x::MPDecoder mpd((const uint8_t*)mpBuf.data(), mpBuf.size());
     //struExampleEnum item2;
     //mpd >> item2;
 
     struItem ins;
 	std::string strJson("{\"id\":-11,\"str\":\"{\\\"struct2json\\\":\\\"ASDF\\\"}\",\"info\":{\"no\":99,\"ts\":{\"i\":0,\"db\":0},\"vts\":[],\"v\":[false, true],\"m\":{}},\"v\":[],\"v2\":[],\"m\":{\"11\":111},\"m2\":{}}");
-    serialize::JSONDecoder decoder(strJson.c_str(), strJson.size());
+    struct2x::JSONDecoder decoder(strJson.c_str(), strJson.size());
     bool bDecode = decoder >> ins;
 
     std::string str;
-//    bool bEncode1 = serialize::CJSONEncoder().operator<<(ins).toString(str);
+//    bool bEncode1 = struct2x::CJSONEncoder().operator<<(ins).toString(str);
     str.clear();
-    bool bEncode = serialize::JSONEncoder(str).operator<<(ins);
+    bool bEncode = struct2x::JSONEncoder(str).operator<<(ins);
 
 //    return 0;
 

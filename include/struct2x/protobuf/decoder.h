@@ -3,7 +3,8 @@
 
 #include <string>
 #include <map>
-#include <struct2x/serialize.h>
+#include <struct2x/struct2x.h>
+#include <struct2x/traits.h>
 
 
 namespace proto {
@@ -54,21 +55,21 @@ namespace proto {
         bool ParseFromBytes(const uint8_t* sz, uint32_t size, void* pStruct);
 
         template<typename P, typename T>
-        bool bind(bool(*f)(T&, const P&, const uint32_t, bool*), serialize::serializeItem<T>& value) {
+        bool bind(bool(*f)(T&, const P&, const uint32_t, bool*), struct2x::serializeItem<T>& value) {
             offset_type offset = ((uint8_t*)(&value.value)) - _struct;
             offset_type has = value.bHas ? ((uint8_t*)(value.bHas)) - _struct : 0;
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, has))).second;
         }
 
         template<typename P, typename T>
-        bool bind(bool(*f)(std::vector<T>&, const P&, const uint32_t, bool*), serialize::serializeItem<std::vector<T> >& value) {
+        bool bind(bool(*f)(std::vector<T>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::vector<T> >& value) {
             offset_type offset = ((uint8_t*)(&value.value)) - _struct;
             offset_type has = value.bHas ? ((uint8_t*)(value.bHas)) - _struct : 0;
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, has))).second;
         }
 
         template<typename P, typename K, typename V>
-        bool bind(bool(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), serialize::serializeItem<std::map<K, V> >& value) {
+        bool bind(bool(*f)(std::map<K, V>&, const P&, const uint32_t, bool*), struct2x::serializeItem<std::map<K, V> >& value) {
             offset_type offset = ((uint8_t*)(&value.value)) - _struct;
             offset_type has = value.bHas ? ((uint8_t*)(value.bHas)) - _struct : 0;
             return _functionSet.insert(std::pair<uint32_t, converter>(value.num, converter(convert_t(f), offset, value.type, has))).second;
@@ -78,7 +79,7 @@ namespace proto {
 
 }  // namespace proto
 
-namespace serialize {
+namespace struct2x {
 
     class EXPORTAPI PBDecoder {
         friend class proto::Message;
@@ -166,13 +167,13 @@ namespace serialize {
 
         template<typename T, typename P>
         static bool convertValue(T& value, const P& cValue, const uint32_t type, bool* pHas) {
-            if (type == serialize::TYPE_VARINT) {
+            if (type == struct2x::TYPE_VARINT) {
                 value = proto::convertVarint<T, P>::value(cValue);
-            } else if (type == serialize::TYPE_SVARINT) {
+            } else if (type == struct2x::TYPE_SVARINT) {
                 value = proto::convertSvarint<T, P>::value(cValue);
-            } else if (type == serialize::TYPE_FIXED32) {
+            } else if (type == struct2x::TYPE_FIXED32) {
                 value = static_cast<T>(cValue);
-            } else if (type == serialize::TYPE_FIXED64) {
+            } else if (type == struct2x::TYPE_FIXED64) {
                 value = static_cast<T>(cValue);
             } else {
                 return false;
@@ -190,13 +191,13 @@ namespace serialize {
         template<typename T, typename P>
         static bool convertArray(std::vector<T>& value, const P& cValue, const uint32_t type, bool* pHas) {
             uint32_t tempType = type & 0xFFFF;
-            if (tempType == serialize::TYPE_VARINT) {
+            if (tempType == struct2x::TYPE_VARINT) {
                 value.push_back(proto::convertVarint<T, P>::value(cValue));
-            } else if (tempType == serialize::TYPE_SVARINT) {
+            } else if (tempType == struct2x::TYPE_SVARINT) {
                 value.push_back(proto::convertSvarint<T, P>::value(cValue));
-            } else if (tempType == serialize::TYPE_FIXED32) {
+            } else if (tempType == struct2x::TYPE_FIXED32) {
                 value.push_back(static_cast<T>(cValue));
-            } else if (tempType == serialize::TYPE_FIXED64) {
+            } else if (tempType == struct2x::TYPE_FIXED64) {
                 value.push_back(static_cast<T>(cValue));
             } else {
                 return false;
@@ -227,7 +228,7 @@ namespace serialize {
 
         template<typename T>
         static bool convertCustom(T& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
-            serialize::PBDecoder decoder(cValue.first, cValue.second);
+            struct2x::PBDecoder decoder(cValue.first, cValue.second);
             if (!decoder.operator>>(value))
                 return false;
             if (pHas) *pHas = true;
@@ -236,7 +237,7 @@ namespace serialize {
 
         template<typename T>
         static bool convertCustomArray(std::vector<T>& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
-            serialize::PBDecoder decoder(cValue.first, cValue.second);
+            struct2x::PBDecoder decoder(cValue.first, cValue.second);
             T temp = T();
             if (!decoder.operator>>(temp))
                 return false;
@@ -247,15 +248,15 @@ namespace serialize {
 
         template<typename K, typename V>
         static bool convertMap(std::map<K, V>& value, const proto::bin_type& cValue, const uint32_t type, bool* pHas) {
-            serialize::PBDecoder decoder(cValue.first, cValue.second);
+            struct2x::PBDecoder decoder(cValue.first, cValue.second);
             static proto::Message msg;
             decoder._msg = &msg;
             K key = K();
             V v = V();
             if (msg.empty()) {
-                serialize::serializeItem<K> kItem = SERIALIZATION(1, key, type >> BITNUM);
+                struct2x::serializeItem<K> kItem = SERIALIZATION(1, key, type >> BITNUM);
                 decoder.decodeValue(*(serializeItem<typename internal::TypeTraits<K>::Type>*)(&kItem));
-                serialize::serializeItem<V> vItem = SERIALIZATION(2, v, type & 0xFFFF);
+                struct2x::serializeItem<V> vItem = SERIALIZATION(2, v, type & 0xFFFF);
                 decoder.decodeValue(*(serializeItem<typename internal::TypeTraits<V>::Type>*)(&vItem));
             } else {
                 msg.offset(1, (proto::offset_type)((uint8_t*)&key));

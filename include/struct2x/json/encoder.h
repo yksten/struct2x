@@ -2,11 +2,11 @@
 #define __JSON_ENCODER_H__
 #include <vector>
 #include <map>
-#include <struct2x/serialize.h>
+#include <struct2x/traits.h>
 #include <struct2x/json/GenericWriter.h>
 
 
-namespace serialize {
+namespace struct2x {
 
     class JSONEncoder {
         custom::GenericWriter _writer;

@@ -3,11 +3,11 @@
 
 #include <string>
 #include <map>
-#include <struct2x/serialize.h>
+#include <struct2x/traits.h>
 #include <struct2x/json/GenericReader.h>
 
 
-namespace serialize {
+namespace struct2x {
 
     static unsigned parse_hex4(const char *str) {
         unsigned h=0;

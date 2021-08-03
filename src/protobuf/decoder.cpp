@@ -84,19 +84,19 @@ namespace proto {
             if (!ReadWirteTypeAndFieldNumber(current, remaining, wirte_type, field_number))
                 return false;
             switch (wirte_type) {
-                case serialize::internal::WT_VARINT: {
+                case struct2x::internal::WT_VARINT: {
                     uint64_t value = 0;
                     if (!ReadVarInt(current, remaining, value))
                         return false;
                     call(field_number, pStruct, &value);
                 } break;
-                case serialize::internal::WT_64BIT: {
+                case struct2x::internal::WT_64BIT: {
                     uint64_t value = 0;
                     if (!ReadFromBytes(current, remaining, value))
                         return false;
                     call(field_number, pStruct, &value);
                 } break;
-                case serialize::internal::WT_LENGTH_DELIMITED: {
+                case struct2x::internal::WT_LENGTH_DELIMITED: {
                     uint64_t size = 0;
                     if (!ReadVarInt(current, remaining, size))
                         return false;
@@ -106,10 +106,10 @@ namespace proto {
                     bin_type bin(data, size);
                     call(field_number, pStruct, &bin);
                 } break;
-                case serialize::internal::WT_GROUP_START:
-                case serialize::internal::WT_GROUP_END:
+                case struct2x::internal::WT_GROUP_START:
+                case struct2x::internal::WT_GROUP_END:
                     return false;
-                case serialize::internal::WT_32BIT: {
+                case struct2x::internal::WT_32BIT: {
                     uint32_t value = 0;
                     if (!ReadFromBytes(current, remaining, value))
                         return false;
@@ -125,7 +125,7 @@ namespace proto {
 
 }  // namespace proto
 
-namespace serialize {
+namespace struct2x {
 
     PBDecoder::PBDecoder(const uint8_t* sz, unsigned int size)
         : _msg(NULL), _sz(sz), _size(size), _bParseResult(true) {
