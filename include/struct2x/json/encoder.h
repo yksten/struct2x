@@ -1,9 +1,9 @@
 #ifndef __JSON_ENCODER_H__
 #define __JSON_ENCODER_H__
-#include "serialize.h"
 #include <vector>
 #include <map>
-#include "json/GenericWriter.h"
+#include <struct2x/serialize.h>
+#include <struct2x/json/GenericWriter.h>
 
 
 namespace serialize {

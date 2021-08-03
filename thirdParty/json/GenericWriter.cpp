@@ -1,4 +1,4 @@
-#include "json/GenericWriter.h"
+#include <struct2x/json/GenericWriter.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <map>
-#include "serialize.h"
+#include <struct2x/serialize.h>
 
 
 namespace proto {

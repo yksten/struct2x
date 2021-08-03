@@ -1,11 +1,10 @@
 #ifndef __JSON_DECODER_H__
 #define __JSON_DECODER_H__
 
-#include "serialize.h"
 #include <string>
 #include <map>
-
-#include "json/GenericReader.h"
+#include <struct2x/serialize.h>
+#include <struct2x/json/GenericReader.h>
 
 
 namespace serialize {

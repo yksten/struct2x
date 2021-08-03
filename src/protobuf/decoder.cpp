@@ -1,4 +1,4 @@
-#include "protobuf/decoder.h"
+#include <struct2x/protobuf/decoder.h>
 
 
 namespace proto {

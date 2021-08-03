@@ -1,4 +1,4 @@
-#include "protobuf/encoder.h"
+#include <struct2x/protobuf/encoder.h>
 #include <assert.h>
 
 namespace serialize {

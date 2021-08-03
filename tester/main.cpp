@@ -1,12 +1,12 @@
 #include <iostream>
 #include <assert.h>
 
-#include "protobuf/encoder.h"
-#include "protobuf/decoder.h"
+#include <struct2x/protobuf/encoder.h>
+#include <struct2x/protobuf/decoder.h>
 #include "testStruct.h"
 
-#include "json/encoder.h"
-#include "json/decoder.h"
+#include <struct2x/json/encoder.h>
+#include <struct2x/json/decoder.h>
 
 
 struct testStru {

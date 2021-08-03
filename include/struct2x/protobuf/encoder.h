@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string>
 #include <map>
-#include "serialize.h"
+#include <struct2x/serialize.h>
 
 #define BEGINCALCULATEFIELD(buf) \
     std::pair<bool, size_t> customField(buf.getCustomField());
