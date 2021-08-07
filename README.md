@@ -50,7 +50,7 @@ $ git clone https://github.com/yksten/struct2x.git
 $ cd struct2x
 $ mkdir -p cmake/build
 $ pushd cmake/build
-$ cmake -DEXEC=ON ../..
+$ cmake -DEXAMPLE=ON ../..
 $ make -j
 $ popd
 ```
