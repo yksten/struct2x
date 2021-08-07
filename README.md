@@ -1,11 +1,10 @@
-# <center>struct2x简介</center>
-### C++98序列化库
-一个开源的C++结构体与JSON快速超高效互转库。它可以快速实现结构体对象与JSON对象之间序列化及反序列化要求。快速、简洁的 API 设计，大大降低直接使用JSON解析库来实现此类功能的代码复杂度。也没有外部依赖。  
+### struct2x简介
+C++98序列化库，一个开源的C++结构体与JSON快速超高效互转库。它可以快速实现结构体对象与JSON对象之间序列化及反序列化要求。快速、简洁的 API 设计，大大降低直接使用JSON解析库来实现此类功能的代码复杂度。也没有外部依赖。  
 
 ***注：*** 该库旨在C++结构体和json互转。 
 
 支持结构体类型：
-* 支持`uint32_t`、`int32_t`、`uint64_t`、`int64_t`、`float`、`double`、`enum`、`std::string`、`std::vector`和`std::map`等。（不支持`std::list`）
+* 支持`bool`、`uint32_t`、`int32_t`、`uint64_t`、`int64_t`、`float`、`double`、`enum`、`std::string`、`std::vector`和`std::map`等。（不支持`std::list`）
 * `std::map`的key只能是基础类型，且不能是`float`、`double`。
 * 不支持指针和固定数组。（以后也不考虑支持指针和数组）
 * 数组内需要统一类型，不支持`[1,2,{"key":"value"}]`。

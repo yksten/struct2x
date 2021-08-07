@@ -72,7 +72,7 @@ namespace struct2x {
     }
 
     class JSONDecoder {
-        custom::CustomGenericReader _reader;
+        custom::GenericReader _reader;
         const custom::GenericValue* _cur;
     public:
         FORCEINLINE JSONDecoder(const char* str, uint32_t length) : _cur(_reader.Parse(str, length)) {
@@ -81,6 +81,7 @@ namespace struct2x {
 
         template<typename T>
         FORCEINLINE bool operator>>(T& value) {
+            if (!_cur) return false;
             const custom::GenericValue* parent = _cur;
             internal::serializeWrapper(*this, *const_cast<T*>(&value));
             return (parent == _cur);
@@ -88,6 +89,7 @@ namespace struct2x {
         
         template<typename K, typename V>
         FORCEINLINE bool operator>>(std::map<K, V>& value) {
+            if (!_cur) return false;
             const custom::GenericValue* parent = _cur;
             if (_cur) {
                 value.clear();
@@ -182,42 +184,42 @@ namespace struct2x {
         FORCEINLINE void decodeValue(const char* name, uint32_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
-                value = (uint32_t)custom::CustomGenericReader::convertUint(item->value, item->valueSize);
+                value = (uint32_t)custom::GenericReader::convertUint(item->value, item->valueSize);
             }
         }
 
         FORCEINLINE void decodeValue(const char* name, int32_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
-                value = (int32_t)custom::CustomGenericReader::convertInt(item->value, item->valueSize);
+                value = (int32_t)custom::GenericReader::convertInt(item->value, item->valueSize);
             }
         }
 
         FORCEINLINE void decodeValue(const char* name, uint64_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
-                value = custom::CustomGenericReader::convertUint(item->value, item->valueSize);
+                value = custom::GenericReader::convertUint(item->value, item->valueSize);
             }
         }
 
         FORCEINLINE void decodeValue(const char* name, int64_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
-                value = custom::CustomGenericReader::convertInt(item->value, item->valueSize);
+                value = custom::GenericReader::convertInt(item->value, item->valueSize);
             }
         }
 
         FORCEINLINE void decodeValue(const char* name, float& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
-                value = (float)custom::CustomGenericReader::convertDouble(item->value, item->valueSize);
+                value = (float)custom::GenericReader::convertDouble(item->value, item->valueSize);
             }
         }
 
         FORCEINLINE void decodeValue(const char* name, double& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
-                value = custom::CustomGenericReader::convertDouble(item->value, item->valueSize);
+                value = custom::GenericReader::convertDouble(item->value, item->valueSize);
             }
         }
 

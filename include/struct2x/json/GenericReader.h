@@ -75,7 +75,7 @@ namespace custom {
 
     class MemoryPoolAllocator;
 
-    class EXPORTAPI CustomGenericReader {
+    class EXPORTAPI GenericReader {
         class StringStream {
             const char* _src;
             uint32_t _length;
@@ -93,8 +93,8 @@ namespace custom {
         GenericValue* _cur;
         char _strError[64];
     public:
-        CustomGenericReader();
-        ~CustomGenericReader();
+        GenericReader();
+        ~GenericReader();
         const GenericValue* Parse(const char* src, uint32_t length);
         const char* getError() const { return _strError; }
         

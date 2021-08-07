@@ -113,16 +113,16 @@ namespace custom {
 
 /*------------------------------------------------------------------------------*/
 
-    CustomGenericReader::CustomGenericReader() : _alloc(new MemoryPoolAllocator), _cur(NULL) {
+    GenericReader::GenericReader() : _alloc(new MemoryPoolAllocator), _cur(NULL) {
     }
 
-    CustomGenericReader::~CustomGenericReader() {
+    GenericReader::~GenericReader() {
         if (_alloc) {
             delete _alloc;
         }
     }
 
-    int64_t CustomGenericReader::convertInt(const char* value, uint32_t length) {
+    int64_t GenericReader::convertInt(const char* value, uint32_t length) {
         if (!length) return 0;
         
         int64_t result = 0;
@@ -138,7 +138,7 @@ namespace custom {
         return result;
     }
 
-    uint64_t CustomGenericReader::convertUint(const char* value, uint32_t length) {
+    uint64_t GenericReader::convertUint(const char* value, uint32_t length) {
         if (!length) return 0;
         
         uint64_t result = 0;
@@ -156,7 +156,7 @@ namespace custom {
         return db;
     }
 
-    double CustomGenericReader::convertDouble(const char* value, uint32_t length) {
+    double GenericReader::convertDouble(const char* value, uint32_t length) {
         if (!length) return 0.0f;
         
         double result = 0.0;
@@ -178,7 +178,7 @@ namespace custom {
         return result;
     }
 
-    const GenericValue* CustomGenericReader::Parse(const char* src, uint32_t length) {
+    const GenericValue* GenericReader::Parse(const char* src, uint32_t length) {
         GenericValue* root = (GenericValue*)_alloc->Malloc(sizeof(GenericValue));
         memset(root, 0, sizeof(GenericValue));
         _cur = root;
@@ -190,7 +190,7 @@ namespace custom {
         return root;
     }
 
-    void CustomGenericReader::ParseValue(StringStream& is) {
+    void GenericReader::ParseValue(StringStream& is) {
         switch (is.Peek()) {
             case 'n': ParseNull(is); break;
             case 't': ParseTrue(is); break;
@@ -206,7 +206,7 @@ namespace custom {
             return;
     }
 
-    void CustomGenericReader::ParseKey(StringStream& is) {
+    void GenericReader::ParseKey(StringStream& is) {
         assert(is.Peek() == '\"');
         is.Take();  // Skip '\"'
         const char* szStart = is.Strart();
@@ -222,7 +222,7 @@ namespace custom {
         setError("KeyInvalid");
     }
 
-    void CustomGenericReader::ParseNull(StringStream& is) {
+    void GenericReader::ParseNull(StringStream& is) {
         assert(is.Peek() == 'n');
         is.Take();
 
@@ -235,7 +235,7 @@ namespace custom {
         }
     }
 
-    void CustomGenericReader::ParseTrue(StringStream& is) {
+    void GenericReader::ParseTrue(StringStream& is) {
         assert(is.Peek() == 't');
         const char* szStart = is.Strart();
         is.Take();
@@ -249,7 +249,7 @@ namespace custom {
         }
     }
 
-    void CustomGenericReader::ParseFalse(StringStream& is) {
+    void GenericReader::ParseFalse(StringStream& is) {
         assert(is.Peek() == 'f');
         const char* szStart = is.Strart();
         is.Take();
@@ -263,7 +263,7 @@ namespace custom {
         }
     }
 
-    void CustomGenericReader::ParseString(StringStream& is) {
+    void GenericReader::ParseString(StringStream& is) {
         assert(is.Peek() == '\"');
         is.Take();  // Skip '\"'
         const char* szStart = is.Strart();
@@ -280,7 +280,7 @@ namespace custom {
         setError("ValueInvalid");
     }
 
-    void CustomGenericReader::ParseArray(StringStream& is) {
+    void GenericReader::ParseArray(StringStream& is) {
         assert(is.Peek() == '[');
         is.Take();  // Skip '['
 
@@ -317,7 +317,7 @@ namespace custom {
         setError("ValueArrayInvalid");
     }
 
-    void CustomGenericReader::ParseNumber(StringStream& is) {
+    void GenericReader::ParseNumber(StringStream& is) {
         const char* szStart = is.Strart();
 
         for (; is.Peek() != '\0'; is.Take()) {
@@ -333,7 +333,7 @@ namespace custom {
         setError("ValueInvalid");
     }
 
-    void CustomGenericReader::ParseObject(StringStream& is) {
+    void GenericReader::ParseObject(StringStream& is) {
         assert(is.Peek() == '{');
         const char* szStart = is.Strart();
         is.Take();  // Skip '{'
