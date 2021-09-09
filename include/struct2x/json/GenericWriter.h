@@ -84,6 +84,8 @@ namespace custom {
             if (!_stack.empty()) {
                 if (_stack.top().first == kkeyType) {
                     _str.append(1, ':');
+                } else if (_stack.top().first == kValueType) {
+                    _str.append(1, ',');
                 }
             }
             _stack.push(Stack::value_type(kNullType, 0));
@@ -96,8 +98,12 @@ namespace custom {
         }
 
         void StartArray() {
-            if (!_stack.empty() && _stack.top().first == kkeyType) {
-                _str.append(1, ':');
+            if (!_stack.empty()) {
+                if (_stack.top().first == kkeyType) {
+                    _str.append(1, ':');
+                } else if (_stack.top().first == kValueType) {
+                    _str.append(1, ',');
+                }
             }
             _str.append(1, '[');
             _stack.push(Stack::value_type(kNullType, 0));
