@@ -214,7 +214,7 @@ namespace custom {
         for (; is.Peek() != '\0'; is.Take()) {
             if (is.Peek() == '\"') {
                 _cur->key = szStart;
-                _cur->keySize = is.Strart() - szStart;
+                _cur->keySize = (int32_t)(is.Strart() - szStart);
                 is.Take();  // Skip '\"'
                 return;
             }
@@ -243,7 +243,7 @@ namespace custom {
         if (Consume(is, 'r') && Consume(is, 'u') && Consume(is, 'e')) {
             _cur->type = VALUE_BOOL;
             _cur->value = szStart;
-            _cur->valueSize = is.Strart() - szStart;
+            _cur->valueSize = (int32_t)(is.Strart() - szStart);
         } else {
             setError("ValueInvalid");
         }
@@ -257,7 +257,7 @@ namespace custom {
         if (Consume(is, 'a') && Consume(is, 'l') && Consume(is, 's') && Consume(is, 'e')) {
             _cur->type = VALUE_BOOL;
             _cur->value = szStart;
-            _cur->valueSize = is.Strart() - szStart;
+            _cur->valueSize = (int32_t)(is.Strart() - szStart);
         } else {
             setError("ValueInvalid");
         }
@@ -272,7 +272,7 @@ namespace custom {
             if (is.Peek() == '\"' && is.Second2Last() != '\\') {
                 _cur->type = VALUE_STRING;
                 _cur->value = szStart;
-                _cur->valueSize = is.Strart() - szStart;
+                _cur->valueSize = (int32_t)(is.Strart() - szStart);
                 is.Take();  // Skip '\"'
                 return;
             }
@@ -326,7 +326,7 @@ namespace custom {
             } else {
                 _cur->type = VALUE_NUMBER;
                 _cur->value = szStart;
-                _cur->valueSize = is.Strart() - szStart;
+                _cur->valueSize = (int32_t)(is.Strart() - szStart);
                 return;
             }
         }
@@ -335,7 +335,7 @@ namespace custom {
 
     void GenericReader::ParseObject(StringStream& is) {
         assert(is.Peek() == '{');
-        const char* szStart = is.Strart();
+//        const char* szStart = is.Strart();
         is.Take();  // Skip '{'
 
         SkipWhitespace(is);

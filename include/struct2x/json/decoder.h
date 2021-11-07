@@ -94,14 +94,14 @@ namespace struct2x {
             if (_cur) {
                 value.clear();
 
-                const custom::GenericValue* parent = _cur;
+                const custom::GenericValue* parentTemp = _cur;
                 for (const custom::GenericValue* child = parent->child; child; child = child->next) {
                     std::string key(child->key, child->keySize);
                     V item = V();
                     decodeValue(key.c_str(), item, NULL);
                     value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
                 }
-                _cur = parent;
+                _cur = parentTemp;
             }
             return (parent == _cur);
         }
@@ -133,16 +133,16 @@ namespace struct2x {
             const custom::GenericValue* parent = _cur;
             _cur = custom::GetObjectItem(_cur, name);
             if (_cur) {
-                int32_t size = custom::GetArraySize(_cur);
+                uint32_t size = custom::GetArraySize(_cur);
                 if (size) {
                     value.resize(size);
                 }
-                const custom::GenericValue* parent = _cur;
+                const custom::GenericValue* parentTemp = _cur;
                 _cur = parent->child;
                 for (uint32_t idx = 0; _cur && (idx < size); (_cur = _cur->next) && ++idx) {
                     decodeValue(NULL, *(typename internal::TypeTraits<T>::Type*)(&value.at(idx)), NULL);
                 }
-                _cur = parent;
+                _cur = parentTemp;
                 if (pHas) *pHas = true;
             }
             _cur = parent;
@@ -155,14 +155,14 @@ namespace struct2x {
             if (_cur) {
                 value.clear();
 
-                const custom::GenericValue* parent = _cur;
+                const custom::GenericValue* parentTemp = _cur;
                 for (const custom::GenericValue* child = parent->child; child; child = child->next) {
                     std::string key(child->key, child->keySize);
                     V item = V();
                     decodeValue(key.c_str(), item, NULL);
                     value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
                 }
-                _cur = parent;
+                _cur = parentTemp;
                 if (pHas) *pHas = true;
             }
             _cur = parent;
@@ -173,8 +173,10 @@ namespace struct2x {
             if (item && item->type == custom::VALUE_BOOL) {
                 if (item->valueSize == 4) {
                     value = true;
+                    if (pHas) *pHas = true;
                 } else if (item->valueSize == 5) {
                     value = false;
+                    if (pHas) *pHas = true;
                 } else {
                     assert(false);
                 }
@@ -185,6 +187,7 @@ namespace struct2x {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
                 value = (uint32_t)custom::GenericReader::convertUint(item->value, item->valueSize);
+                if (pHas) *pHas = true;
             }
         }
 
@@ -192,6 +195,7 @@ namespace struct2x {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
                 value = (int32_t)custom::GenericReader::convertInt(item->value, item->valueSize);
+                if (pHas) *pHas = true;
             }
         }
 
@@ -199,6 +203,7 @@ namespace struct2x {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
                 value = custom::GenericReader::convertUint(item->value, item->valueSize);
+                if (pHas) *pHas = true;
             }
         }
 
@@ -206,6 +211,7 @@ namespace struct2x {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
                 value = custom::GenericReader::convertInt(item->value, item->valueSize);
+                if (pHas) *pHas = true;
             }
         }
 
@@ -213,6 +219,7 @@ namespace struct2x {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
                 value = (float)custom::GenericReader::convertDouble(item->value, item->valueSize);
+                if (pHas) *pHas = true;
             }
         }
 
@@ -220,6 +227,7 @@ namespace struct2x {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
             if (item && item->type == custom::VALUE_NUMBER) {
                 value = custom::GenericReader::convertDouble(item->value, item->valueSize);
+                if (pHas) *pHas = true;
             }
         }
 
@@ -228,6 +236,7 @@ namespace struct2x {
             if (item && item->type == custom::VALUE_STRING && item->value && item->valueSize) {
                 value.clear();
                 bool result = parse_string(value, item->value, item->valueSize);
+                if (pHas) *pHas = true;
                 assert(result);
             }
         }
@@ -237,6 +246,7 @@ namespace struct2x {
             if (item && item->type == custom::VALUE_ARRAY) {
                 for (const custom::GenericValue* child = item->child; child && child->type == custom::VALUE_BOOL; child = child->next) {
                     value.push_back((child->valueSize == 4));
+                    if (pHas) *pHas = true;
                 }
             }
         }

@@ -53,7 +53,7 @@ namespace custom {
         return NULL;
     }
 
-    inline const uint32_t GetArraySize(const GenericValue* parent) {
+    inline uint32_t GetArraySize(const GenericValue* parent) {
         uint32_t size = 0;
         if (parent && parent->type == VALUE_ARRAY) {
             for (const GenericValue* child = parent->child; child; child = child->next) {
@@ -63,7 +63,7 @@ namespace custom {
         return size;
     }
 
-    inline const uint32_t GetObjectSize(const GenericValue* parent) {
+    inline uint32_t GetObjectSize(const GenericValue* parent) {
         uint32_t size = 0;
         if (parent && parent->type == VALUE_OBJECT) {
             for (const GenericValue* child = parent->child; child; child = child->next) {
@@ -80,11 +80,12 @@ namespace custom {
             const char* _src;
             uint32_t _length;
         public:
+            typedef const char value_type;
             StringStream(const char* src, uint32_t length) : _src(src), _length(length) {}
-            const char Peek() const { if (isEnd()) return '\0'; return *_src; }
-            const char Second2Last() const { return *(_src - 1); }
-            const char Take() { --_length; return *_src++; }
-            const char* Strart() const { return _src; }
+            value_type Peek() const { if (isEnd()) return '\0'; return *_src; }
+            value_type Second2Last() const { return *(_src - 1); }
+            value_type Take() { --_length; return *_src++; }
+            value_type* Strart() const { return _src; }
             bool isEnd() const { return (_length == 0); }
         };
         
