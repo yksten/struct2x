@@ -10,6 +10,18 @@ C++98序列化库，一个开源的C++结构体与JSON快速超高效互转库�
 * 数组内需要统一类型，不支持`[1,2,{"key":"value"}]`。
 * 解析时支持has功能。
 
+
+### 性能(benchmark)
+```
+-------------------------------------------------------------
+Benchmark                   Time             CPU   Iterations
+-------------------------------------------------------------
+struct2xJSONEncode      42850 ns        42812 ns        15775
+struct2xJSONDecode      13109 ns        13085 ns        56355
+cJSONEncode            130396 ns       130237 ns         5382
+cJSONDecode             78503 ns        78451 ns         8670
+```
+
 ### 如何使用
 ```
 #include <iostream>
@@ -52,4 +64,257 @@ $ pushd cmake/build
 $ cmake -DEXAMPLE=ON ../..
 $ make -j
 $ popd
+```
+
+### 附：benchmark相关代码
+```
+如果没有大量重复结构，cJSON序列化会更慢
+static void struct2xJSONEncode(benchmark::State &state) {
+    example::containerData ins;
+    // 赋值
+    do {
+        ins.vi.push_back(1);
+        ins.vi.push_back(2345);
+        ins.vi.push_back(789);
+
+        ins.v.push_back(ins.d);
+        ins.v.push_back(ins.d);
+
+        ins.m.insert(std::pair<int32_t, example::data>(1, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(2, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(3, ins.d));
+
+        ins.vv.push_back(ins.v);
+        ins.vv.push_back(ins.v);
+
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("key", ins.m));
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("keystring", ins.m));
+
+        ins.vm.push_back(ins.m);
+        ins.vm.push_back(ins.m);
+
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkey", ins.v));
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkeystring", ins.v));
+    } while (false);
+
+    while (state.KeepRunning()) {
+        std::string strJson;
+        bool bEncode = struct2x::JSONEncoder(strJson) << ins;
+        assert(bEncode);
+    }
+}
+
+static void struct2xJSONDecode(benchmark::State &state) {
+    example::containerData ins;
+    // 赋值
+    do {
+        ins.vi.push_back(1);
+        ins.vi.push_back(2345);
+        ins.vi.push_back(789);
+
+        ins.v.push_back(ins.d);
+        ins.v.push_back(ins.d);
+
+        ins.m.insert(std::pair<int32_t, example::data>(1, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(2, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(3, ins.d));
+
+        ins.vv.push_back(ins.v);
+        ins.vv.push_back(ins.v);
+
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("key", ins.m));
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("keystring", ins.m));
+
+        ins.vm.push_back(ins.m);
+        ins.vm.push_back(ins.m);
+
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkey", ins.v));
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkeystring", ins.v));
+    } while (false);
+
+    std::string strJson;
+    bool bEncode = struct2x::JSONEncoder(strJson) << ins;
+    assert(bEncode);
+    while (state.KeepRunning()) {
+        bool bDecode = struct2x::JSONDecoder(strJson.c_str(), (uint32_t)strJson.size()) >> ins;
+        assert(bDecode);
+    }
+}
+
+static void cJSONEncode(benchmark::State &state) {
+    example::containerData ins;
+    // 赋值
+    do {
+        ins.vi.push_back(1);
+        ins.vi.push_back(2345);
+        ins.vi.push_back(789);
+
+        ins.v.push_back(ins.d);
+        ins.v.push_back(ins.d);
+
+        ins.m.insert(std::pair<int32_t, example::data>(1, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(2, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(3, ins.d));
+
+        ins.vv.push_back(ins.v);
+        ins.vv.push_back(ins.v);
+
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("key", ins.m));
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("keystring", ins.m));
+
+        ins.vm.push_back(ins.m);
+        ins.vm.push_back(ins.m);
+
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkey", ins.v));
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkeystring", ins.v));
+    } while (false);
+
+    while (state.KeepRunning()) {
+        cJSON *root      = cJSON_CreateObject();
+        cJSON *item_d    = cJSON_CreateObject();
+        example::data &d = ins.d;
+        cJSON_AddNumberToObject(item_d, "d", d.e);
+        cJSON_AddNumberToObject(item_d, "i", d.i);
+        cJSON_AddNumberToObject(item_d, "ui", d.ui);
+        cJSON_AddNumberToObject(item_d, "i64", d.i64);
+        cJSON_AddNumberToObject(item_d, "ui64", d.ui64);
+        cJSON_AddNumberToObject(item_d, "f", d.f);
+        cJSON_AddNumberToObject(item_d, "db", d.db);
+        cJSON_AddStringToObject(item_d, "str", d.str.c_str());
+
+        cJSON_AddItemToObject(root, "d", item_d);
+
+        cJSON *item_vi = cJSON_CreateIntArray(&ins.vi[0], 3);
+        cJSON_AddItemToObject(root, "vi", item_vi);
+
+        cJSON *item_v = cJSON_CreateArray();
+        cJSON_AddItemReferenceToArray(item_v, item_d);
+        cJSON_AddItemReferenceToArray(item_v, item_d);
+        cJSON_AddItemToObject(root, "v", item_v);
+
+        cJSON *item_m = cJSON_CreateObject();
+        cJSON_AddItemReferenceToObject(item_m, "1", item_d);
+        cJSON_AddItemReferenceToObject(item_m, "2", item_d);
+        cJSON_AddItemReferenceToObject(item_m, "3", item_d);
+        cJSON_AddItemToObject(root, "m", item_m);
+
+        cJSON *item_vv = cJSON_CreateArray();
+        cJSON_AddItemReferenceToArray(item_vv, item_v);
+        cJSON_AddItemReferenceToArray(item_vv, item_v);
+        cJSON_AddItemToObject(root, "vv", item_vv);
+
+        cJSON *item_mm = cJSON_CreateObject();
+        cJSON_AddItemReferenceToObject(item_mm, "key", item_m);
+        cJSON_AddItemReferenceToObject(item_mm, "keystring", item_m);
+        cJSON_AddItemToObject(root, "mm", item_mm);
+
+        cJSON *item_vm = cJSON_CreateArray();
+        cJSON_AddItemReferenceToArray(item_vm, item_m);
+        cJSON_AddItemReferenceToArray(item_vm, item_m);
+        cJSON_AddItemToObject(root, "vm", item_vm);
+
+        cJSON *item_mv = cJSON_CreateObject();
+        cJSON_AddItemReferenceToObject(item_mv, "mvkey", item_v);
+        cJSON_AddItemReferenceToObject(item_mv, "mvkeystring", item_v);
+
+        cJSON_AddItemToObject(root, "mv", item_mv);
+        char *buf = cJSON_PrintUnformatted(root);
+
+        std::string strJson(buf);
+        free(buf);
+        cJSON_Delete(root);
+    }
+}
+
+static void cJSONDecode(benchmark::State &state) {
+    example::containerData ins;
+    // 赋值
+    do {
+        ins.vi.push_back(1);
+        ins.vi.push_back(2345);
+        ins.vi.push_back(789);
+
+        ins.v.push_back(ins.d);
+        ins.v.push_back(ins.d);
+
+        ins.m.insert(std::pair<int32_t, example::data>(1, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(2, ins.d));
+        ins.m.insert(std::pair<int32_t, example::data>(3, ins.d));
+
+        ins.vv.push_back(ins.v);
+        ins.vv.push_back(ins.v);
+
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("key", ins.m));
+        ins.mm.insert(std::pair<std::string, std::map<int32_t, example::data>>("keystring", ins.m));
+
+        ins.vm.push_back(ins.m);
+        ins.vm.push_back(ins.m);
+
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkey", ins.v));
+        ins.mv.insert(std::pair<std::string, std::vector<example::data>>("mvkeystring", ins.v));
+    } while (false);
+
+    cJSON *root      = cJSON_CreateObject();
+    cJSON *item_d    = cJSON_CreateObject();
+    example::data &d = ins.d;
+    cJSON_AddNumberToObject(item_d, "d", d.e);
+    cJSON_AddNumberToObject(item_d, "i", d.i);
+    cJSON_AddNumberToObject(item_d, "ui", d.ui);
+    cJSON_AddNumberToObject(item_d, "i64", d.i64);
+    cJSON_AddNumberToObject(item_d, "ui64", d.ui64);
+    cJSON_AddNumberToObject(item_d, "f", d.f);
+    cJSON_AddNumberToObject(item_d, "db", d.db);
+    cJSON_AddStringToObject(item_d, "str", d.str.c_str());
+
+    cJSON_AddItemToObject(root, "d", item_d);
+
+    cJSON *item_vi = cJSON_CreateIntArray(&ins.vi[0], 3);
+    cJSON_AddItemToObject(root, "vi", item_vi);
+
+    cJSON *item_v = cJSON_CreateArray();
+    cJSON_AddItemReferenceToArray(item_v, item_d);
+    cJSON_AddItemReferenceToArray(item_v, item_d);
+    cJSON_AddItemToObject(root, "v", item_v);
+
+    cJSON *item_m = cJSON_CreateObject();
+    cJSON_AddItemReferenceToObject(item_m, "1", item_d);
+    cJSON_AddItemReferenceToObject(item_m, "2", item_d);
+    cJSON_AddItemReferenceToObject(item_m, "3", item_d);
+    cJSON_AddItemToObject(root, "m", item_m);
+
+    cJSON *item_vv = cJSON_CreateArray();
+    cJSON_AddItemReferenceToArray(item_vv, item_v);
+    cJSON_AddItemReferenceToArray(item_vv, item_v);
+    cJSON_AddItemToObject(root, "vv", item_vv);
+
+    cJSON *item_mm = cJSON_CreateObject();
+    cJSON_AddItemReferenceToObject(item_mm, "key", item_m);
+    cJSON_AddItemReferenceToObject(item_mm, "keystring", item_m);
+    cJSON_AddItemToObject(root, "mm", item_mm);
+
+    cJSON *item_vm = cJSON_CreateArray();
+    cJSON_AddItemReferenceToArray(item_vm, item_m);
+    cJSON_AddItemReferenceToArray(item_vm, item_m);
+    cJSON_AddItemToObject(root, "vm", item_vm);
+
+    cJSON *item_mv = cJSON_CreateObject();
+    cJSON_AddItemReferenceToObject(item_mv, "mvkey", item_v);
+    cJSON_AddItemReferenceToObject(item_mv, "mvkeystring", item_v);
+
+    cJSON_AddItemToObject(root, "mv", item_mv);
+    char *buf = cJSON_PrintUnformatted(root);
+
+    while (state.KeepRunning()) {
+        cJSON *decodeRoot = cJSON_Parse(buf);
+        cJSON_Delete(decodeRoot);
+    }
+
+    cJSON_Delete(root);
+    free(buf);
+}
+
+BENCHMARK(struct2xJSONEncode);
+BENCHMARK(struct2xJSONDecode);
+BENCHMARK(cJSONEncode);
+BENCHMARK(cJSONDecode);
 ```
