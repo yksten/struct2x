@@ -53,19 +53,19 @@ namespace custom {
         return NULL;
     }
 
-    inline uint32_t GetArraySize(const GenericValue* parent) {
-        uint32_t size = 0;
-        if (parent && parent->type == VALUE_ARRAY) {
-            for (const GenericValue* child = parent->child; child; child = child->next) {
-                ++size;
-            }
-        }
-        return size;
-    }
+//    inline uint32_t GetArraySize(const GenericValue* parent) {
+//        uint32_t size = 0;
+//        if (parent && parent->type == VALUE_ARRAY) {
+//            for (const GenericValue* child = parent->child; child; child = child->next) {
+//                ++size;
+//            }
+//        }
+//        return size;
+//    }
 
     inline uint32_t GetObjectSize(const GenericValue* parent) {
         uint32_t size = 0;
-        if (parent && parent->type == VALUE_OBJECT) {
+        if (parent/* && parent->type == VALUE_OBJECT*/) {
             for (const GenericValue* child = parent->child; child; child = child->next) {
                 ++size;
             }

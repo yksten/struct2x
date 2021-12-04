@@ -72,10 +72,11 @@ namespace struct2x {
     }
 
     class JSONDecoder {
+        bool _gnoreItemType;
         custom::GenericReader _reader;
         const custom::GenericValue* _cur;
     public:
-        FORCEINLINE JSONDecoder(const char* str, uint32_t length) : _cur(_reader.Parse(str, length)) {
+        FORCEINLINE JSONDecoder(const char* str, uint32_t length, bool gnoreType = false) : _gnoreItemType(gnoreType), _cur(_reader.Parse(str, length)) {
             assert(_cur);
         }
 
@@ -133,7 +134,7 @@ namespace struct2x {
             const custom::GenericValue* parent = _cur;
             _cur = custom::GetObjectItem(_cur, name);
             if (_cur) {
-                uint32_t size = custom::GetArraySize(_cur);
+                uint32_t size = custom::GetObjectSize(_cur);
                 if (size) {
                     value.resize(size);
                 }
@@ -170,22 +171,15 @@ namespace struct2x {
         
         FORCEINLINE void decodeValue(const char* name, bool& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_BOOL) {
-                if (item->valueSize == 4) {
-                    value = true;
-                    if (pHas) *pHas = true;
-                } else if (item->valueSize == 5) {
-                    value = false;
-                    if (pHas) *pHas = true;
-                } else {
-                    assert(false);
-                }
+            if (item && checkItemType(*item, custom::VALUE_BOOL)) {
+                value = item2Bool(*item);
+                if (pHas) *pHas = true;
             }
         }
 
         FORCEINLINE void decodeValue(const char* name, uint32_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_NUMBER) {
+            if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = (uint32_t)custom::GenericReader::convertUint(item->value, item->valueSize);
                 if (pHas) *pHas = true;
             }
@@ -193,7 +187,7 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, int32_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_NUMBER) {
+            if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = (int32_t)custom::GenericReader::convertInt(item->value, item->valueSize);
                 if (pHas) *pHas = true;
             }
@@ -201,7 +195,7 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, uint64_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_NUMBER) {
+            if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = custom::GenericReader::convertUint(item->value, item->valueSize);
                 if (pHas) *pHas = true;
             }
@@ -209,7 +203,7 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, int64_t& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_NUMBER) {
+            if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = custom::GenericReader::convertInt(item->value, item->valueSize);
                 if (pHas) *pHas = true;
             }
@@ -217,7 +211,7 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, float& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_NUMBER) {
+            if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = (float)custom::GenericReader::convertDouble(item->value, item->valueSize);
                 if (pHas) *pHas = true;
             }
@@ -225,7 +219,7 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, double& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_NUMBER) {
+            if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = custom::GenericReader::convertDouble(item->value, item->valueSize);
                 if (pHas) *pHas = true;
             }
@@ -233,7 +227,7 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, std::string& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_STRING && item->value && item->valueSize) {
+            if (item && checkItemType(*item, custom::VALUE_STRING) && item->value && item->valueSize) {
                 value.clear();
                 bool result = parse_string(value, item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -243,12 +237,38 @@ namespace struct2x {
 
         FORCEINLINE void decodeValue(const char* name, std::vector<bool>& value, bool* pHas) {
             const custom::GenericValue* item = custom::GetObjectItem(_cur, name);
-            if (item && item->type == custom::VALUE_ARRAY) {
-                for (const custom::GenericValue* child = item->child; child && child->type == custom::VALUE_BOOL; child = child->next) {
-                    value.push_back((child->valueSize == 4));
+            if (item && checkItemType(*item, custom::VALUE_ARRAY)) {
+                for (const custom::GenericValue* child = item->child; child && checkItemType(*item, custom::VALUE_BOOL); child = child->next) {
+                    value.push_back(item2Bool(*child));
                     if (pHas) *pHas = true;
                 }
             }
+        }
+        
+        inline bool checkItemType(const custom::GenericValue& item, const int type) const {
+            if (_gnoreItemType) {
+                return true;
+            }
+            return (item.type == type);
+        }
+        
+        inline bool item2Bool(const custom::GenericValue& item) const {
+            if (item.type == custom::VALUE_BOOL) {
+                return (item.valueSize == 4);
+            } else if (_gnoreItemType) {
+                if (item.type == custom::VALUE_NUMBER) {
+                    int value = custom::GenericReader::convertInt(item.value, item.valueSize);
+                    return (value != 0);
+                } else if (item.type == custom::VALUE_STRING) {
+                    std::string value;
+                    if (parse_string(value, item.value, item.valueSize)) {
+                        return (atoi(value.c_str()));
+                    }
+                } else {
+                    ;
+                }
+            }
+            return false;
         }
         
     };

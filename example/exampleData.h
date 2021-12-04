@@ -16,7 +16,7 @@ namespace example {
     };
 
     struct data {
-        data() : e(ET2), b(true), i(-25), ui(253), i64(-847), ui64(3647457), f(253.28503), db(2535.78925) {}
+        data() : e(ET2), b(true), i(-25), ui(253), i64(-847), ui64(3647457), f(253.28503), db(2535.78925), str("1111") {}
 
         EnumType e;
         bool b;
@@ -56,7 +56,7 @@ namespace example {
 
         template<typename T>
         void serialize(T& t) {
-            SERIALIZE(t, e, i, ui, i64, ui64, f, db, str);
+            SERIALIZE(t, e, b, i, ui, i64, ui64, f, db, str);
         }
     };
 
