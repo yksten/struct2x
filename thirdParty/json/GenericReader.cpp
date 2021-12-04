@@ -14,6 +14,35 @@
 
 namespace custom {
 
+    static int32_t strcasecmp(const char *s1, const char *s2) {
+        if (!s1) return (s1==s2)?0:1;if (!s2) return 1;
+        for(; tolower(*s1) == tolower(*s2); ++s1, ++s2)    if(*s1 == 0)    return 0;
+        return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
+    }
+
+    const GenericValue* GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive) {
+        if (!name) {
+            return parent;
+        }
+        
+        if (parent) {
+            for (GenericValue* child = parent->child; child; child = child->next) {
+                if (child->key && (strlen(name) == child->keySize)) {
+                    if (!caseInsensitive) {
+                        if (strncmp(name, child->key, child->keySize) == 0) {
+                            return child;
+                        }
+                    } else {
+                        if (strcasecmp(name, std::string(child->key, child->keySize).c_str()) == 0) {
+                            return child;
+                        }
+                    }
+                }
+            }
+        }
+        return NULL;
+    }
+
     class MemoryPoolAllocator {
         struct ChunkHeader {
             size_t capacity;

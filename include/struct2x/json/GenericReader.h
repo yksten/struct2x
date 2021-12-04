@@ -3,9 +3,11 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <ctype.h>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <string>
 
 
 #ifdef _MSC_VER
@@ -38,20 +40,7 @@ namespace custom {
         struct GenericValue* child;
     } GenericValue;
 
-    inline const GenericValue* GetObjectItem(const GenericValue* parent, const char* name) {
-        if (!name) {
-            return parent;
-        }
-        
-        if (parent) {
-            for (GenericValue* child = parent->child; child; child = child->next) {
-                if (child->key && (strlen(name) == child->keySize) && strncmp(name, child->key, child->keySize) == 0) {
-                    return child;
-                }
-            }
-        }
-        return NULL;
-    }
+    const GenericValue* GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive);
 
 //    inline uint32_t GetArraySize(const GenericValue* parent) {
 //        uint32_t size = 0;
