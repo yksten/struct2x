@@ -138,7 +138,7 @@ namespace struct2x {
                     value.resize(size);
                 }
                 const custom::GenericValue* parentTemp = _cur;
-                _cur = parent->child;
+                _cur = _cur->child;
                 for (uint32_t idx = 0; _cur && (idx < size); (_cur = _cur->next) && ++idx) {
                     decodeValue(NULL, *(typename internal::TypeTraits<T>::Type*)(&value.at(idx)), NULL);
                 }
@@ -156,7 +156,7 @@ namespace struct2x {
                 value.clear();
 
                 const custom::GenericValue* parentTemp = _cur;
-                for (const custom::GenericValue* child = parent->child; child; child = child->next) {
+                for (const custom::GenericValue* child = _cur->child; child; child = child->next) {
                     std::string key(child->key, child->keySize);
                     V item = V();
                     decodeValue(key.c_str(), item, NULL);
