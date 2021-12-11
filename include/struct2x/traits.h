@@ -2,15 +2,10 @@
 #define __STRUCT2X_TRAITS_H__
 
 #include <stdlib.h>
-#ifdef _MSC_VER
-#ifdef EXPORTAPI 
-#define EXPORTAPI _declspec(dllimport)
-#else 
-#define EXPORTAPI _declspec(dllexport)
-#endif
-#else
-#define EXPORTAPI
-#endif
+#include <stdint.h>
+#include <string>
+#include <vector>
+
 
 #ifdef _MSC_VER_ // for MSVC
 #define FORCEINLINE __forceinline
@@ -19,10 +14,6 @@
 #else
 #define FORCEINLINE
 #endif
-
-#include <stdint.h>
-#include <string>
-#include <vector>
 
 
 namespace struct2x {

@@ -72,13 +72,18 @@ namespace struct2x {
     }
 
     class JSONDecoder {
-        bool _gnoreItemType;                // check field type
-        bool _CaseInsensitive;              // key case insensitive
+        bool _convertByType;                // convert by field type
+        bool _caseInsensitive;              // key case insensitive
         custom::GenericReader _reader;
         const custom::GenericValue* _cur;
     public:
-        FORCEINLINE JSONDecoder(const char* str, bool gnoreType = false, bool caseInsensitive = false) : _gnoreItemType(gnoreType), _CaseInsensitive(caseInsensitive), _cur(_reader.Parse(str)) {
+        FORCEINLINE JSONDecoder(const char* str, bool caseInsensitive = false) : _convertByType(true), _caseInsensitive(caseInsensitive), _cur(_reader.Parse(str)) {
             assert(_cur);
+        }
+        
+        JSONDecoder& setConvertByType(bool convertByType) {
+            _convertByType = convertByType;
+            return *this;
         }
 
         template<typename T>
@@ -122,7 +127,7 @@ namespace struct2x {
         template<typename T>
         FORCEINLINE void decodeValue(const char* name, T& value, bool* pHas) {
             const custom::GenericValue* parent = _cur;
-            _cur = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            _cur = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (_cur) {
                 internal::serializeWrapper(*this, value);
                 if (pHas) *pHas = true;
@@ -133,7 +138,7 @@ namespace struct2x {
         template<typename T>
         FORCEINLINE void decodeValue(const char* name, std::vector<T>& value, bool* pHas) {
             const custom::GenericValue* parent = _cur;
-            _cur = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            _cur = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (_cur) {
                 uint32_t size = custom::GetObjectSize(_cur);
                 if (size) {
@@ -153,7 +158,7 @@ namespace struct2x {
         template<typename K, typename V>
         FORCEINLINE void decodeValue(const char* name, std::map<K, V>& value, bool* pHas) {
             const custom::GenericValue* parent = _cur;
-            _cur = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            _cur = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (_cur) {
                 value.clear();
 
@@ -171,7 +176,7 @@ namespace struct2x {
         }
         
         FORCEINLINE void decodeValue(const char* name, bool& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_BOOL)) {
                 value = item2Bool(*item);
                 if (pHas) *pHas = true;
@@ -179,7 +184,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, uint32_t& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = (uint32_t)custom::GenericReader::convertUint(item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -187,7 +192,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, int32_t& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = (int32_t)custom::GenericReader::convertInt(item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -195,7 +200,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, uint64_t& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = custom::GenericReader::convertUint(item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -203,7 +208,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, int64_t& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = custom::GenericReader::convertInt(item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -211,7 +216,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, float& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = (float)custom::GenericReader::convertDouble(item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -219,7 +224,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, double& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
                 value = custom::GenericReader::convertDouble(item->value, item->valueSize);
                 if (pHas) *pHas = true;
@@ -227,7 +232,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, std::string& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_STRING) && item->value && item->valueSize) {
                 value.clear();
                 bool result = parse_string(value, item->value, item->valueSize);
@@ -237,7 +242,7 @@ namespace struct2x {
         }
 
         FORCEINLINE void decodeValue(const char* name, std::vector<bool>& value, bool* pHas) {
-            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _CaseInsensitive);
+            const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
             if (item && checkItemType(*item, custom::VALUE_ARRAY)) {
                 for (const custom::GenericValue* child = item->child; child && checkItemType(*item, custom::VALUE_BOOL); child = child->next) {
                     value.push_back(item2Bool(*child));
@@ -247,7 +252,7 @@ namespace struct2x {
         }
         
         inline bool checkItemType(const custom::GenericValue& item, const int type) const {
-            if (_gnoreItemType) {
+            if (!_convertByType) {
                 return true;
             }
             return (item.type == type);
@@ -256,7 +261,7 @@ namespace struct2x {
         inline bool item2Bool(const custom::GenericValue& item) const {
             if (item.type == custom::VALUE_BOOL) {
                 return (item.valueSize == 4);
-            } else if (_gnoreItemType) {
+            } else if (!_convertByType) {
                 if (item.type == custom::VALUE_NUMBER) {
                     int value = custom::GenericReader::convertInt(item.value, item.valueSize);
                     return (value != 0);

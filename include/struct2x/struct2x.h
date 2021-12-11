@@ -205,7 +205,7 @@ namespace struct2x {
                                      _8, _7, _6, _5, _4, _3, _2, _1))(c, __VA_ARGS__))
 
 #define VISITSTRUCT(structType, ...)                                                               \
-    template <typename T> FORCEINLINE void serialize(T &t, structType &data) {                     \
+    template <typename T> void serialize(T &t, structType &data) {                                 \
         NISERIALIZE(t, data, __VA_ARGS__);                                                         \
     }
 
