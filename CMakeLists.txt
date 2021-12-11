@@ -13,17 +13,19 @@ SET(CMAKE_DEBUG_POSTFIX d)
 INCLUDE_DIRECTORIES(./ ./include/)
 AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 
-# json
-SET(JSON "./include/struct2x/json/GenericReader.h" "./thirdParty/json/GenericReader.cpp" "./include/struct2x/json/GenericWriter.h" "./thirdParty/json/GenericWriter.cpp")
-SOURCE_GROUP("thirdParty\\json" FILES ${JSON})
-
 # struct2x
 SET(INCLUDE "./include/struct2x/traits.h" "./include/struct2x/struct2x.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
+# thirdParty
+SET(JSON "./include/struct2x/json/GenericReader.h" "./src/thirdParty/json/GenericReader.cpp" "./include/struct2x/json/GenericWriter.h" "./src/thirdParty/json/GenericWriter.cpp")
+SOURCE_GROUP("src\\thirdParty\\json" FILES ${JSON})
+
 # json
 SET(INCLUDEJSON "./include/struct2x/json/encoder.h" "./include/struct2x/json/decoder.h")
 SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
+SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
+SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
 # protobuf
 SET(INCLUDEPROTOBUF "./include/struct2x/protobuf/encoder.h" "./include/struct2x/protobuf/decoder.h")
@@ -36,14 +38,14 @@ IF (MSVC)
     ADD_LIBRARY(struct2x SHARED
     ${JSON} 
     ${INCLUDE} 
-    ${INCLUDEJSON} 
+    ${INCLUDEJSON} ${SRCJSON}
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ELSE ()
     ADD_LIBRARY(struct2x 
     ${JSON} 
     ${INCLUDE} 
-    ${INCLUDEJSON} 
+    ${INCLUDEJSON} ${SRCJSON}
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ENDIF (MSVC)

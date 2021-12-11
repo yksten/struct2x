@@ -15,6 +15,16 @@
 #define FORCEINLINE
 #endif
 
+#ifdef _MSC_VER
+#ifdef EXPORTAPI
+#define EXPORTAPI _declspec(dllimport)
+#else
+#define EXPORTAPI _declspec(dllexport)
+#endif
+#else
+#define EXPORTAPI
+#endif
+
 
 namespace struct2x {
 
