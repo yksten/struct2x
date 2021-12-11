@@ -67,15 +67,14 @@ namespace custom {
     class EXPORTAPI GenericReader {
         class StringStream {
             const char* _src;
-            uint32_t _length;
         public:
             typedef const char value_type;
-            StringStream(const char* src, uint32_t length) : _src(src), _length(length) {}
+            explicit StringStream(const char* src) : _src(src) {}
             value_type Peek() const { if (isEnd()) return '\0'; return *_src; }
             value_type Second2Last() const { return *(_src - 1); }
-            value_type Take() { --_length; return *_src++; }
+            value_type Take() { return *_src++; }
             value_type* Strart() const { return _src; }
-            bool isEnd() const { return (_length == 0); }
+            bool isEnd() const {return (*_src == '\0'); }
         };
         
         enum { DEFAULTCACPCITY = 32 };
@@ -85,7 +84,7 @@ namespace custom {
     public:
         GenericReader();
         ~GenericReader();
-        const GenericValue* Parse(const char* src, uint32_t length);
+        const GenericValue* Parse(const char* src);
         const char* getError() const { return _strError; }
         
         static int64_t convertInt(const char* value, uint32_t length);

@@ -72,12 +72,12 @@ namespace struct2x {
     }
 
     class JSONDecoder {
-        bool _gnoreItemType;
-        bool _CaseInsensitive;
+        bool _gnoreItemType;                // check field type
+        bool _CaseInsensitive;              // key case insensitive
         custom::GenericReader _reader;
         const custom::GenericValue* _cur;
     public:
-        FORCEINLINE JSONDecoder(const char* str, uint32_t length, bool gnoreType = false, bool caseInsensitive = false) : _gnoreItemType(gnoreType), _CaseInsensitive(caseInsensitive), _cur(_reader.Parse(str, length)) {
+        FORCEINLINE JSONDecoder(const char* str, bool gnoreType = false, bool caseInsensitive = false) : _gnoreItemType(gnoreType), _CaseInsensitive(caseInsensitive), _cur(_reader.Parse(str)) {
             assert(_cur);
         }
 

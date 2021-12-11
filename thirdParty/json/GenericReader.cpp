@@ -207,12 +207,12 @@ namespace custom {
         return result;
     }
 
-    const GenericValue* GenericReader::Parse(const char* src, uint32_t length) {
+    const GenericValue* GenericReader::Parse(const char* src) {
         GenericValue* root = (GenericValue*)_alloc->Malloc(sizeof(GenericValue));
         memset(root, 0, sizeof(GenericValue));
         _cur = root;
         
-        StringStream is(src, length);
+        StringStream is(src);
         if (is.Peek() != '\0') {
             ParseValue(is);
         }

@@ -11,7 +11,7 @@ namespace struct2x {
     class JSONEncoder {
         custom::GenericWriter _writer;
     public:
-        explicit JSONEncoder(std::string& str) : _writer(str) {}
+        explicit JSONEncoder(std::string& str, bool formatted = false) : _writer(str, formatted) {}
 
         template<typename T>
         FORCEINLINE JSONEncoder& operator&(serializeItem<T> value) {

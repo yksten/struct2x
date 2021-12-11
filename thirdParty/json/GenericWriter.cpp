@@ -32,7 +32,14 @@ namespace custom {
 
     void GenericWriter::Bool(bool b) {
         Stack::value_type &vt = _stack.top();
-        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        if (vt.first == kkeyType) {
+            colon(_str);
+        } else if (vt.first == kValueType) {
+            comma(_str);
+            tab(_str, _stack.layer());
+        } else {
+            tab(_str, _stack.layer());
+        }
         if (b) {
             _str.append("true");
         } else {
@@ -43,7 +50,14 @@ namespace custom {
 
     void GenericWriter::Int64(int64_t i64) {
         Stack::value_type &vt = _stack.top();
-        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        if (vt.first == kkeyType) {
+            colon(_str);
+        } else if (vt.first == kValueType) {
+            comma(_str);
+            tab(_str, _stack.layer());
+        } else {
+            tab(_str, _stack.layer());
+        }
         char buffer[32] = {0};
         snprintf(buffer, 32, "%lld", i64);
         _str.append(buffer);
@@ -52,7 +66,14 @@ namespace custom {
 
     void GenericWriter::Uint64(uint64_t u64) {
         Stack::value_type &vt = _stack.top();
-        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        if (vt.first == kkeyType) {
+            colon(_str);
+        } else if (vt.first == kValueType) {
+            comma(_str);
+            tab(_str, _stack.layer());
+        } else {
+            tab(_str, _stack.layer());
+        }
         char buffer[32] = {0};
         snprintf(buffer, 32, "%llu", u64);
         _str.append(buffer);
@@ -61,7 +82,14 @@ namespace custom {
 
     void GenericWriter::Double(double d) {
         Stack::value_type &vt = _stack.top();
-        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        if (vt.first == kkeyType) {
+            colon(_str);
+        } else if (vt.first == kValueType) {
+            comma(_str);
+            tab(_str, _stack.layer());
+        } else {
+            tab(_str, _stack.layer());
+        }
         char buffer[64] = {0};
         snprintf(buffer, 64, "%0.8f", d);
         _str.append(buffer);
@@ -70,7 +98,8 @@ namespace custom {
     GenericWriter &GenericWriter::Key(const char *szKey) {
         if (szKey) {
             Stack::value_type &vt = _stack.top();
-            if (vt.second) { _str.append(1, ','); }
+            if (vt.second) { comma(_str); }
+            tab(_str, _stack.layer());
             APPENDSTRING(_str, szKey);
             vt.second++;
             vt.first = kkeyType;
@@ -80,9 +109,106 @@ namespace custom {
 
     void GenericWriter::String(const char *szValue) {
         Stack::value_type &vt = _stack.top();
-        if (vt.first == kkeyType) { _str.append(1, ':'); } else if (vt.first == kValueType) { _str.append(1, ','); }
+        if (vt.first == kkeyType) {
+            colon(_str);
+        } else if (vt.first == kValueType) {
+            comma(_str);
+            tab(_str, _stack.layer());
+        } else {
+            tab(_str, _stack.layer());
+        }
         APPENDSTRING(_str, szValue);
         vt.first = kValueType;
+    }
+
+    void GenericWriter::StartObject() {
+        if (!_stack.empty()) {
+            if (_stack.top().first == kkeyType) {
+                colon(_str);
+            } else if (_stack.top().first == kValueType) {
+                comma(_str);
+            } else {
+                tab(_str, _stack.layer());
+            }
+        }
+        _stack.push(Stack::value_type(kNullType, 0));
+        leftBrace(_str);
+    }
+
+    void GenericWriter::EndObject() {
+        rightBrace(_str, _stack.layer());
+        _stack.pop();
+    }
+
+    void GenericWriter::StartArray() {
+        if (!_stack.empty()) {
+            if (_stack.top().first == kkeyType) {
+                colon(_str);
+            } else if (_stack.top().first == kValueType) {
+                comma(_str);
+            } else {
+                tab(_str, _stack.layer());
+            }
+        }
+        leftBracket(_str);
+        _stack.push(Stack::value_type(kNullType, 0));
+    }
+
+    void GenericWriter::EndArray() {
+        rightBracket(_str, _stack.layer());
+        _stack.pop();
+    }
+
+    void GenericWriter::colon(std::string& str) const {
+        str.append(1, ':');
+        if (_formatted) {
+            str.append(1, ' ');
+        }
+    }
+
+    void GenericWriter::comma(std::string& str) const {
+        str.append(1, ',');
+        if (_formatted) {
+            str.append(1, '\n');
+        }
+    }
+
+    void GenericWriter::leftBrace(std::string& str) const {
+        str.append(1, '{');
+        if (_formatted) {
+            str.append(1, '\n');
+        }
+    }
+
+    void GenericWriter::rightBrace(std::string& str, int32_t layer) const {
+        if (_formatted) {
+            str.append(1, '\n');
+            tab(str, layer - 1);
+        }
+        str.append(1, '}');
+    }
+
+    void GenericWriter::leftBracket(std::string& str) const {
+        str.append(1, '[');
+        if (_formatted) {
+            str.append(1, '\n');
+        }
+    }
+
+    void GenericWriter::rightBracket(std::string& str, int32_t layer) const {
+        if (_formatted) {
+            str.append(1, '\n');
+            tab(str, layer - 1);
+        }
+        str.append(1, ']');
+    }
+
+    void GenericWriter::tab(std::string& str, int32_t layer) const {
+        if (_formatted) {
+            for (int32_t idx = 0; idx < layer; ++idx) {
+                str.append(1, '\t');
+            }
+        }
     }
 
 } // namespace custom

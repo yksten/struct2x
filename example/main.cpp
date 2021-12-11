@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     
     
     example::containerData insResult;
-    bool bDecode =struct2x::JSONDecoder(strJson.c_str(), strJson.size()) >> insResult;
+    bool bDecode =struct2x::JSONDecoder(strJson.c_str()) >> insResult;
     assert(bDecode);
     
     if (ins == insResult) {
