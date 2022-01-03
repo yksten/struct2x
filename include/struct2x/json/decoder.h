@@ -44,7 +44,7 @@ namespace struct2x {
             if (!_cur) return false;
             const custom::GenericValue* parent = _cur;
             if (_cur) {
-                uint32_t size = custom::GetObjectSize(_cur);
+                uint32_t size = custom::GenericReader::GetObjectSize(_cur);
                 if (size) {
                     value.resize(size);
                 }
@@ -80,7 +80,7 @@ namespace struct2x {
         template<typename T>
         void decodeValue(const char* name, T& value, bool* pHas) {
             const custom::GenericValue* parent = _cur;
-            _cur = custom::GetObjectItem(_cur, name, _caseInsensitive);
+            _cur = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
             if (_cur) {
                 internal::serializeWrapper(*this, value);
                 if (pHas) *pHas = true;
@@ -91,9 +91,9 @@ namespace struct2x {
         template<typename T>
         void decodeValue(const char* name, std::vector<T>& value, bool* pHas) {
             const custom::GenericValue* parent = _cur;
-            _cur = custom::GetObjectItem(_cur, name, _caseInsensitive);
+            _cur = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
             if (_cur) {
-                uint32_t size = custom::GetObjectSize(_cur);
+                uint32_t size = custom::GenericReader::GetObjectSize(_cur);
                 if (size) {
                     value.resize(size);
                 }
@@ -111,7 +111,7 @@ namespace struct2x {
         template<typename K, typename V>
         void decodeValue(const char* name, std::map<K, V>& value, bool* pHas) {
             const custom::GenericValue* parent = _cur;
-            _cur = custom::GetObjectItem(_cur, name, _caseInsensitive);
+            _cur = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
             if (_cur) {
                 value.clear();
 

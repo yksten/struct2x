@@ -1,5 +1,6 @@
 #include <struct2x/json/GenericReader.h>
 #include <assert.h>
+#include <string>
 
 
 #define ALIGN(x) (((x) + static_cast<size_t>(7u)) & ~static_cast<size_t>(7u))
@@ -14,141 +15,24 @@
 
 namespace custom {
 
-    static int32_t strcasecmp(const char *s1, const char *s2) {
-        if (!s1) return (s1==s2)?0:1;if (!s2) return 1;
-        for(; tolower(*s1) == tolower(*s2); ++s1, ++s2)    if(*s1 == 0)    return 0;
-        return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
-    }
-
-    const GenericValue* GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive) {
-        if (!name) {
-            return parent;
-        }
-        
-        if (parent) {
-            for (GenericValue* child = parent->child; child; child = child->next) {
-                if (child->key && (strlen(name) == child->keySize)) {
-                    if (!caseInsensitive) {
-                        if (strncmp(name, child->key, child->keySize) == 0) {
-                            return child;
-                        }
-                    } else {
-                        if (strcasecmp(name, std::string(child->key, child->keySize).c_str()) == 0) {
-                            return child;
-                        }
-                    }
-                }
-            }
-        }
-        return NULL;
-    }
-
-    class MemoryPoolAllocator {
-        struct ChunkHeader {
-            size_t capacity;
-            size_t size;
-            ChunkHeader *next;
-        };
-
-        struct SharedData {
-            ChunkHeader* chunkHead;
-            size_t refcount;
-            bool ownBuffer;
-        };
-
-        static const size_t SIZEOF_SHARED_DATA  = ALIGN(sizeof(SharedData));
-        static const size_t SIZEOF_CHUNK_HEADER = ALIGN(sizeof(ChunkHeader));
-        static const size_t kDefaultChunkCapacity = 56 * 32;
-
-        size_t chunk_capacity_;
-        SharedData *shared_;
-      public:
-        explicit MemoryPoolAllocator(size_t chunkSize = kDefaultChunkCapacity)
-            : chunk_capacity_(chunkSize), shared_(static_cast<SharedData*>(AllocatorMalloc(SIZEOF_SHARED_DATA + SIZEOF_CHUNK_HEADER))) {
-            assert(shared_ != 0);
-            shared_->chunkHead           = GetChunkHead(shared_);
-            shared_->chunkHead->capacity = 0;
-            shared_->chunkHead->size     = 0;
-            shared_->chunkHead->next     = 0;
-            shared_->ownBuffer           = true;
-            shared_->refcount            = 1;
-        }
-
-        ~MemoryPoolAllocator() {
-            if (!shared_) {
-                return;
-            }
-            if (shared_->refcount > 1) {
-                --shared_->refcount;
-                return;
-            }
-            Clear();
-            if (shared_->ownBuffer) { AllocatorFree(shared_); }
-        }
-
-        void* Malloc(size_t size) {
-            assert(shared_->refcount > 0);
-            if (!size) return NULL;
-
-            size = ALIGN(size);
-            if (UNLIKELY(shared_->chunkHead->size + size > shared_->chunkHead->capacity)) {
-                if (!AddChunk(chunk_capacity_ > size ? chunk_capacity_ : size)) {
-                    return NULL;
-                }
-            }
-
-            void *buffer = GetChunkBuffer(shared_) + shared_->chunkHead->size;
-            shared_->chunkHead->size += size;
-            return buffer;
-        }
-
-      private:
-        void Clear() {
-            assert(shared_->refcount > 0);
-            for (;;) {
-                ChunkHeader *c = shared_->chunkHead;
-                if (!c->next) { break; }
-                shared_->chunkHead = c->next;
-                AllocatorFree(c);
-            }
-            shared_->chunkHead->size = 0;
-        }
-        
-        bool AddChunk(size_t capacity) {
-            if (ChunkHeader* chunk = static_cast<ChunkHeader *>(AllocatorMalloc(SIZEOF_CHUNK_HEADER + capacity))) {
-                chunk->capacity    = capacity;
-                chunk->size        = 0;
-                chunk->next        = shared_->chunkHead;
-                shared_->chunkHead = chunk;
-                return true;
-            }
-            return false;
-        }
-        
-        static inline void AllocatorFree(void *ptr) {
-            free(ptr);
-        }
-        static inline void* AllocatorMalloc(size_t size) {
-            if (size) { return malloc(size); } return NULL;
-        }
-        
-        static inline ChunkHeader *GetChunkHead(SharedData *shared) {
-            return reinterpret_cast<ChunkHeader *>(reinterpret_cast<uint8_t *>(shared) + SIZEOF_SHARED_DATA);
-        }
-        static inline uint8_t *GetChunkBuffer(SharedData *shared) {
-            return reinterpret_cast<uint8_t *>(shared->chunkHead) + SIZEOF_CHUNK_HEADER;
-        }
+    class StringStream {
+        const char* _src;
+    public:
+        typedef const char value_type;
+        explicit StringStream(const char* src) : _src(src) {}
+        value_type Peek() const { if (isEnd()) return '\0'; return *_src; }
+        value_type Second2Last() const { return *(_src - 1); }
+        value_type Take() { return *_src++; }
+        value_type* Strart() const { return _src; }
+        bool isEnd() const {return (*_src == '\0'); }
     };
 
 /*------------------------------------------------------------------------------*/
 
-    GenericReader::GenericReader() : _alloc(new MemoryPoolAllocator), _cur(NULL) {
+    GenericReader::GenericReader() : _cur(NULL) {
     }
 
     GenericReader::~GenericReader() {
-        if (_alloc) {
-            delete _alloc;
-        }
     }
 
     int64_t GenericReader::convertInt(const char* value, uint32_t length) {
@@ -207,9 +91,58 @@ namespace custom {
         return result;
     }
 
+    uint32_t GenericReader::GetObjectSize(const GenericValue* parent) {
+       uint32_t size = 0;
+        if (parent) {
+            for (const GenericValue* child = parent->child; child; child = child->next) {
+                ++size;
+            }
+        }
+       return size;
+    }
+
+    static int32_t strcasecmp(const char *s1, const char *s2) {
+        if (!s1) return (s1==s2)?0:1;if (!s2) return 1;
+        for(; tolower(*s1) == tolower(*s2); ++s1, ++s2)    if(*s1 == 0)    return 0;
+        return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
+    }
+
+    const GenericValue* GenericReader::GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive) {
+        if (!name) {
+            return parent;
+        }
+        
+        if (parent) {
+            for (GenericValue* child = parent->child; child; child = child->next) {
+                if (child->key && (strlen(name) == child->keySize)) {
+                    if (!caseInsensitive) {
+                        if (strncmp(name, child->key, child->keySize) == 0) {
+                            return child;
+                        }
+                    } else {
+                        if (strcasecmp(name, std::string(child->key, child->keySize).c_str()) == 0) {
+                            return child;
+                        }
+                    }
+                }
+            }
+        }
+        return NULL;
+    }
+
     const GenericValue* GenericReader::Parse(const char* src) {
-        GenericValue* root = (GenericValue*)_alloc->Malloc(sizeof(GenericValue));
-        memset(root, 0, sizeof(GenericValue));
+        do {
+            ++_alloc;
+            StringStream is(src);
+            if (is.Peek() != '\0') {
+                ParseValue(is);
+            }
+        } while(false);
+        
+        //
+        _alloc.reSize();
+        
+        GenericValue* root = _alloc.allocValue();
         _cur = root;
         
         StringStream is(src);
@@ -225,8 +158,8 @@ namespace custom {
             case 't': ParseTrue(is); break;
             case 'f': ParseFalse(is); break;
             case '"': ParseString(is); break;
-            case '{': { GenericValue* parent = _cur; ParseObject(is); _cur = parent; } break;
-            case '[': { GenericValue* parent = _cur; ParseArray(is); _cur = parent; } break;
+            case '{': { GenericValue* parent = _cur; setItemType(GenericValue::VALUE_OBJECT); ParseObject(is); _cur = parent; } break;
+            case '[': { GenericValue* parent = _cur; setItemType(GenericValue::VALUE_ARRAY); ParseArray(is); _cur = parent; } break;
             default:
                 ParseNumber(is);
                 break;
@@ -242,8 +175,7 @@ namespace custom {
 
         for (; is.Peek() != '\0'; is.Take()) {
             if (is.Peek() == '\"') {
-                _cur->key = szStart;
-                _cur->keySize = (int32_t)(is.Strart() - szStart);
+                setItemKey(szStart, is.Strart() - szStart);
                 is.Take();  // Skip '\"'
                 return;
             }
@@ -256,9 +188,7 @@ namespace custom {
         is.Take();
 
         if (Consume(is, 'u') && Consume(is, 'l') && Consume(is, 'l')) {
-            _cur->type = VALUE_NULL;
-            _cur->value = "null";
-            _cur->valueSize = 4;
+            setItemValue(GenericValue::VALUE_NULL, "null", 4);
         } else {
             setError("ValueInvalid");
         }
@@ -270,9 +200,7 @@ namespace custom {
         is.Take();
 
         if (Consume(is, 'r') && Consume(is, 'u') && Consume(is, 'e')) {
-            _cur->type = VALUE_BOOL;
-            _cur->value = szStart;
-            _cur->valueSize = (int32_t)(is.Strart() - szStart);
+            setItemValue(GenericValue::VALUE_BOOL, szStart, is.Strart() - szStart);
         } else {
             setError("ValueInvalid");
         }
@@ -284,9 +212,7 @@ namespace custom {
         is.Take();
 
         if (Consume(is, 'a') && Consume(is, 'l') && Consume(is, 's') && Consume(is, 'e')) {
-            _cur->type = VALUE_BOOL;
-            _cur->value = szStart;
-            _cur->valueSize = (int32_t)(is.Strart() - szStart);
+            setItemValue(GenericValue::VALUE_BOOL, szStart, is.Strart() - szStart);
         } else {
             setError("ValueInvalid");
         }
@@ -299,10 +225,22 @@ namespace custom {
 
         for (; is.Peek() != '\0'; is.Take()) {
             if (is.Peek() == '\"' && is.Second2Last() != '\\') {
-                _cur->type = VALUE_STRING;
-                _cur->value = szStart;
-                _cur->valueSize = (int32_t)(is.Strart() - szStart);
+                setItemValue(GenericValue::VALUE_STRING, szStart, is.Strart() - szStart);
                 is.Take();  // Skip '\"'
+                return;
+            }
+        }
+        setError("ValueInvalid");
+    }
+
+    void GenericReader::ParseNumber(StringStream& is) {
+        const char* szStart = is.Strart();
+        
+        for (; is.Peek() != '\0'; is.Take()) {
+            if (is.Peek() == '-' || is.Peek() == '.' || (is.Peek() >= '0' && is.Peek() <= '9')) {
+                continue;
+            } else {
+                setItemValue(GenericValue::VALUE_NUMBER, szStart, is.Strart() - szStart);
                 return;
             }
         }
@@ -318,20 +256,10 @@ namespace custom {
             return;
         }
 
-        _cur->type = VALUE_ARRAY;
-        for (uint32_t elementCount = 0;;) {
-            GenericValue* temp = _cur;
-            _cur = (GenericValue*)_alloc->Malloc(sizeof(GenericValue));
-            memset(_cur, 0, sizeof(GenericValue));
-            _cur->prev = temp;
-            if (!elementCount) {
-                temp->child = _cur;
-            } else {
-                temp->next = _cur;
-            }
-            
+        for (uint32_t elementIndex = 0;;) {
+            getChildItem(elementIndex);
             ParseValue(is);
-            ++elementCount;
+            ++elementIndex;
             SkipWhitespace(is);
 
             if (Consume(is, ',')) {
@@ -346,22 +274,6 @@ namespace custom {
         setError("ValueArrayInvalid");
     }
 
-    void GenericReader::ParseNumber(StringStream& is) {
-        const char* szStart = is.Strart();
-
-        for (; is.Peek() != '\0'; is.Take()) {
-            if (is.Peek() == '-' || is.Peek() == '.' || (is.Peek() >= '0' && is.Peek() <= '9')) {
-                continue;
-            } else {
-                _cur->type = VALUE_NUMBER;
-                _cur->value = szStart;
-                _cur->valueSize = (int32_t)(is.Strart() - szStart);
-                return;
-            }
-        }
-        setError("ValueInvalid");
-    }
-
     void GenericReader::ParseObject(StringStream& is) {
         assert(is.Peek() == '{');
 //        const char* szStart = is.Strart();
@@ -373,22 +285,12 @@ namespace custom {
             return;
         }
 
-        _cur->type = VALUE_OBJECT;
-        for (uint32_t memberCount = 0; !is.isEnd();) {
+        for (uint32_t elementIndex = 0; !is.isEnd();) {
             if (is.Peek() != '"') {
                 setError("ObjectMissName");
                 return;
             }
-            GenericValue* temp = _cur;
-            _cur = (GenericValue*)_alloc->Malloc(sizeof(GenericValue));
-            memset(_cur, 0, sizeof(GenericValue));
-            _cur->prev = temp;
-            if (!memberCount) {
-                temp->child = _cur;
-            } else {
-                temp->next = _cur;
-            }
-            
+            getChildItem(elementIndex);
             ParseKey(is);
 
             SkipWhitespace(is);
@@ -399,7 +301,7 @@ namespace custom {
 
             SkipWhitespace(is);
             ParseValue(is);
-            ++memberCount;
+            ++elementIndex;
 
             SkipWhitespace(is);
             switch (is.Peek()) {
@@ -415,7 +317,67 @@ namespace custom {
                     break; // This useless break is only for making warning and coverage happy
             }
         }
-        _cur = _cur->prev;
+    }
+
+    void GenericReader::setItemType(const int32_t type) {
+        if (_cur) {
+            assert(GenericValue::VALUE_NULL <= type && type <= GenericValue::VALUE_OBJECT);
+            _cur->type = type;
+        }
+    }
+
+    void GenericReader::getChildItem(const uint32_t elementIndex) {
+        if (_cur) {
+            GenericValue* temp = _cur;
+            _cur = _alloc.allocValue();
+            _cur->prev = temp;
+            if (!elementIndex) {
+                temp->child = _cur;
+            } else {
+                temp->next = _cur;
+            }
+        } else {
+            ++_alloc;
+        }
+    }
+
+    void GenericReader::setItemKey(const char* key, const uint32_t keySize) {
+        if (_cur) {
+            assert(key);
+            assert(keySize);
+            _cur->key = key;
+            _cur->keySize = keySize;
+        }
+    }
+
+    void GenericReader::setItemValue(const int32_t type, const char* value, const uint32_t valueSize) {
+        if (_cur) {
+            assert(GenericValue::VALUE_NULL <= type && type <= GenericValue::VALUE_OBJECT);
+            assert(value);
+            assert(valueSize);
+            _cur->type = type;
+            _cur->value = value;
+            _cur->valueSize = valueSize;
+        }
+    }
+
+    bool GenericReader::Consume(StringStream& is, const char expect) {
+        if (is.Peek() == expect) {
+            is.Take();
+            return true;
+        } else
+            return false;
+    }
+
+    void GenericReader::SkipWhitespace(StringStream& is) {
+        for (;;) {
+            const char c = is.Peek();
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                is.Take();
+            } else {
+                break;
+            }
+        }
     }
 
 }

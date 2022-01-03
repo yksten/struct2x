@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-#include <string>
+#include <vector>
 
 
 #ifdef _MSC_VER
@@ -24,9 +24,10 @@
 
 namespace custom {
 
-    enum { VALUE_NULL = 0, VALUE_BOOL, VALUE_NUMBER, VALUE_STRING, VALUE_ARRAY, VALUE_OBJECT };
 
-    typedef struct GenericValue {
+    struct GenericValue {
+        enum { VALUE_NULL = 0, VALUE_BOOL, VALUE_NUMBER, VALUE_STRING, VALUE_ARRAY, VALUE_OBJECT };
+        
         int32_t type;
         
         const char* key;
@@ -38,47 +39,25 @@ namespace custom {
         struct GenericValue* prev;
         struct GenericValue* next;
         struct GenericValue* child;
-    } GenericValue;
+        
+        GenericValue() :type(VALUE_NULL), key(NULL), keySize(0), value(NULL), valueSize(0), prev(NULL), next(NULL), child(NULL) {}
+    };
 
-    const GenericValue* GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive);
 
-//    inline uint32_t GetArraySize(const GenericValue* parent) {
-//        uint32_t size = 0;
-//        if (parent && parent->type == VALUE_ARRAY) {
-//            for (const GenericValue* child = parent->child; child; child = child->next) {
-//                ++size;
-//            }
-//        }
-//        return size;
-//    }
-
-    inline uint32_t GetObjectSize(const GenericValue* parent) {
-        uint32_t size = 0;
-        if (parent/* && parent->type == VALUE_OBJECT*/) {
-            for (const GenericValue* child = parent->child; child; child = child->next) {
-                ++size;
-            }
-        }
-        return size;
-    }
-
-    class MemoryPoolAllocator;
+    class StringStream;
 
     class EXPORTAPI GenericReader {
-        class StringStream {
-            const char* _src;
+        class GenericValueAllocator {
+            uint32_t _curIndex;
+            uint32_t _capacity;
+            std::vector<GenericValue> _vec;
         public:
-            typedef const char value_type;
-            explicit StringStream(const char* src) : _src(src) {}
-            value_type Peek() const { if (isEnd()) return '\0'; return *_src; }
-            value_type Second2Last() const { return *(_src - 1); }
-            value_type Take() { return *_src++; }
-            value_type* Strart() const { return _src; }
-            bool isEnd() const {return (*_src == '\0'); }
+            GenericValueAllocator() : _curIndex(0), _capacity(0) {}
+            void operator++() { ++_capacity; }
+            void reSize() { assert(_vec.empty()); _vec.resize(_capacity); }
+            GenericValue* allocValue() { assert(_curIndex < _vec.size()); return &_vec.at(_curIndex++); }
         };
-        
-        enum { DEFAULTCACPCITY = 32 };
-        MemoryPoolAllocator* _alloc;
+        GenericValueAllocator _alloc;
         GenericValue* _cur;
         char _strError[64];
     public:
@@ -90,6 +69,8 @@ namespace custom {
         static int64_t convertInt(const char* value, uint32_t length);
         static uint64_t convertUint(const char* value, uint32_t length);
         static double convertDouble(const char* value, uint32_t length);
+        static uint32_t GetObjectSize(const GenericValue* parent);
+        static const GenericValue* GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive);
     private:
         void setError(const char* sz) { memcpy(_strError, sz, 64); }
         void ParseValue(StringStream& is);
@@ -101,25 +82,14 @@ namespace custom {
         void ParseNumber(StringStream& is);
         void ParseArray(StringStream& is);
         void ParseObject(StringStream& is);
-
-        static bool Consume(StringStream& is, const char expect) {
-            if (is.Peek() == expect) {
-                is.Take();
-                return true;
-            } else
-                return false;
-        }
-
-        static void SkipWhitespace(StringStream& is) {
-            for (;;) {
-                const char c = is.Peek();
-                if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
-                    is.Take();
-                } else {
-                    break;
-                }
-            }
-        }
+        
+        void setItemType(const int32_t type);
+        void getChildItem(const uint32_t elementIndex);
+        void setItemKey(const char* key, const uint32_t keySize);
+        void setItemValue(const int32_t type, const char* value, const uint32_t valueSize);
+        
+        static bool Consume(StringStream& is, const char expect);
+        static void SkipWhitespace(StringStream& is);
         
     };
 

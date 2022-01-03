@@ -76,64 +76,64 @@ namespace struct2x {
     }
 
     void JSONDecoder::decodeValue(const char* name, bool& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_BOOL)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_BOOL)) {
             value = item2Bool(*item);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, uint32_t& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_NUMBER)) {
             value = (uint32_t)custom::GenericReader::convertUint(item->value, item->valueSize);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, int32_t& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_NUMBER)) {
             value = (int32_t)custom::GenericReader::convertInt(item->value, item->valueSize);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, uint64_t& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_NUMBER)) {
             value = custom::GenericReader::convertUint(item->value, item->valueSize);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, int64_t& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_NUMBER)) {
             value = custom::GenericReader::convertInt(item->value, item->valueSize);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, float& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_NUMBER)) {
             value = (float)custom::GenericReader::convertDouble(item->value, item->valueSize);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, double& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_NUMBER)) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_NUMBER)) {
             value = custom::GenericReader::convertDouble(item->value, item->valueSize);
             if (pHas) *pHas = true;
         }
     }
 
     void JSONDecoder::decodeValue(const char* name, std::string& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_STRING) && item->value && item->valueSize) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_STRING) && item->value && item->valueSize) {
             value.clear();
             bool result = parse_string(value, item->value, item->valueSize);
             if (pHas) *pHas = true;
@@ -142,9 +142,9 @@ namespace struct2x {
     }
 
     void JSONDecoder::decodeValue(const char* name, std::vector<bool>& value, bool* pHas) {
-        const custom::GenericValue* item = custom::GetObjectItem(_cur, name, _caseInsensitive);
-        if (item && checkItemType(*item, custom::VALUE_ARRAY)) {
-            for (const custom::GenericValue* child = item->child; child && checkItemType(*item, custom::VALUE_BOOL); child = child->next) {
+        const custom::GenericValue* item = custom::GenericReader::GetObjectItem(_cur, name, _caseInsensitive);
+        if (item && checkItemType(*item, custom::GenericValue::VALUE_ARRAY)) {
+            for (const custom::GenericValue* child = item->child; child && checkItemType(*item, custom::GenericValue::VALUE_BOOL); child = child->next) {
                 value.push_back(item2Bool(*child));
                 if (pHas) *pHas = true;
             }
@@ -159,13 +159,13 @@ namespace struct2x {
     }
 
     bool JSONDecoder::item2Bool(const custom::GenericValue& item) const {
-        if (item.type == custom::VALUE_BOOL) {
+        if (item.type == custom::GenericValue::VALUE_BOOL) {
             return (item.valueSize == 4);
         } else if (!_convertByType) {
-            if (item.type == custom::VALUE_NUMBER) {
+            if (item.type == custom::GenericValue::VALUE_NUMBER) {
                 int value = custom::GenericReader::convertInt(item.value, item.valueSize);
                 return (value != 0);
-            } else if (item.type == custom::VALUE_STRING) {
+            } else if (item.type == custom::GenericValue::VALUE_STRING) {
                 std::string value;
                 if (parse_string(value, item.value, item.valueSize)) {
                     return (atoi(value.c_str()));
