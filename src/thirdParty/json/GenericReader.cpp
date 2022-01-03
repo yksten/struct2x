@@ -3,16 +3,6 @@
 #include <string>
 
 
-#define ALIGN(x) (((x) + static_cast<size_t>(7u)) & ~static_cast<size_t>(7u))
-
-#ifndef UNLIKELY
-#if defined(__GNUC__) || defined(__clang__)
-#define UNLIKELY(x) __builtin_expect(!!(x), 0)
-#else
-#define UNLIKELY(x) (x)
-#endif
-#endif
-
 namespace custom {
 
     class StringStream {
@@ -29,7 +19,7 @@ namespace custom {
 
 /*------------------------------------------------------------------------------*/
 
-    GenericReader::GenericReader() : _cur(NULL) {
+    GenericReader::GenericReader(std::vector<GenericValue>& vec) : _cur(NULL), _alloc(vec) {
     }
 
     GenericReader::~GenericReader() {
@@ -108,25 +98,24 @@ namespace custom {
     }
 
     const GenericValue* GenericReader::GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive) {
-        if (!name) {
+        if (!parent || !name) {
             return parent;
         }
         
-        if (parent) {
-            for (GenericValue* child = parent->child; child; child = child->next) {
-                if (child->key && (strlen(name) == child->keySize)) {
-                    if (!caseInsensitive) {
-                        if (strncmp(name, child->key, child->keySize) == 0) {
-                            return child;
-                        }
-                    } else {
-                        if (strcasecmp(name, std::string(child->key, child->keySize).c_str()) == 0) {
-                            return child;
-                        }
+        for (GenericValue* child = parent->child; child; child = child->next) {
+            if (child->key && (strlen(name) == child->keySize)) {
+                if (!caseInsensitive) {
+                    if (strncmp(name, child->key, child->keySize) == 0) {
+                        return child;
+                    }
+                } else {
+                    if (strcasecmp(name, std::string(child->key, child->keySize).c_str()) == 0) {
+                        return child;
                     }
                 }
             }
         }
+
         return NULL;
     }
 

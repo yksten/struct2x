@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <cassert>
 #include <vector>
 
@@ -50,21 +50,21 @@ namespace custom {
         class GenericValueAllocator {
             uint32_t _curIndex;
             uint32_t _capacity;
-            std::vector<GenericValue> _vec;
+            std::vector<GenericValue>& _vec;
         public:
-            GenericValueAllocator() : _curIndex(0), _capacity(0) {}
+            explicit GenericValueAllocator(std::vector<GenericValue>& vec) : _curIndex(0), _capacity(0), _vec(vec) {}
             void operator++() { ++_capacity; }
             void reSize() { assert(_vec.empty()); _vec.resize(_capacity); }
             GenericValue* allocValue() { assert(_curIndex < _vec.size()); return &_vec.at(_curIndex++); }
         };
-        GenericValueAllocator _alloc;
         GenericValue* _cur;
-        char _strError[64];
+        GenericValueAllocator _alloc;
+        std::string _strError;
     public:
-        GenericReader();
+        explicit GenericReader(std::vector<GenericValue>& vec);
         ~GenericReader();
         const GenericValue* Parse(const char* src);
-        const char* getError() const { return _strError; }
+        const char* getError() const { return _strError.c_str(); }
         
         static int64_t convertInt(const char* value, uint32_t length);
         static uint64_t convertUint(const char* value, uint32_t length);
@@ -72,7 +72,7 @@ namespace custom {
         static uint32_t GetObjectSize(const GenericValue* parent);
         static const GenericValue* GetObjectItem(const GenericValue* parent, const char* name, bool caseInsensitive);
     private:
-        void setError(const char* sz) { memcpy(_strError, sz, 64); }
+        void setError(const char* sz) { _strError = sz; }
         void ParseValue(StringStream& is);
         void ParseKey(StringStream& is);
         void ParseNull(StringStream& is);

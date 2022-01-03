@@ -31,14 +31,14 @@ for (const char *ptr = szValue; *ptr; ++ptr) {                                  
 namespace custom {
 
     void GenericWriter::Bool(bool b) {
-        Stack::value_type &vt = _stack.top();
+        value_type &vt = _stack.back();
         if (vt.first == kkeyType) {
             colon(_str);
         } else if (vt.first == kValueType) {
             comma(_str);
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         } else {
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         }
         if (b) {
             _str.append("true");
@@ -49,14 +49,14 @@ namespace custom {
     }
 
     void GenericWriter::Int64(int64_t i64) {
-        Stack::value_type &vt = _stack.top();
+        value_type &vt = _stack.back();
         if (vt.first == kkeyType) {
             colon(_str);
         } else if (vt.first == kValueType) {
             comma(_str);
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         } else {
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         }
         char buffer[32] = {0};
         snprintf(buffer, 32, "%lld", i64);
@@ -65,14 +65,14 @@ namespace custom {
     }
 
     void GenericWriter::Uint64(uint64_t u64) {
-        Stack::value_type &vt = _stack.top();
+        value_type &vt = _stack.back();
         if (vt.first == kkeyType) {
             colon(_str);
         } else if (vt.first == kValueType) {
             comma(_str);
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         } else {
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         }
         char buffer[32] = {0};
         snprintf(buffer, 32, "%llu", u64);
@@ -81,14 +81,14 @@ namespace custom {
     }
 
     void GenericWriter::Double(double d) {
-        Stack::value_type &vt = _stack.top();
+        value_type &vt = _stack.back();
         if (vt.first == kkeyType) {
             colon(_str);
         } else if (vt.first == kValueType) {
             comma(_str);
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         } else {
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         }
         char buffer[64] = {0};
         snprintf(buffer, 64, "%0.8f", d);
@@ -97,9 +97,9 @@ namespace custom {
 
     GenericWriter &GenericWriter::Key(const char *szKey) {
         if (szKey) {
-            Stack::value_type &vt = _stack.top();
+            value_type &vt = _stack.back();
             if (vt.second) { comma(_str); }
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
             APPENDSTRING(_str, szKey);
             vt.second++;
             vt.first = kkeyType;
@@ -108,14 +108,14 @@ namespace custom {
     }
 
     void GenericWriter::String(const char *szValue) {
-        Stack::value_type &vt = _stack.top();
+        value_type &vt = _stack.back();
         if (vt.first == kkeyType) {
             colon(_str);
         } else if (vt.first == kValueType) {
             comma(_str);
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         } else {
-            tab(_str, _stack.layer());
+            tab(_str, _stack.size());
         }
         APPENDSTRING(_str, szValue);
         vt.first = kValueType;
@@ -123,40 +123,40 @@ namespace custom {
 
     void GenericWriter::StartObject() {
         if (!_stack.empty()) {
-            if (_stack.top().first == kkeyType) {
+            if (_stack.back().first == kkeyType) {
                 colon(_str);
-            } else if (_stack.top().first == kValueType) {
+            } else if (_stack.back().first == kValueType) {
                 comma(_str);
             } else {
-                tab(_str, _stack.layer());
+                tab(_str, _stack.size());
             }
         }
-        _stack.push(Stack::value_type(kNullType, 0));
+        _stack.push_back(value_type(kNullType, 0));
         leftBrace(_str);
     }
 
     void GenericWriter::EndObject() {
-        rightBrace(_str, _stack.layer());
-        _stack.pop();
+        rightBrace(_str, _stack.size());
+        _stack.pop_back();
     }
 
     void GenericWriter::StartArray() {
         if (!_stack.empty()) {
-            if (_stack.top().first == kkeyType) {
+            if (_stack.back().first == kkeyType) {
                 colon(_str);
-            } else if (_stack.top().first == kValueType) {
+            } else if (_stack.back().first == kValueType) {
                 comma(_str);
             } else {
-                tab(_str, _stack.layer());
+                tab(_str, _stack.size());
             }
         }
         leftBracket(_str);
-        _stack.push(Stack::value_type(kNullType, 0));
+        _stack.push_back(value_type(kNullType, 0));
     }
 
     void GenericWriter::EndArray() {
-        rightBracket(_str, _stack.layer());
-        _stack.pop();
+        rightBracket(_str, _stack.size());
+        _stack.pop_back();
     }
 
     void GenericWriter::colon(std::string& str) const {

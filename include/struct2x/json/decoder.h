@@ -12,8 +12,11 @@ namespace struct2x {
     class EXPORTAPI JSONDecoder {
         bool _convertByType;                // convert by field type
         bool _caseInsensitive;              // key case insensitive
-        custom::GenericReader _reader;
+        std::vector<custom::GenericValue> _vec;
         const custom::GenericValue* _cur;
+        
+        JSONDecoder(const JSONDecoder&);
+        JSONDecoder& operator=(const JSONDecoder&);
     public:
         JSONDecoder(const char* str, bool caseInsensitive = false);
         

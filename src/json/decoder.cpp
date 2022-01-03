@@ -66,7 +66,7 @@ namespace struct2x {
     }
 
 
-    JSONDecoder::JSONDecoder(const char* str, bool caseInsensitive) : _convertByType(true), _caseInsensitive(caseInsensitive), _cur(_reader.Parse(str)) {
+    JSONDecoder::JSONDecoder(const char* str, bool caseInsensitive) : _convertByType(true), _caseInsensitive(caseInsensitive), _cur(custom::GenericReader(_vec).Parse(str)) {
         assert(_cur);
     }
 
