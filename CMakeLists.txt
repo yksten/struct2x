@@ -18,7 +18,7 @@ SET(INCLUDE "./include/struct2x/traits.h" "./include/struct2x/struct2x.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
 # thirdParty
-SET(JSON "./include/struct2x/json/GenericReader.h" "./src/thirdParty/json/GenericReader.cpp" "./include/struct2x/json/GenericWriter.h" "./src/thirdParty/json/GenericWriter.cpp")
+SET(JSON "./include/struct2x/json/genericreader.h" "./src/thirdParty/json/genericreader.cpp" "./include/struct2x/json/genericwriter.h" "./src/thirdParty/json/genericwriter.cpp")
 SOURCE_GROUP("src\\thirdParty\\json" FILES ${JSON})
 
 # json
@@ -53,7 +53,7 @@ ENDIF (MSVC)
 
 SET(EXAMPLE OFF CACHE BOOL "")
 if (${EXAMPLE} STREQUAL ON)
-    SET(EXAMPLE "./example/main.cpp" "./example/exampleData.h")
+    SET(EXAMPLE "./example/main.cpp" "./example/exampledata.h")
     SOURCE_GROUP(example FILES ${EXAMPLE})
     ADD_EXECUTABLE(example ${EXAMPLE})
     TARGET_LINK_LIBRARIES(example struct2x)

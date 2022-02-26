@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <iostream>
 
-#include "exampleData.h"
+#include "exampledata.h"
 #include <struct2x/json/decoder.h>
 #include <struct2x/json/encoder.h>
 

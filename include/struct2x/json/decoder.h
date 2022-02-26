@@ -4,7 +4,7 @@
 #include <map>
 #include <struct2x/traits.h>
 #include <struct2x/struct2x.h>
-#include <struct2x/json/GenericReader.h>
+#include <struct2x/json/genericreader.h>
 
 
 namespace struct2x {

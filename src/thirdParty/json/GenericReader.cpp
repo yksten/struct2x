@@ -1,4 +1,4 @@
-#include <struct2x/json/GenericReader.h>
+#include <struct2x/json/genericreader.h>
 #include <assert.h>
 #include <string>
 

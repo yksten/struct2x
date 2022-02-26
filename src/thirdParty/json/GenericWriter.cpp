@@ -1,4 +1,4 @@
-#include <struct2x/json/GenericWriter.h>
+#include <struct2x/json/genericwriter.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,7 +91,7 @@ namespace custom {
             tab(_str, _stack.size());
         }
         char buffer[64] = {0};
-        snprintf(buffer, 64, "%0.8f", d);
+        snprintf(buffer, 64, "%lf", d);
         _str.append(buffer);
     }
 
