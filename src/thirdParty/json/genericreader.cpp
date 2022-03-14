@@ -343,7 +343,7 @@ namespace custom {
         if (_cur) {
             assert(GenericValue::VALUE_NULL <= type && type <= GenericValue::VALUE_OBJECT);
             assert(value);
-            assert(valueSize);
+            assert(type == GenericValue::VALUE_STRING || valueSize);
             _cur->type = type;
             _cur->value = value;
             _cur->valueSize = valueSize;
