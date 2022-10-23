@@ -95,16 +95,11 @@ namespace struct2x {
         PBDecoder(const uint8_t* sz, uint32_t size);
 
         template<typename T>
-        proto::Message getMessage(T& value) {
-            proto::Message msg(&value);
+        bool operator>>(T& value) {
+            proto::Message msg(value);
             _msg = &msg;
             internal::serializeWrapper(*this, value);
-            return msg;
-        }
 
-        template<typename T>
-        bool operator>>(T& value) {
-            static proto::Message msg = getMessage(value);
             _bParseResult = false;
             internal::serializeWrapper(*this, value);
             _bParseResult = true;

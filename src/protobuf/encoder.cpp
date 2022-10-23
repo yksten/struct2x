@@ -1,7 +1,19 @@
 #include <struct2x/protobuf/encoder.h>
 #include <assert.h>
 
-namespace struct2x {
+namespace proto {
+
+    enclosure_t encodeVarint(uint64_t tag, uint32_t type) {
+        proto::enclosure_t info(type, 0);
+
+        while (tag >= 0x80) {
+            info.sz[info.size++] = static_cast<uint8_t>(tag | 0x80);
+            tag >>= 7;
+        }
+        info.sz[info.size++] = static_cast<uint8_t>(tag);
+
+        return info;
+    }
 
     BufferWrapper::BufferWrapper(std::string* str) : _buffer(str), _target(NULL), _bCalculateFlag(false), _cumtomFieldSize(0) {
     }
@@ -61,7 +73,10 @@ namespace struct2x {
         _bCalculateFlag = pair.first;
         _cumtomFieldSize = pair.second;
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////
+
+};
+
+namespace struct2x {
 
     PBEncoder::encodeFunction32 PBEncoder::convsetSet32[] = { &PBEncoder::encodeValueVarintArray, &PBEncoder::encodeValueSvarintArray, &PBEncoder::encodeValueFixed32Array };
     PBEncoder::encodeFunction32 PBEncoder::convsetSetPack32[] = { &PBEncoder::encodeValueVarintPack, &PBEncoder::encodeValueSvarintPack, &PBEncoder::encodeValueFixed32Pack };
@@ -175,7 +190,7 @@ namespace struct2x {
         return ++i;
     }
 
-    void PBEncoder::varInt(uint64_t value, BufferWrapper& buf) {
+    void PBEncoder::varInt(uint64_t value, proto::BufferWrapper& buf) {
         if (buf.isGetLength()) {
             buf.appendLength(VarintSize(value));
         } else {
@@ -188,15 +203,15 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::svarInt(uint32_t value, BufferWrapper& buf) {
+    void PBEncoder::svarInt(uint32_t value, proto::BufferWrapper& buf) {
         varInt((value << 1) ^ static_cast<uint32_t>(value >> 31), buf);
     }
 
-    void PBEncoder::svarInt(uint64_t value, BufferWrapper& buf) {
+    void PBEncoder::svarInt(uint64_t value, proto::BufferWrapper& buf) {
         varInt((value << 1) ^ static_cast<uint64_t>(value >> 63), buf);
     }
 
-    void PBEncoder::fixed32(uint32_t value, BufferWrapper& buf) {
+    void PBEncoder::fixed32(uint32_t value, proto::BufferWrapper& buf) {
         if (buf.isGetLength()) {
             buf.appendLength(4);
         } else {
@@ -208,7 +223,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::fixed64(uint64_t value, BufferWrapper& buf) {
+    void PBEncoder::fixed64(uint64_t value, proto::BufferWrapper& buf) {
         if (buf.isGetLength()) {
             buf.appendLength(8);
         } else {
@@ -224,19 +239,7 @@ namespace struct2x {
         }
     }
 
-    PBEncoder::enclosure_t PBEncoder::encodeVarint(uint64_t tag, uint32_t type) {
-        enclosure_t info(type, 0);
-
-        while (tag >= 0x80) {
-            info.sz[info.size++] = static_cast<uint8_t>(tag | 0x80);
-            tag >>= 7;
-        }
-        info.sz[info.size++] = static_cast<uint8_t>(tag);
-
-        return info;
-    }
-
-    void PBEncoder::encodeValue(const bool& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const bool& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             if (buf.isGetLength()) {
                 buf.appendLength(info.size + 1);
@@ -248,49 +251,49 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValue(const int32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const int32_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValue(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const uint32_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(int32_t(v), buf);
         }
     }
 
-    void PBEncoder::encodeValue(const int64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const int64_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValue(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const uint64_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             varInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValue(const float& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const float& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || value) {
             buf.appendBytes(info.sz, info.size);
             fixed32(*reinterpret_cast<const uint32_t*>(&value), buf);
         }
     }
 
-    void PBEncoder::encodeValue(const double& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const double& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || value) {
             buf.appendBytes(info.sz, info.size);
             fixed64(*reinterpret_cast<const uint64_t*>(&value), buf);
         }
     }
 
-    void PBEncoder::encodeValue(const std::string& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValue(const std::string& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || !v.empty()) {
             buf.appendBytes(info.sz, info.size);
             varInt(v.length(), buf);
@@ -298,35 +301,35 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueSvarint32(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarint32(const uint32_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             svarInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueSvarint64(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarint64(const uint64_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             svarInt(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueFixed32(const uint32_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed32(const uint32_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             fixed32(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueFixed64(const uint64_t& v, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed64(const uint64_t& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!pHas || v) {
             buf.appendBytes(info.sz, info.size);
             fixed64(v, buf);
         }
     }
 
-    void PBEncoder::encodeValueVarintArray(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintArray(const std::vector<uint32_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -335,7 +338,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueSvarintArray(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintArray(const std::vector<uint32_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -344,7 +347,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueFixed32Array(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed32Array(const std::vector<uint32_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -353,7 +356,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueVarintArray(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintArray(const std::vector<uint64_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -362,7 +365,7 @@ namespace struct2x {
         }
     }
     
-    void PBEncoder::encodeValueSvarintArray(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintArray(const std::vector<uint64_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -371,7 +374,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueFixed64Array(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed64Array(const std::vector<uint64_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             uint32_t size = (uint32_t)value.size();
             for (uint32_t i = 0; i < size; ++i) {
@@ -380,7 +383,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueVarintPack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintPack(const std::vector<uint32_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -390,7 +393,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueSvarintPack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintPack(const std::vector<uint32_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -400,7 +403,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueFixed32Pack(const std::vector<uint32_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed32Pack(const std::vector<uint32_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -410,7 +413,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueVarintPack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueVarintPack(const std::vector<uint64_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -420,7 +423,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueSvarintPack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueSvarintPack(const std::vector<uint64_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
@@ -430,7 +433,7 @@ namespace struct2x {
         }
     }
 
-    void PBEncoder::encodeValueFixed64Pack(const std::vector<uint64_t>& value, const bool* pHas, const enclosure_t& info, BufferWrapper& buf) {
+    void PBEncoder::encodeValueFixed64Pack(const std::vector<uint64_t>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
         if (!value.empty()) {
             buf.appendBytes(info.sz, info.size);
             uint32_t size = (uint32_t)value.size();
