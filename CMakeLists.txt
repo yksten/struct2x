@@ -27,12 +27,6 @@ SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
 SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
 SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
-# msgpack
-SET(INCLUDEMAGPACK "./include/struct2x/msgpack/encoder.h" "./include/struct2x/msgpack/decoder.h")
-SOURCE_GROUP("include\\msgpack" FILES ${INCLUDEMAGPACK})
-SET(SRCMSGPACK "./src/msgpack/encoder.cpp" "./src/msgpack/decoder.cpp")
-SOURCE_GROUP("src\\msgpack" FILES ${SRCMSGPACK})
-
 # protobuf
 SET(INCLUDEPROTOBUF "./include/struct2x/protobuf/encoder.h" "./include/struct2x/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
@@ -45,7 +39,6 @@ IF (MSVC)
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDEJSON} ${SRCJSON}
-    ${INCLUDEMAGPACK} ${SRCMSGPACK}
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ELSE ()
@@ -53,7 +46,6 @@ ELSE ()
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDEJSON} ${SRCJSON}
-    ${INCLUDEMAGPACK} ${SRCMSGPACK}
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ENDIF (MSVC)
