@@ -13,6 +13,7 @@ namespace struct2x {
         custom::GenericWriter _writer;
     public:
         explicit JSONEncoder(std::string& str, bool formatted = false);
+        ~JSONEncoder();
 
         template<typename T>
         JSONEncoder& operator&(const serializeItem<T>& value) {

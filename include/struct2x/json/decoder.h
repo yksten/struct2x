@@ -19,6 +19,7 @@ namespace struct2x {
         JSONDecoder& operator=(const JSONDecoder&);
     public:
         JSONDecoder(const char* str, bool caseInsensitive = false);
+        ~JSONDecoder();
         
         // convert by field type
         JSONDecoder& setConvertByType(bool convertByType);

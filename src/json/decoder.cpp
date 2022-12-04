@@ -70,6 +70,9 @@ namespace struct2x {
         assert(_cur);
     }
 
+    JSONDecoder::~JSONDecoder() {
+    }
+
     JSONDecoder& JSONDecoder::setConvertByType(bool convertByType) {
         _convertByType = convertByType;
         return *this;

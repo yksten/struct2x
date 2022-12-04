@@ -6,6 +6,9 @@ namespace struct2x {
     JSONEncoder::JSONEncoder(std::string& str, bool formatted) : _writer(str, formatted) {
     }
 
+    JSONEncoder::~JSONEncoder() {
+    }
+
     void JSONEncoder::encodeValue(const char* sz, const bool& value) {
         _writer.Key(sz).Bool(value);
     }
