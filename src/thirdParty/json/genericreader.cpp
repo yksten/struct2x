@@ -138,6 +138,9 @@ namespace custom {
         if (is.Peek() != '\0') {
             ParseValue(is);
         }
+        if (!_strError.empty()) {
+            return NULL;
+        }
         return root;
     }
 
@@ -153,8 +156,9 @@ namespace custom {
                 ParseNumber(is);
                 break;
         }
-        if (_strError[0])
+        if (!_strError.empty()) {
             return;
+        }
     }
 
     void GenericReader::ParseKey(StringStream& is) {

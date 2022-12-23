@@ -26,7 +26,7 @@ namespace custom {
 
 
     struct GenericValue {
-        enum { VALUE_NULL = 0, VALUE_BOOL, VALUE_NUMBER, VALUE_STRING, VALUE_ARRAY, VALUE_OBJECT };
+        enum { VALUE_NULL = 0, VALUE_BOOL = 1, VALUE_NUMBER = 2, VALUE_STRING = 3, VALUE_ARRAY = 4, VALUE_OBJECT = 5 };
         
         int32_t type;
         
