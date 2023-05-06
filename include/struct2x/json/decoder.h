@@ -120,10 +120,10 @@ namespace struct2x {
                 value.clear();
 
                 const custom::GenericValue* parentTemp = _cur;
-                for (const custom::GenericValue* child = _cur->child; child; child = child->next) {
-                    std::string key(child->key, child->keySize);
+                for (_cur = _cur->child; _cur; _cur = _cur->next) {
+                    std::string key(_cur->key, _cur->keySize);
                     V item = V();
-                    decodeValue(key.c_str(), item, NULL);
+                    decodeValue(NULL, item, NULL);
                     value.insert(std::pair<K, V>(internal::STOT::type<K>::strto(key.c_str()), item));
                 }
                 _cur = parentTemp;
