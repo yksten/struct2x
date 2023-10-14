@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
     } while(false);
     
     std::string strJson;
-    bool bEncode =struct2x::PBEncoder(strJson) << ins;
-    assert(bEncode);
+    //bool bEncode =struct2x::PBEncoder(strJson) << ins;
+    //assert(bEncode);
     std::cout << "json is :" << strJson.c_str() << std::endl;
     
     
