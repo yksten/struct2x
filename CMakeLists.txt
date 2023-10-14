@@ -27,26 +27,18 @@ SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
 SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
 SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
-# protobuf
-SET(INCLUDEPROTOBUF "./include/struct2x/protobuf/encoder.h" "./include/struct2x/protobuf/decoder.h")
-SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
-SET(SRCPROTOBUF "./src/protobuf/encoder.cpp" "./src/protobuf/decoder.cpp")
-SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
-
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
     ADD_LIBRARY(struct2x SHARED
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDEJSON} ${SRCJSON}
-    ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ELSE ()
     ADD_LIBRARY(struct2x 
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDEJSON} ${SRCJSON}
-    ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ENDIF (MSVC)
 
