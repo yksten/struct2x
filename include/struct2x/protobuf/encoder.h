@@ -264,7 +264,7 @@ namespace struct2x {
         template<typename T>
         static void encodeValue(const T& v, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
             buf.appendBytes(info.sz, info.size);
-            proto::convertMgr mgr(v);
+            proto::convertMgr mgr(&v);
             std::string str;
             PBEncoder encoder(str);
             encoder._mgr = &mgr;
@@ -304,8 +304,8 @@ namespace struct2x {
         static void encodeValue(const std::map<K, V>& value, const bool* pHas, const proto::enclosure_t& info, proto::BufferWrapper& buf) {
             for (typename std::map<K, V>::const_iterator it = value.begin(); it != value.end(); ++it) {
                 buf.appendBytes(info.sz, info.size);
-                proto::enclosure_t infok = encodeVarint(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE, TYPE_VARINT);
-                proto::enclosure_t infov = encodeVarint(((uint64_t)2 << 3) | internal::isMessage<V>::WRITE_TYPE, TYPE_VARINT);
+                proto::enclosure_t infok = proto::encodeVarint(((uint64_t)1 << 3) | internal::isMessage<K>::WRITE_TYPE, TYPE_VARINT);
+                proto::enclosure_t infov = proto::encodeVarint(((uint64_t)2 << 3) | internal::isMessage<V>::WRITE_TYPE, TYPE_VARINT);
                 uint32_t nByteSize = 0;
                 do {
                     BEGINCALCULATEFIELD(buf);

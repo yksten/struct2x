@@ -56,7 +56,8 @@ namespace example {
 
         template<typename T>
         void serialize(T& t) {
-            SERIALIZE(t, e, b, i, ui, i64, ui64, f, db, str);
+            t & SERIALIZATION(1, e) & SERIALIZATION(2, b) & SERIALIZATION(3, i) & SERIALIZATION(4, ui);
+            t & SERIALIZATION(5, i64) & SERIALIZATION(6, ui64) & SERIALIZATION(7, f) & SERIALIZATION(8, db) & SERIALIZATION(9, str);
         }
     };
 
@@ -104,7 +105,8 @@ namespace example {
 
         template<typename T>
         void serialize(T& t) {
-            SERIALIZE(t, d, vi, v, m, vv, mm, vm, mv);
+            t & SERIALIZATION(1, d) & SERIALIZATION(2, vi) & SERIALIZATION(3, v) & SERIALIZATION(4, m);
+            t & SERIALIZATION(5, vv) & SERIALIZATION(6, mm) & SERIALIZATION(7, vm) & SERIALIZATION(8, mv);
         }
     };
 

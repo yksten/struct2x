@@ -96,7 +96,7 @@ namespace struct2x {
 
         template<typename T>
         bool operator>>(T& value) {
-            proto::Message msg(value);
+            proto::Message msg(&value);
             _msg = &msg;
             internal::serializeWrapper(*this, value);
 

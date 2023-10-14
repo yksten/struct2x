@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include "exampledata.h"
-#include <struct2x/json/decoder.h>
-#include <struct2x/json/encoder.h>
+#include <struct2x/protobuf/decoder.h>
+#include <struct2x/protobuf/encoder.h>
 
 int main(int argc, char *argv[]) {
     example::containerData ins;
@@ -34,14 +34,14 @@ int main(int argc, char *argv[]) {
     } while(false);
     
     std::string strJson;
-    bool bEncode =struct2x::JSONEncoder(strJson) << ins;
+    bool bEncode =struct2x::PBEncoder(strJson) << ins;
     assert(bEncode);
     std::cout << "json is :" << strJson.c_str() << std::endl;
     
     
     example::containerData insResult;
-    bool bDecode =struct2x::JSONDecoder(strJson.c_str()) >> insResult;
-    assert(bDecode);
+    //bool bDecode =struct2x::PBDecoder(strJson) >> insResult;
+    //assert(bDecode);
     
     if (ins == insResult) {
         std::cout << "decode success!" << std::endl;

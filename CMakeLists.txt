@@ -17,16 +17,6 @@ AUX_SOURCE_DIRECTORY(. DIR_SRCS)
 SET(INCLUDE "./include/struct2x/traits.h" "./include/struct2x/struct2x.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
-# thirdParty
-SET(JSON "./include/struct2x/json/genericreader.h" "./src/thirdParty/json/genericreader.cpp" "./include/struct2x/json/genericwriter.h" "./src/thirdParty/json/genericwriter.cpp")
-SOURCE_GROUP("src\\thirdParty\\json" FILES ${JSON})
-
-# json
-SET(INCLUDEJSON "./include/struct2x/json/encoder.h" "./include/struct2x/json/decoder.h")
-SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
-SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
-SOURCE_GROUP("src\\json" FILES ${SRCJSON})
-
 # protobuf
 SET(INCLUDEPROTOBUF "./include/struct2x/protobuf/encoder.h" "./include/struct2x/protobuf/decoder.h")
 SOURCE_GROUP("include\\protobuf" FILES ${INCLUDEPROTOBUF})
@@ -36,16 +26,12 @@ SOURCE_GROUP("src\\protobuf" FILES ${SRCPROTOBUF})
 LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
     ADD_LIBRARY(struct2x SHARED
-    ${JSON} 
-    ${INCLUDE} 
-    ${INCLUDEJSON} ${SRCJSON}
+    ${INCLUDE}
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ELSE ()
     ADD_LIBRARY(struct2x 
-    ${JSON} 
-    ${INCLUDE} 
-    ${INCLUDEJSON} ${SRCJSON}
+    ${INCLUDE}
     ${INCLUDEPROTOBUF} ${SRCPROTOBUF} 
     ${DIR_SRCS})
 ENDIF (MSVC)
