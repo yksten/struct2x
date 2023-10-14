@@ -155,7 +155,7 @@ namespace struct2x {
     }
 
     bool JSONDecoder::checkItemType(const custom::GenericValue& item, const int type) const {
-        if (!_convertByType) {
+        if (!_convertByType && item.type != custom::GenericValue::VALUE_NULL) {
             return true;
         }
         return (item.type == type);
