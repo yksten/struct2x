@@ -62,21 +62,15 @@ namespace custom {
     double GenericReader::convertDouble(const char* value, uint32_t length) {
         if (!length) return 0.0f;
         
-        double result = 0.0;
-        for (uint32_t idx = 0, bFlag = false, num = 0; idx < length; ++idx) {
-            const char& c = value[idx];
-            if (c == '.') {
-                bFlag = true;
-                continue;
-            }
-            uint8_t n = c - '0';
-            if (!bFlag) {
-                result *= 10;
-                result += n;
-            } else {
-                ++num;
-                result += decimal(n, num);
-            }
+        unsigned char* after_end = NULL;
+        unsigned char number_c_string[64] = { 0 };
+
+        for (uint32_t idx = 0; idx < length; ++idx) {
+            number_c_string[idx] = value[idx];
+        }
+        double result = strtod((const char*)number_c_string, (char**)&after_end);
+        if (after_end != (number_c_string + length)) {
+            return 0.0f; /* parse_error */
         }
         return result;
     }
@@ -123,6 +117,7 @@ namespace custom {
         do {
             ++_alloc;
             StringStream is(src);
+            SkipWhitespace(is);
             if (is.Peek() != '\0') {
                 ParseValue(is);
             }
@@ -135,6 +130,7 @@ namespace custom {
         _cur = root;
         
         StringStream is(src);
+        SkipWhitespace(is);
         if (is.Peek() != '\0') {
             ParseValue(is);
         }
