@@ -93,6 +93,7 @@ namespace custom {
         char buffer[64] = {0};
         snprintf(buffer, 64, "%lf", d);
         _str.append(buffer);
+        vt.first = kValueType;
     }
 
     GenericWriter &GenericWriter::Key(const char *szKey) {
