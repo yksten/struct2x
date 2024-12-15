@@ -1,4 +1,5 @@
 #include "parser.h"
+#include <cctype>
 #include "genericreader.h"
 
 namespace json2cpp {
@@ -60,6 +61,9 @@ public:
             }
             strResult.append(1, ' ').append(fieldName).append(1, ';');
             strResult.append(1, '\n');
+            // has field
+            strResult.append("    bool has_").append(fieldName).append(1, ';');
+            strResult.append(1, '\n');
         }
         // serialize
         strResult.append("\n    template<typename Archive>");
@@ -77,6 +81,8 @@ public:
             strResult.append(".convert(\"")
                 .append(fieldName)
                 .append("\", ")
+                .append(fieldName)
+                .append(", &has_")
                 .append(fieldName)
                 .append(1, ')');
         }
