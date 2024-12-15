@@ -22,7 +22,9 @@ namespace struct2x {
 
         template<typename T>
         JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
-            encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)(&value));
+            if (!pHas || (*pHas == true)) {
+                encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)(&value));
+            }
             return *this;
         }
 
