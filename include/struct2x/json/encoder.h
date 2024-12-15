@@ -16,11 +16,6 @@ namespace struct2x {
         ~JSONEncoder();
 
         template<typename T>
-        JSONEncoder& operator&(const serializeItem<T>& value) {
-            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
-        }
-
-        template<typename T>
         JSONEncoder& convert(const char* sz, const T& value, bool* pHas = NULL) {
             if (!pHas || (*pHas == true)) {
                 encodeValue(sz, *(const typename internal::TypeTraits<T>::Type*)(&value));

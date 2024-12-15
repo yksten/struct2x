@@ -23,11 +23,6 @@ namespace struct2x {
         
         // convert by field type
         JSONDecoder& setConvertByType(bool convertByType);
-        
-        template<typename T>
-        JSONDecoder& operator&(serializeItem<T> value) {
-            return convert(value.name, *(typename internal::TypeTraits<T>::Type*)(&value.value), value.bHas);
-        }
 
         template<typename T>
         JSONDecoder& convert(const char* name, T& value, bool* pHas = NULL) {
