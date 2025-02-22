@@ -1,4 +1,4 @@
-PROJECT(struct2x)
+PROJECT(serialflex)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 INCLUDE(CheckIncludeFileCXX)
 
@@ -10,43 +10,46 @@ SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/lib)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 SET(CMAKE_DEBUG_POSTFIX d)
 
-INCLUDE_DIRECTORIES(./ ./include/)
-AUX_SOURCE_DIRECTORY(. DIR_SRCS)
+INCLUDE_DIRECTORIES(include)
+INCLUDE_DIRECTORIES(./src)
+IF (MSVC)
+    ADD_COMPILE_OPTIONS(/D _CRT_SECURE_NO_WARNINGS)
+ENDIF (MSVC)
 
-# struct2x
-SET(INCLUDE "./include/struct2x/traits.h" "./include/struct2x/struct2x.h")
+# serialflex
+SET(INCLUDE "include/serialflex/traits.h" "include/serialflex/serialize.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
-# thirdParty
-SET(JSON "./include/struct2x/json/genericreader.h" "./src/thirdParty/json/genericreader.cpp" "./include/struct2x/json/genericwriter.h" "./src/thirdParty/json/genericwriter.cpp")
-SOURCE_GROUP("src\\thirdParty\\json" FILES ${JSON})
+# third
+SET(JSON "src/json/third/reader.h" "src/json/third/reader.cpp" "src/json/third/writer.h" "src/json/third/writer.cpp")
+SOURCE_GROUP("src\\json\\third" FILES ${JSON})
 
 # json
-SET(INCLUDEJSON "./include/struct2x/json/encoder.h" "./include/struct2x/json/decoder.h")
+SET(INCLUDEJSON "include/serialflex/json/encoder.h" "include/serialflex/json/decoder.h")
 SOURCE_GROUP("include\\json" FILES ${INCLUDEJSON})
-SET(SRCJSON "./src/json/encoder.cpp" "./src/json/decoder.cpp")
+SET(SRCJSON "src/json/encoder.cpp" "src/json/decoder.cpp")
 SOURCE_GROUP("src\\json" FILES ${SRCJSON})
 
-LIST(REMOVE_ITEM DIR_SRCS "./tester/main.cpp")
 IF (MSVC)
-    ADD_LIBRARY(struct2x SHARED
+    ADD_LIBRARY(${PROJECT_NAME} SHARED
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDEJSON} ${SRCJSON}
-    ${DIR_SRCS})
+    )
 ELSE ()
-    ADD_LIBRARY(struct2x 
+    ADD_LIBRARY(${PROJECT_NAME} 
     ${JSON} 
     ${INCLUDE} 
     ${INCLUDEJSON} ${SRCJSON}
-    ${DIR_SRCS})
+    )
+    TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
 ENDIF (MSVC)
 
 
 SET(EXAMPLE OFF CACHE BOOL "")
 if (${EXAMPLE} STREQUAL ON)
-    SET(EXAMPLE "./example/main.cpp" "./example/exampledata.h")
+    SET(EXAMPLE "example/main.cpp" "example/exampledata.h")
     SOURCE_GROUP(example FILES ${EXAMPLE})
     ADD_EXECUTABLE(example ${EXAMPLE})
-    TARGET_LINK_LIBRARIES(example struct2x)
+    TARGET_LINK_LIBRARIES(example ${PROJECT_NAME})
 endif()

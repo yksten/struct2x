@@ -1,70 +1,108 @@
-#include <struct2x/json/encoder.h>
+#include <json/third/writer.h>
+#include <serialflex/json/encoder.h>
 
+namespace serialflex {
 
-namespace struct2x {
-
-    JSONEncoder::JSONEncoder(std::string& str, bool formatted) : _writer(str, formatted) {
-    }
-
-    JSONEncoder::~JSONEncoder() {
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const bool& value) {
-        _writer.Key(sz).Bool(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const uint32_t& value) {
-        _writer.Key(sz).Uint64(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const int32_t& value) {
-        _writer.Key(sz).Int64(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const uint64_t& value) {
-        _writer.Key(sz).Uint64(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const int64_t& value) {
-        _writer.Key(sz).Int64(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const float& value) {
-        _writer.Key(sz).Double(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const double& value) {
-        _writer.Key(sz).Double(value);
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const std::string& value) {
-        _writer.Key(sz).String(value.c_str());
-    }
-
-    void JSONEncoder::encodeValue(const char* sz, const std::vector<bool>& value) {
-        StartArray(sz);
-        int32_t size = (int32_t)value.size();
-        for (int32_t i = 0; i < size; ++i) {
-            const bool item = value.at(i);
-            encodeValue(NULL, item);
-        }
-        EndArray();
-    }
-
-    void JSONEncoder::StartObject(const char* sz) {
-        _writer.Key(sz).StartObject();
-    }
-
-    void JSONEncoder::EndObject() {
-        _writer.EndObject();
-    }
-
-    void JSONEncoder::StartArray(const char* sz) {
-        _writer.Key(sz).StartArray();
-    }
-
-    void JSONEncoder::EndArray() {
-        _writer.EndArray();
-    }
-
+JSONEncoder::JSONEncoder(std::string& str, bool formatted) {
+    writer_ = new custom::Writer(str, formatted);
 }
+
+JSONEncoder::~JSONEncoder() { delete writer_; }
+
+void JSONEncoder::encodeValue(const char* name, const bool& value) {
+    if (writer_) {
+        writer_->key(name).value(value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const uint32_t& value) {
+    if (writer_) {
+        writer_->key(name).value((uint64_t)value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const int32_t& value) {
+    if (writer_) {
+        writer_->key(name).value((int64_t)value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const uint64_t& value) {
+    if (writer_) {
+        writer_->key(name).value(value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const int64_t& value) {
+    if (writer_) {
+        writer_->key(name).value(value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const float& value) {
+    if (writer_) {
+        writer_->key(name).value(value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const double& value) {
+    if (writer_) {
+        writer_->key(name).value(value);
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name, const std::string& value) {
+    if (writer_) {
+        writer_->key(name).value(value.c_str());
+    }
+}
+
+void JSONEncoder::encodeValue(const char* name,
+                              const std::vector<bool>& value) {
+    startArray(name);
+    int32_t size = (int32_t)value.size();
+    for (int32_t i = 0; i < size; ++i) {
+        const bool item = value.at(i);
+        encodeValue(NULL, item);
+    }
+    endArray();
+}
+
+void JSONEncoder::startObject(const char* name) {
+    if (writer_) {
+        writer_->key(name).startObject();
+    }
+}
+
+void JSONEncoder::endObject() {
+    if (writer_) {
+        writer_->endObject();
+    }
+}
+
+void JSONEncoder::startArray(const char* name) {
+    if (writer_) {
+        writer_->key(name).startArray();
+    }
+}
+
+void JSONEncoder::endArray() {
+    if (writer_) {
+        writer_->endArray();
+    }
+}
+
+bool JSONEncoder::writerResult() const {
+    if (writer_) {
+        return writer_->result();
+    }
+    return false;
+}
+
+void JSONEncoder::writerSeparation() {
+    if (writer_) {
+        writer_->separation();
+    }
+}
+
+}// namespace serialflex

@@ -1,12 +1,14 @@
 #include "parser.h"
 #include <cctype>
-#include "genericreader.h"
+#include "reader.h"
+
 
 namespace json2cpp {
 
+const char* GLOBAL_PREFIX = "CXX_";
 class StructDetails {
-    std::string _name;
-    const custom::GenericValue* _value;
+    std::string name_;
+    const custom::GenericValue* value_;
 
 public:
     enum ITEMTYPE {
@@ -15,185 +17,195 @@ public:
         TYPE_VECTOR = 2,
         TYPE_MAP = 4
     };
+    
     StructDetails(const std::string& name, const custom::GenericValue* value)
-        : _name(name), _value(value) {
-        if (!_name.empty()) {
-            _name.front() = std::toupper(_name.front());
+        : name_(name), value_(value) {
+        if (!name_.empty()) {
+            name_.front() = std::toupper(name_.front());
         }
     }
+    
     std::string toText() const {
-        std::string strResult("struct struct_");
-        strResult.append(_name).append(" {\n");
+        // class name
+        std::string str_result("class ");
+        str_result.append(GLOBAL_PREFIX).append(name_).append(" {\n");
+        // field
+        for (const custom::GenericValue* item = value_->child; item;
+             item = item->next) {
+            str_result.append("    ").append(
+                StructDetails::toTypeByItem(*item, true));
+            std::string field_name = StructDetails::getFieldName(*item);
+            str_result.append(1, ' ').append(field_name).append(1, ';');
+            str_result.append(1, '\n');
+            // has field
+            str_result.append("    bool has_").append(field_name).append(1, ';');
+            str_result.append(1, '\n');
+        }
+        // public
+        str_result.append("public:\n");
         // constructor
-        strResult.append("    struct_").append(_name).append("() ");
-        std::string strConstructor;
-        for (const custom::GenericValue* item = _value->child; item;
+        str_result.append("    ").append(GLOBAL_PREFIX).append(name_).append("() ");
+        std::string str_constructor;
+        for (const custom::GenericValue* item = value_->child; item;
              item = item->next) {
             if (item->type == custom::GenericValue::VALUE_BOOL) {
-                if (!strConstructor.empty()) {
-                    strConstructor.append(", ");
+                if (!str_constructor.empty()) {
+                    str_constructor.append(", ");
                 }
-                strConstructor.append(item->key, item->keySize)
+                str_constructor.append(item->key, item->key_size)
                     .append("(false)");
             } else if (item->type == custom::GenericValue::VALUE_NUMBER) {
-                if (!strConstructor.empty()) {
-                    strConstructor.append(", ");
+                if (!str_constructor.empty()) {
+                    str_constructor.append(", ");
                 }
-                strConstructor.append(item->key, item->keySize).append("(0)");
+                str_constructor.append(item->key, item->key_size).append("(0)");
             }
         }
-        if (!strConstructor.empty()) {
-            strResult.append(": ").append(strConstructor);
+        if (!str_constructor.empty()) {
+            str_result.append(": ").append(str_constructor);
         }
-        strResult.append(" {}\n\n");
-        // field
-        for (const custom::GenericValue* item = _value->child; item;
+        str_result.append(" {}\n");
+        // set/get function
+        for (const custom::GenericValue* item = value_->child; item;
              item = item->next) {
-            strResult.append("    ").append(
-                StructDetails::toTypeByItem(*item, true));
-            std::string fieldName;
-            if (!item->key) {
-                const custom::GenericValue* itemPrev = item->prev;
-                fieldName.append(itemPrev->key, itemPrev->keySize)
-                    .append("child");
-            } else {
-                fieldName.append(item->key, item->keySize);
-            }
-            strResult.append(1, ' ').append(fieldName).append(1, ';');
-            strResult.append(1, '\n');
-            // has field
-            strResult.append("    bool has_").append(fieldName).append(1, ';');
-            strResult.append(1, '\n');
+            // type
+            const std::string field_type = StructDetails::toTypeByItem(*item, true);
+            // name
+            std::string field_name = StructDetails::getFieldName(*item);
+            // set_field
+            str_result.append("\n    ").append("void set_").append(field_name).append("(const ").append(field_type).append("& value) { ").append(field_name).append(" = value; ").append("has_").append(field_name).append(" = true; }");
+            // get_field
+            str_result.append("\n    ").append("const ").append(field_type).append("& get_").append(field_name).append("() const { return ").append(field_name).append("; }");
         }
         // serialize
-        strResult.append("\n    template<typename Archive>");
-        strResult.append("\n    void serialize(Archive& ar) {\n        ar");
-        for (const custom::GenericValue* item = _value->child; item;
+        str_result.append("\n    template<typename Archive>");
+        str_result.append("\n    void serialize(Archive& ar) {\n        ar");
+        for (const custom::GenericValue* item = value_->child; item;
              item = item->next) {
-            std::string fieldName;
-            if (!item->key) {
-                const custom::GenericValue* itemPrev = item->prev;
-                fieldName.append(itemPrev->key, itemPrev->keySize)
-                    .append("child");
-            } else {
-                fieldName.append(item->key, item->keySize);
-            }
-            strResult.append(".convert(\"")
-                .append(fieldName)
+            std::string field_name = StructDetails::getFieldName(*item);
+            str_result.append(".convert(\"")
+                .append(field_name)
                 .append("\", ")
-                .append(fieldName)
+                .append(field_name)
                 .append(", &has_")
-                .append(fieldName)
+                .append(field_name)
                 .append(1, ')');
         }
-        strResult.append(";\n    }\n");
+        str_result.append(";\n    }\n");
 
-        strResult.append("};");
+        str_result.append("};");
 
-        return strResult;
+        return str_result;
     }
+    
     int32_t hasType() const {
         int32_t type = TYPE_NULL;
-        for (const custom::GenericValue* item = _value->child; item;
+        for (const custom::GenericValue* item = value_->child; item;
              item = item->next) {
             if (item->type == custom::GenericValue::VALUE_STRING) {
                 type |= TYPE_STRING;
             } else if (item->type == custom::GenericValue::VALUE_ARRAY) {
                 type |= TYPE_VECTOR;
             }
-            // �޷�����object��map
         }
         return type;
     }
 
 private:
     static std::string toTypeByItem(const custom::GenericValue& item,
-                                    const bool bChild) {
-        std::string strResult;
+                                    const bool is_child) {
+        std::string str_result;
         if (item.type == custom::GenericValue::VALUE_BOOL) {
-            strResult.append("bool");
+            str_result.append("bool");
         } else if (item.type == custom::GenericValue::VALUE_NUMBER) {
-            bool isFloat = false;
-            for (uint32_t idx = 0; idx < item.valueSize; ++idx) {
+            bool is_float = false;
+            for (uint32_t idx = 0; idx < item.value_size; ++idx) {
                 if (item.value[idx] == '.') {
-                    isFloat = true;
+                    is_float = true;
                     break;
                 }
             }
-            if (isFloat) {
+            if (is_float) {
                 // double db = custom::GenericReader::convertDouble(item.value,
                 // item.valueSize);
-                strResult.append("float");
+                str_result.append("float");
             } else {
                 // int64_t value = custom::GenericReader::convertInt(item.value,
                 // item.valueSize);
-                strResult.append("int32_t");
+                str_result.append("int32_t");
             }
         } else if (item.type == custom::GenericValue::VALUE_STRING) {
-            strResult.append("std::string");
+            str_result.append("std::string");
         } else if (item.type == custom::GenericValue::VALUE_ARRAY) {
             if (item.child) {
-                strResult.append("std::vector<")
+                str_result.append("std::vector<")
                     .append(toTypeByItem(*item.child, false))
                     .append(">");
             }
         } else if (item.type == custom::GenericValue::VALUE_OBJECT) {
-            std::string itemName;
-            if (!item.key) {
-                const custom::GenericValue* itemPrev = item.prev;
-                itemName.append(itemPrev->key, itemPrev->keySize);
-                if (bChild) {
-                    itemName.append("child");
-                }
-            } else {
-                itemName.append(item.key, item.keySize);
+            std::string field_name = StructDetails::getFieldName(item, is_child);
+            if (!field_name.empty()) {
+                field_name.front() = std::toupper(field_name.front());
             }
-            if (!itemName.empty()) {
-                itemName.front() = std::toupper(itemName.front());
-            }
-            strResult.append("struct_").append(itemName);
+            str_result.append(GLOBAL_PREFIX).append(field_name);
         }
-        return strResult;
+        return str_result;
+    }
+    
+    static std::string getFieldName(const custom::GenericValue& item, const bool is_child = true) {
+        std::string field_name;
+        if (!item.key) {
+            const custom::GenericValue* item_prev = item.prev;
+            field_name.append(item_prev->key, item_prev->key_size);
+            if (is_child) {
+                field_name.append("child");
+            }
+        } else {
+            field_name.append(item.key, item.key_size);
+        }
+        return field_name;
     }
 };
 
 /*----------------------------------------------------------------------------------------------------------------*/
 
 class CppDescription {
-    int32_t _hasStringVectorMap;
-    std::vector<StructDetails> _vec;
+    int32_t has_string_vector_map_;
+    std::vector<StructDetails> vec_;
 
 public:
-    CppDescription(): _hasStringVectorMap(StructDetails::TYPE_NULL) {}
+    CppDescription(): has_string_vector_map_(StructDetails::TYPE_NULL) {}
     void push_front(const StructDetails& item) {
-        _hasStringVectorMap |= item.hasType();
-        _vec.insert(_vec.begin(), item);
+        has_string_vector_map_ |= item.hasType();
+        vec_.insert(vec_.begin(), item);
     }
+    
     void push_back(const StructDetails& item) {
-        _hasStringVectorMap |= item.hasType();
-        _vec.push_back(item);
+        has_string_vector_map_ |= item.hasType();
+        vec_.push_back(item);
     }
+    
     std::string toText() const {
-        std::string strResult("#include <stdint.h>");
-        if ((_hasStringVectorMap & StructDetails::TYPE_STRING) ==
+        std::string str_result("#include <stdint.h>");
+        if ((has_string_vector_map_ & StructDetails::TYPE_STRING) ==
             StructDetails::TYPE_STRING) {
-            strResult.append("\n#include <string>");
+            str_result.append("\n#include <string>");
         }
-        if ((_hasStringVectorMap & StructDetails::TYPE_VECTOR) ==
+        if ((has_string_vector_map_ & StructDetails::TYPE_VECTOR) ==
             StructDetails::TYPE_VECTOR) {
-            strResult.append("\n#include <vector>");
+            str_result.append("\n#include <vector>");
         }
-        if ((_hasStringVectorMap & StructDetails::TYPE_MAP) ==
+        if ((has_string_vector_map_ & StructDetails::TYPE_MAP) ==
             StructDetails::TYPE_MAP) {
-            strResult.append("\n#include <map>");
+            str_result.append("\n#include <map>");
         }
-        strResult.append("\n\n");
-        for (const StructDetails& item : _vec) {
-            strResult.append(1, '\n');
-            strResult.append(item.toText());
-            strResult.append(1, '\n');
+        str_result.append("\n\n");
+        for (const StructDetails& item : vec_) {
+            str_result.append(1, '\n');
+            str_result.append(item.toText());
+            str_result.append(1, '\n');
         }
-        return strResult;
+        return str_result;
     }
 
     static void getDescriptionChild(const custom::GenericValue* root,
@@ -224,14 +236,14 @@ public:
             if (item->type == custom::GenericValue::VALUE_OBJECT) {
                 temp_item = item;
                 key = item->key;
-                keySize = item->keySize;
+                keySize = item->key_size;
             } else if (item->type == custom::GenericValue::VALUE_ARRAY &&
                        item->child &&
                        item->child->type ==
                            custom::GenericValue::VALUE_OBJECT) {
                 temp_item = item->child;
                 key = item->key;
-                keySize = item->keySize;
+                keySize = item->key_size;
             } else {
                 continue;
             }
@@ -241,12 +253,12 @@ public:
             descriptions.push_back(
                 StructDetails(std::string(key, keySize), temp_item));
         }
-        if (root->keySize) {
+        if (root->key_size) {
             descriptions.push_back(
-                StructDetails(std::string(root->key, root->keySize), root));
+                StructDetails(std::string(root->key, root->key_size), root));
         } else if (root->prev) {
             descriptions.push_back(StructDetails(
-                std::string(root->prev->key, root->prev->keySize), root));
+                std::string(root->prev->key, root->prev->key_size), root));
         }
     }
 };
@@ -254,9 +266,8 @@ public:
 /*----------------------------------------------------------------------------------------------------------------*/
 
 std::string buildStruct(const char* json) {
-    std::vector<custom::GenericValue> vec;
-    custom::GenericReader reader(vec);
-    const custom::GenericValue* root = reader.Parse(json);
+    custom::Reader reader;
+    const custom::GenericValue* root = reader.parse(json);
     if (!root) {
         return std::string(reader.getError());
     }

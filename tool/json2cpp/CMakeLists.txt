@@ -18,16 +18,16 @@ SET(INCLUDE "./include/parser.h")
 SOURCE_GROUP(include FILES ${INCLUDE})
 
 # src
-SET(SRC "./src/parser.cpp" "./src/genericreader.h" "./src/genericreader.cpp")
+SET(SRC "./src/parser.cpp" "./src/reader.h" "./src/reader.cpp")
 SOURCE_GROUP("src" FILES ${SRC})
 
 
 IF (MSVC)
-    ADD_LIBRARY(json2cpp SHARED
+    ADD_LIBRARY(${PROJECT_NAME} SHARED
     ${INCLUDE} ${SRC}
     ${DIR_SRCS})
 ELSE ()
-    ADD_LIBRARY(json2cpp 
+    ADD_LIBRARY(${PROJECT_NAME} 
     ${INCLUDE} ${SRC}
     ${DIR_SRCS})
 ENDIF (MSVC)
@@ -38,5 +38,5 @@ if (${EXEC} STREQUAL ON)
     SET(EXEC "./tester/main.cpp")
     SOURCE_GROUP(builder FILES ${EXEC})
     ADD_EXECUTABLE(builder ${EXEC})
-    TARGET_LINK_LIBRARIES(builder json2cpp)
+    TARGET_LINK_LIBRARIES(builder ${PROJECT_NAME})
 endif()

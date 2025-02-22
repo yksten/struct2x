@@ -9,10 +9,10 @@ int32_t main(int argc, char *argv[]) {
         return -1;
     }
 
-    std::string strOut = json2cpp::buildStruct(argv[1]);
+    std::string str_ut = json2cpp::buildStruct(argv[1]);
 
     std::cout << "// Generated according to JSON, for reference only!" << std::endl;
-    std::cout << strOut << std::endl;
+    std::cout << str_ut << std::endl;
 
     return 0;
 }
